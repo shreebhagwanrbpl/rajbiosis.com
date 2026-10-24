@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: 'Plus Jakarta Sans', 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+}
+
+html {
+  overflow-x: clip;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #f8fafc;
+  color: #1e293b;
+  min-height: 100vh;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  color: #0f172a;
+  letter-spacing: -0.015em;
+  font-weight: 700;
+}
+
+p {
+  color: #475569;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+/* Custom Minimalist Biomedical Utility Classes */
+@layer components {
+  /* Primary Red Action Button */
+  .btn-primary-red {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 active:bg-brand-800 rounded-xl shadow-sm transition-colors duration-150;
+  }
+  
+  /* Clean Outline Action Button */
+  .btn-outline-neutral {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-neutral-800 bg-white hover:bg-neutral-50 border border-neutral-200 hover:border-neutral-300 rounded-xl shadow-sm transition-colors duration-150;
+  }
+
+  /* Secondary Subtle Button */
+  .btn-subtle-red {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200/80 rounded-lg transition-colors duration-150;
+  }
+
+  /* Minimalist Product Card */
+  .product-card {
+    @apply bg-white border border-neutral-200/90 rounded-2xl overflow-hidden transition-all duration-200 hover:border-neutral-300 hover:shadow-card-hover;
+  }
+
+  /* Specification Table Row */
+  .spec-row {
+    @apply grid grid-cols-1 sm:grid-cols-3 py-3 px-4 border-b border-neutral-100 text-xs sm:text-sm;
+  }
+}
+
+/* Smooth Brand Marquee / Carousel */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 55s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+
+
+/* Slim Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3;
+}
