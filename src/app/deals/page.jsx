@@ -19,8 +19,11 @@ import {
   Search,
   Filter,
   FileText,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Heart
 } from 'lucide-react';
+import { getWishlist, toggleWishlist, WISHLIST_UPDATED_EVENT } from '../../utils/wishlist';
+import { requireCustomerAuth } from '../../utils/userProfile';
 
 function DealsContent() {
   const router = useRouter();
@@ -30,6 +33,20 @@ function DealsContent() {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [wishlistIds, setWishlistIds] = useState(new Set());
+
+  useEffect(() => {
+    const syncWishlist = () => {
+      const items = getWishlist();
+      setWishlistIds(new Set(items.map(i => i.id)));
+    };
+    syncWishlist();
+
+    window.addEventListener(WISHLIST_UPDATED_EVENT, syncWishlist);
+    return () => {
+      window.removeEventListener(WISHLIST_UPDATED_EVENT, syncWishlist);
+    };
+  }, []);
 
   useEffect(() => {
     const tabParam = searchParams.get('tab');
@@ -248,34 +265,63 @@ function DealsContent() {
                 >
                   <div>
                     {/* Top Image Box with High-Impact Badges */}
-                    <Link 
-                      href={`/product/${product.id}`}
-                      className="block relative aspect-[4/3] bg-slate-50 p-4 border-b border-slate-100 overflow-hidden"
-                    >
-                      <img 
-                        src={product.image} 
-                        alt={product.name} 
-                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                      />
+                    <div className="relative aspect-[4/3] bg-slate-50 p-4 border-b border-slate-100 overflow-hidden">
+                      <Link 
+                        href={`/product/${product.id}`}
+                        className="block w-full h-full"
+                      >
+                        <img 
+                          src={product.image} 
+                          alt={product.name} 
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </Link>
 
                       {/* Discount Tag */}
                       {discountPercent > 0 && (
-                        <div className="absolute top-3 right-3 bg-red-600 text-white text-xs font-black px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1">
+                        <div className="pointer-events-none absolute top-3 right-3 bg-red-600 text-white text-xs font-black px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1 z-10">
                           <Percent size={11} className="stroke-[3]" />
                           <span>{discountPercent}% OFF</span>
                         </div>
                       )}
 
+                      {/* Floating Wishlist Heart (Prominent Red Background) */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          const inList = wishlistIds.has(product.id);
+                          if (!inList && !requireCustomerAuth('wishlist', product)) {
+                            return;
+                          }
+                          toggleWishlist(product);
+                        }}
+                        className={`absolute top-3 ${discountPercent > 0 ? 'right-28' : 'right-3'} w-8 h-8 rounded-full shadow-md flex items-center justify-center transition-all duration-200 cursor-pointer z-30 hover:scale-110 active:scale-95 ${
+                          wishlistIds.has(product.id)
+                            ? 'bg-red-600 text-white ring-2 ring-red-300 shadow-red-600/30'
+                            : 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/30'
+                        }`}
+                        title={wishlistIds.has(product.id) ? "Remove from Wishlist" : "Save to Wishlist"}
+                      >
+                        <Heart
+                          size={15}
+                          className={`transition-all duration-200 text-white ${
+                            wishlistIds.has(product.id) ? 'fill-white scale-110' : 'stroke-[2.2]'
+                          }`}
+                        />
+                      </button>
+
                       {/* Brand Label */}
-                      <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-xs text-slate-700 text-[10px] font-bold px-2.5 py-1 rounded-md border border-slate-200">
+                      <div className="pointer-events-none absolute top-3 left-3 bg-white/95 backdrop-blur-xs text-slate-700 text-[10px] font-bold px-2.5 py-1 rounded-md border border-slate-200">
                         {product.brand}
                       </div>
 
                       {/* Model SKU */}
-                      <div className="absolute bottom-3 left-3 bg-slate-900/80 text-white text-[10px] font-mono px-2 py-0.5 rounded">
+                      <div className="pointer-events-none absolute bottom-3 left-3 bg-slate-900/80 text-white text-[10px] font-mono px-2 py-0.5 rounded">
                         {product.sku}
                       </div>
-                    </Link>
+                    </div>
 
                     {/* Content Section */}
                     <div className="p-5">

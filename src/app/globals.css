@@ -90,6 +90,46 @@ p {
   animation-play-state: paused;
 }
 
+/* Vertical Multi-Track Brand Marquee (Quotation Modal) */
+@keyframes verticalScrollUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes verticalScrollDown {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-vertical-up {
+  animation: verticalScrollUp 20s linear infinite;
+  will-change: transform;
+}
+
+.animate-vertical-down {
+  animation: verticalScrollDown 20s linear infinite;
+  will-change: transform;
+}
+
+.animate-vertical-up-slow {
+  animation: verticalScrollUp 24s linear infinite;
+  will-change: transform;
+}
+
+.animate-vertical-up:hover,
+.animate-vertical-down:hover,
+.animate-vertical-up-slow:hover {
+  animation-play-state: paused;
+}
+
 
 
 /* Slim Scrollbar */
@@ -107,3 +147,72 @@ p {
 ::-webkit-scrollbar-thumb:hover {
   background: #a3a3a3;
 }
+
+/* Micro-animations for modals, profile popovers, and drawers */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.22s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Hot Toaster Slide Down */
+@keyframes toastSlideDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -24px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+.animate-toast-down {
+  animation: toastSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Global scrollbar hiding helper */
+.scrollbar-none::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+

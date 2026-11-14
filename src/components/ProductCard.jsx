@@ -2,16 +2,23 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ShieldCheck, ArrowRight, FileText, Truck, ShoppingCart, Tag, Check } from 'lucide-react';
-import { getActiveDistrict, USER_PROFILE_EVENT } from '../utils/userProfile';
+import { ShieldCheck, ArrowRight, FileText, Truck, ShoppingCart, Tag, Check, Heart } from 'lucide-react';
+import { isInWishlist, toggleWishlist, WISHLIST_UPDATED_EVENT } from '../utils/wishlist';
+import { getActiveDistrict, USER_PROFILE_EVENT, requireCustomerAuth } from '../utils/userProfile';
 import { addToCart, openCartDrawer } from '../utils/cart';
 
 export default function ProductCard({ product, onOpenQuote }) {
   const [district, setDistrict] = useState('Jaipur');
   const [justAdded, setJustAdded] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
     setDistrict(getActiveDistrict());
+    setIsWishlisted(isInWishlist(product.id));
+
+    const handleWishlistUpdate = () => {
+      setIsWishlisted(isInWishlist(product.id));
+    };
 
     const handleProfileUpdate = (e) => {
       if (e && e.detail && e.detail.district) {
@@ -21,13 +28,38 @@ export default function ProductCard({ product, onOpenQuote }) {
       }
     };
 
+    const handleDistrictChange = (e) => {
+      if (e && e.detail) {
+        setDistrict(e.detail);
+      }
+    };
+
+    window.addEventListener(WISHLIST_UPDATED_EVENT, handleWishlistUpdate);
     window.addEventListener(USER_PROFILE_EVENT, handleProfileUpdate);
-    return () => window.removeEventListener(USER_PROFILE_EVENT, handleProfileUpdate);
-  }, []);
+    window.addEventListener('active-district-changed', handleDistrictChange);
+    return () => {
+      window.removeEventListener(WISHLIST_UPDATED_EVENT, handleWishlistUpdate);
+      window.removeEventListener(USER_PROFILE_EVENT, handleProfileUpdate);
+      window.removeEventListener('active-district-changed', handleDistrictChange);
+    };
+  }, [product.id]);
+
+  const handleToggleWishlist = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isWishlisted && !requireCustomerAuth('wishlist', product)) {
+      return;
+    }
+    const nowWishlisted = toggleWishlist(product);
+    setIsWishlisted(nowWishlisted);
+  };
 
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!requireCustomerAuth('cart', product, 1)) {
+      return;
+    }
     addToCart(product, 1);
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 2000);
@@ -44,52 +76,67 @@ export default function ProductCard({ product, onOpenQuote }) {
   };
 
   // Get key technical highlights from specs (first 2 entries)
-  const specHighlights = product.specs 
-    ? Object.entries(product.specs).slice(0, 2) 
+  const specHighlights = product.specs
+    ? Object.entries(product.specs).slice(0, 2)
     : [];
 
   return (
     <div className="product-card group flex flex-col justify-between bg-white relative">
       <div>
         {/* Product Image Area with Wide Aspect Ratio (Shorter & Wider) */}
-        <Link href={`/product/${product.id}`} className="block relative aspect-[16/10] sm:aspect-[16/9] max-h-[165px] bg-neutral-50 overflow-hidden p-2.5 border-b border-neutral-100">
-          <img
-            src={product.image}
-            alt={product.name}
-            loading="lazy"
-            className="w-full h-full object-contain object-center transition-transform duration-300 group-hover:scale-105"
-          />
-          
+        <div className="relative aspect-[16/10] sm:aspect-[16/9] max-h-[165px] bg-neutral-50 overflow-hidden p-2.5 border-b border-neutral-100">
+          <Link
+            href={`/product/${product.id}`}
+            className="block w-full h-full"
+          >
+            <img
+              src={product.image}
+              alt={product.name}
+              loading="lazy"
+              className="w-full h-full object-contain object-center transition-transform duration-300 group-hover:scale-105"
+            />
+          </Link>
+
           {/* Brand Badge */}
           {product.brand && (
-            <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-xs text-neutral-600 text-[9px] font-semibold px-1.5 py-0.5 rounded border border-neutral-200">
+            <div className="pointer-events-none absolute top-2 left-2 bg-white/95 backdrop-blur-xs text-neutral-600 text-[9px] font-semibold px-1.5 py-0.5 rounded border border-neutral-200">
               {product.brand}
             </div>
           )}
 
-          {/* Quick Add To Cart Floating Button on Image */}
+          {/* Wishlist Heart Floating Button on Image (Prominent Red Background) */}
           <button
             type="button"
-            onClick={handleAddToCart}
-            className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/95 hover:bg-red-600 hover:text-white text-slate-700 shadow-2xs border border-slate-200 flex items-center justify-center transition-all duration-200 cursor-pointer"
-            title="Add to Equipment Cart"
+            onClick={handleToggleWishlist}
+            className={`absolute top-2.5 right-2.5 w-8 h-8 rounded-full shadow-md flex items-center justify-center transition-all duration-200 cursor-pointer z-30 hover:scale-110 active:scale-95 ${
+              isWishlisted
+                ? 'bg-red-600 text-white ring-2 ring-red-300 shadow-red-600/30'
+                : 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/30'
+            }`}
+            title={isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"}
+            aria-label={isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"}
           >
-            {justAdded ? <Check size={13} className="text-emerald-600" /> : <ShoppingCart size={13} />}
+            <Heart
+              size={15}
+              className={`transition-all duration-200 text-white ${
+                isWishlisted ? 'fill-white scale-110' : 'stroke-[2.2]'
+              }`}
+            />
           </button>
 
           {/* Model / SKU Chip */}
-          <div className="absolute bottom-2 left-2 bg-neutral-900/80 backdrop-blur-xs text-white text-[9px] font-mono px-1.5 py-0.5 rounded">
+          <div className="pointer-events-none absolute bottom-2 left-2 bg-neutral-900/80 backdrop-blur-xs text-white text-[9px] font-mono px-1.5 py-0.5 rounded">
             {product.sku}
           </div>
 
           {/* Negotiable Badge */}
           {product.isNegotiable && (
-            <div className="absolute bottom-2 right-2 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-2xs flex items-center gap-0.5">
+            <div className="pointer-events-none absolute bottom-2 right-2 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-2xs flex items-center gap-0.5">
               <Tag size={9} />
               <span>Negotiable</span>
             </div>
           )}
-        </Link>
+        </div>
 
         {/* Content Body - Compact and Wide */}
         <div className="p-3 sm:p-3.5">
@@ -115,8 +162,8 @@ export default function ProductCard({ product, onOpenQuote }) {
           {/* Localized District Fast Delivery Pill */}
           <div className="mt-1.5 flex items-center gap-1.5 text-[9px] sm:text-[10px] font-semibold text-slate-600 bg-slate-50 border border-slate-200/90 px-2 py-0.5 rounded-md">
             <Truck size={11} className="text-brand-600 shrink-0" />
-            <span className="truncate">
-              Dispatch to <strong className="text-slate-900">{district}</strong> (24-48h)
+            <span className="truncate" suppressHydrationWarning>
+              Dispatch to <strong className="text-slate-900" suppressHydrationWarning>{district}</strong>
             </span>
           </div>
 
@@ -172,7 +219,7 @@ export default function ProductCard({ product, onOpenQuote }) {
             )}
             <span>{justAdded ? 'Added' : '+ Cart'}</span>
           </button>
-          
+
           <button
             type="button"
             onClick={(e) => {

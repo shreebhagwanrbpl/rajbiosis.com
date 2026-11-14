@@ -35,12 +35,12 @@ export default function CountryCodeSelector({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="h-full inline-flex items-center gap-1.5 px-3 py-2.5 bg-slate-100 hover:bg-slate-200/90 text-slate-800 text-xs sm:text-sm font-bold border border-slate-300 rounded-l-xl transition outline-none cursor-pointer select-none"
+        className="h-full inline-flex items-center gap-1.5 px-3.5 bg-slate-100 hover:bg-slate-200/80 text-slate-800 text-sm sm:text-base font-bold border-r border-slate-300 rounded-l-xl transition outline-none cursor-pointer select-none shrink-0"
         title="Select Country Calling Code"
       >
-        <span className="text-base leading-none">{selected.flag}</span>
-        <span className="font-mono">{selected.code}</span>
-        <ChevronDown size={13} className={`text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <span className="text-lg leading-none">{selected.flag}</span>
+        <span className="font-mono text-sm sm:text-base font-bold">{selected.code}</span>
+        <ChevronDown size={14} className={`text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (

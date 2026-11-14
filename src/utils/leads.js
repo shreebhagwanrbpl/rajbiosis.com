@@ -1,3 +1,4 @@
+import { syncLeadToAdmin } from './adminSync';
 // Utility for District-Based Customer Leads Management for Employees & Admin
 export const LEADS_STORAGE_KEY = 'rajbiosis_all_leads';
 export const LEADS_EVENT = 'rajbiosis-leads-updated';
@@ -144,27 +145,39 @@ export function recordCustomerLead(leadData) {
   if (typeof window === 'undefined') return null;
   try {
     const currentLeads = getAllLeads();
+    const offerPrice = leadData.expectedPrice ? Number(leadData.expectedPrice) : null;
+    const isNeg = Boolean(leadData.isNegotiable || offerPrice);
+    const catalogBase = Number(leadData.actualPrice || leadData.catalogPrice || leadData.price || 485000);
+    const unitPriceNum = Number(leadData.unitPrice || offerPrice || catalogBase);
+
     const newLead = {
       id: leadData.id || `LEAD-${Date.now().toString().slice(-6)}`,
-      quoteNumber: leadData.quoteNumber || `RB-QT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-      customerName: leadData.customerName || leadData.fullName || 'Medical Client',
-      designation: leadData.designation || 'Procurement In-charge',
-      hospitalName: leadData.hospitalName || 'Hospital / Healthcare Center',
-      customerPhone: leadData.customerPhone || leadData.phone || '',
-      customerEmail: leadData.customerEmail || leadData.email || '',
-      district: leadData.district || 'Jaipur',
-      state: leadData.state || 'Rajasthan',
-      productName: leadData.productName || 'Medical Equipment',
+      customerName: leadData.customerName || leadData.fullName || 'NA',
+      designation: leadData.designation || 'NA',
+      hospitalName: leadData.hospitalName || 'NA',
+      customerPhone: leadData.customerPhone || leadData.phone || 'NA',
+      customerEmail: leadData.customerEmail || leadData.email || 'NA',
+      district: leadData.district || 'NA',
+      state: leadData.state || 'NA',
+      productName: leadData.productName || 'NA',
       productSku: leadData.productSku || 'RAJ-MED-GEN',
       qty: Number(leadData.qty || leadData.quantity || 1),
-      unitPrice: Number(leadData.unitPrice || leadData.price || 0),
-      expectedPrice: leadData.expectedPrice ? Number(leadData.expectedPrice) : null,
-      isNegotiable: Boolean(leadData.isNegotiable),
+      unitPrice: unitPriceNum,
+      actualPrice: catalogBase,
+      expectedPrice: offerPrice,
+      isNegotiable: isNeg,
+      isPriceNegotiated: Boolean(offerPrice && offerPrice > 0),
+      negotiationStatus: leadData.negotiationStatus || (offerPrice ? 'pending_approval' : 'none'),
+      approvedPrice: leadData.approvedPrice || null,
+      adminCounterPrice: leadData.adminCounterPrice || null,
+      adminNote: leadData.adminNote || null,
       isMultiItem: Boolean(leadData.isMultiItem),
       cartProducts: leadData.cartProducts || null,
-      grandTotal: Number(leadData.grandTotal || leadData.totalAmount || 0),
-      status: 'New Lead',
-      statusNote: leadData.statusNote || 'Customer requested official quotation via website portal.',
+      gstRate: leadData.gstRate || (leadData.productCategory === 'radiology-imaging' ? '18%' : '12%'),
+      gstAmount: Number(leadData.gstAmount || 0),
+      grandTotal: Number(leadData.grandTotal || leadData.totalAmount || (unitPriceNum * (leadData.qty || 1))),
+      status: leadData.status || (offerPrice ? 'Pending Price Approval' : 'New Lead'),
+      statusNote: leadData.statusNote || (offerPrice ? `Customer target offer of ₹${offerPrice.toLocaleString('en-IN')} submitted. Awaiting Admin review.` : 'Customer requested official quotation via website portal.'),
       createdAt: leadData.createdAt || new Date().toISOString(),
       notes: []
     };
@@ -172,6 +185,7 @@ export function recordCustomerLead(leadData) {
     const updated = [newLead, ...currentLeads.filter(l => l.id !== newLead.id)];
     localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent(LEADS_EVENT, { detail: updated }));
+    try { syncLeadToAdmin(newLead); } catch (e) {}
     return newLead;
   } catch (err) {
     console.error('Error recording customer lead:', err);

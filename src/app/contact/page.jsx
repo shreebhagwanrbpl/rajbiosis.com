@@ -78,7 +78,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <span className="font-bold text-neutral-950 block text-xs">Procurement Email</span>
-                    <span className="text-neutral-900 font-bold">institutional@rajbiosis.com</span>
+                    <span className="text-neutral-900 font-bold">mail@rajbiosis.com</span>
                     <span className="text-[11px] text-neutral-600 font-medium block mt-0.5">Formal RFP, GeM tenders & PO submissions</span>
                   </div>
                 </div>

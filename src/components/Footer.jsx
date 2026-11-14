@@ -43,11 +43,12 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-2 text-neutral-700">
                 <Mail size={14} className="text-brand-600 shrink-0" />
-                <span>institutional@rajbiosis.com</span>
+                <span>mail@rajbiosis.com</span>
               </div>
               <div className="flex items-start gap-2 text-neutral-700">
                 <MapPin size={14} className="text-brand-600 shrink-0 mt-0.5" />
-                <span>Raj Biosis Life Sciences Park, Phase II, Bengaluru - 560100, India</span>
+                <span>1st Floor, F-4,Plot No.16, D- Block, Tagor Nagar,Nr.200 FT
+                  Jaipur - 302021, Rajasthan, India</span>
               </div>
             </div>
           </div>

@@ -1,5 +1,7 @@
 'use client';
 
+import { syncCartWishlistInteraction } from './cartWishlistSync';
+
 const CART_STORAGE_KEY = 'rajbiosis_cart';
 export const CART_UPDATED_EVENT = 'cart-updated';
 export const OPEN_CART_EVENT = 'open-cart';
@@ -70,6 +72,7 @@ export function addToCart(product, qty = 1, expectedPrice = null) {
   }
 
   saveCart(items);
+  syncCartWishlistInteraction('add_to_cart', product, qty);
   return items;
 }
 
@@ -111,8 +114,14 @@ export function updateCartExpectedPrice(productId, expectedPrice) {
  */
 export function removeFromCart(productId) {
   const items = getCart();
+  const removedItem = items.find(item => item.id === productId);
   const filtered = items.filter(item => item.id !== productId);
   saveCart(filtered);
+  if (removedItem) {
+    syncCartWishlistInteraction('remove_from_cart', removedItem);
+  } else {
+    syncCartWishlistInteraction('remove_from_cart', { id: productId });
+  }
   return filtered;
 }
 

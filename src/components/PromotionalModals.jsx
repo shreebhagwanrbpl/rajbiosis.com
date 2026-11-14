@@ -35,7 +35,7 @@ const NEW_ARRIVALS = [
     featureDesc: 'Real-time 4D Color Doppler imaging with 3 multi-frequency transducers and AI speckle reduction.'
   },
   {
-    ...PRODUCTS.find(p => p.id === 'prod-ot-light-duo') || PRODUCTS[4],
+    ...PRODUCTS.find(p => p.id === 'prod-ot-light') || PRODUCTS[4],
     badgeLabel: '2026 Shadowless OT Light',
     featureDesc: 'Dual-dome surgical LED surgical lights with 160,000 Lux illumination and laminar airflow design.'
   },
@@ -99,20 +99,19 @@ export default function PromotionalModals() {
   const [isDealPaused, setIsDealPaused] = useState(false);
   const dealTouchStartX = useRef(null);
 
-  // Initial Pop-up: Show New Arrivals when website opens (skip on profile or portal)
+  // Initial Pop-up: Show New Arrivals when website opens (skip if dismissed or on profile/portal)
   useEffect(() => {
     if (pathname === '/profile' || pathname === '/portal') return;
 
     if (typeof window !== 'undefined') {
       try {
-        sessionStorage.removeItem('rb_dismissed_arrivals');
-        sessionStorage.removeItem('rb_dismissed_deals');
+        if (sessionStorage.getItem('rb_dismissed_arrivals')) return;
       } catch (e) {}
     }
 
     const timer = setTimeout(() => {
       setShowNewArrivals(true);
-    }, 600);
+    }, 1500);
     return () => clearTimeout(timer);
   }, [pathname]);
 

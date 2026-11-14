@@ -30,6 +30,9 @@ import { DEFAULT_COUNTRY_CODE } from '../../data/internationalCodes';
 import { INDIAN_STATES, RAJASTHAN_DISTRICTS } from '../../data/districts';
 import { PRODUCTS } from '../../data/products';
 import {
+  ChevronUp,
+  Layers,
+  Package,
   User,
   Phone,
   Mail,
@@ -65,8 +68,12 @@ import {
   Users,
   Trash2,
   KeyRound,
-  BadgeCheck
+  BadgeCheck,
+  Heart,
+  ShoppingCart,
+  Activity
 } from 'lucide-react';
+import { fetchAdminCartWishlistOverview } from '../../utils/cartWishlistSync';
 import {
   getUserAccounts,
   createUserAccount,
@@ -80,7 +87,7 @@ function ProfileContent() {
   const router = useRouter();
 
   // Set to false whenever you want to hide the account type selection dropdown from public visitors
-  const SHOW_ROLE_DROPDOWN = true;
+  const SHOW_ROLE_DROPDOWN = false;
 
   // Active Top View: 'customer' (default) | 'staff' (employee & admin desk)
   const tabParam = searchParams?.get('tab');
@@ -96,6 +103,104 @@ function ProfileContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [inquiries, setInquiries] = useState([]);
   const [selectedQuotation, setSelectedQuotation] = useState(null);
+  const [expandedInquiryIds, setExpandedInquiryIds] = useState({});
+
+  const toggleExpandInquiry = (id) => {
+    setExpandedInquiryIds((prev) => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
+  const getItemProducts = (inq) => {
+    if (!inq) return [];
+    let rawList = [];
+    if (Array.isArray(inq.items) && inq.items.length > 0) {
+      rawList = inq.items;
+    } else if (Array.isArray(inq.cartProducts) && inq.cartProducts.length > 0) {
+      rawList = inq.cartProducts;
+    } else if (Array.isArray(inq.rawLeadData?.cartProducts) && inq.rawLeadData.cartProducts.length > 0) {
+      rawList = inq.rawLeadData.cartProducts;
+    } else if (Array.isArray(inq.quoteDetails?.items) && inq.quoteDetails.items.length > 0) {
+      rawList = inq.quoteDetails.items;
+    } else if (Array.isArray(inq.lead?.rawLeadData?.cartProducts) && inq.lead.rawLeadData.cartProducts.length > 0) {
+      rawList = inq.lead.rawLeadData.cartProducts;
+    } else if (Array.isArray(inq.lead?.cartProducts) && inq.lead.cartProducts.length > 0) {
+      rawList = inq.lead.cartProducts;
+    } else if (Array.isArray(inq.lead?.items) && inq.lead.items.length > 0) {
+      rawList = inq.lead.items;
+    }
+
+    return rawList.map((p, idx) => {
+      const sku = (p.itemCode || p.sku || p.productSku || '').toLowerCase();
+      const title = (p.title || p.name || p.productName || '').toLowerCase();
+      const matched = PRODUCTS.find((prod) =>
+        (sku && prod.sku && prod.sku.toLowerCase() === sku) ||
+        (p.id && prod.id && prod.id === p.id) ||
+        (prod.name && title && (prod.name.toLowerCase().includes(title) || title.includes(prod.name.toLowerCase())))
+      );
+
+      return {
+        id: p.id || `item-${idx}`,
+        title: p.title || p.name || matched?.name || `Equipment Item ${idx + 1}`,
+        name: p.name || p.title || matched?.name || `Equipment Item ${idx + 1}`,
+        sku: p.sku || p.itemCode || matched?.sku || '',
+        itemCode: p.itemCode || p.sku || matched?.sku || '',
+        brand: p.brand || p.productBrand || matched?.brand || 'Raj Biosis OEM',
+        image: p.image || p.productImage || matched?.image || '/logo.png',
+        warranty: p.warranty || matched?.warranty || '2 Years Comprehensive On-Site Warranty',
+        bullets: p.bullets || (matched?.features ? matched.features.join('\n') : null),
+        unitPrice: parseFloat(p.unitPrice || p.price || matched?.price || 0),
+        price: parseFloat(p.price || p.unitPrice || matched?.price || 0),
+        qty: parseInt(p.qty || p.quantity || 1, 10) || 1
+      };
+    });
+  };
+
+  const handleOpenQuotation = async (item) => {
+    const initialProducts = getItemProducts(item);
+    setSelectedQuotation({
+      ...item,
+      items: initialProducts,
+      cartProducts: initialProducts
+    });
+
+    const ref = item.quotationRef || (item.quoteNumber?.startsWith('RBPL/') ? item.quoteNumber : null) || item.id;
+    if (ref) {
+      try {
+        const res = await fetch('/api/quotations?id=' + encodeURIComponent(ref));
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.quotation) {
+            const q = data.quotation;
+            const freshProducts = getItemProducts({
+              ...item,
+              ...q,
+              items: q.items,
+              cartProducts: q.lead?.rawLeadData?.cartProducts || q.lead?.cartProducts || item.cartProducts
+            });
+
+            setSelectedQuotation((prev) => ({
+              ...prev,
+              ...item,
+              ...q,
+              items: freshProducts,
+              cartProducts: freshProducts,
+              grandTotal: q.grandTotal || q.totalAmount || item.grandTotal,
+              totalAmount: q.totalAmount || item.unitPrice,
+              quotationRef: q.refNo || item.quotationRef,
+              customerName: q.customerName || item.customerName,
+              customerAddress1: q.customerAddress1,
+              customerAddress2: q.customerAddress2,
+              date: q.date
+            }));
+          }
+        }
+      } catch (err) {
+        console.warn('Error fetching proforma quotation details:', err);
+      }
+    }
+  };
 
   // Customer Profile Form Data (supports customer, admin, employee registration)
   const [formData, setFormData] = useState({
@@ -120,7 +225,7 @@ function ProfileContent() {
   // -------------------------------------------------------------
   const [staffSession, setStaffSession] = useState(null);
   const [staffAuthTab, setStaffAuthTab] = useState(tabParam === 'admin' ? 'admin' : 'employee'); // 'employee' | 'admin'
-  
+
   // Employee Login fields: name, email, district
   const [empName, setEmpName] = useState('Er. Rajesh Sharma');
   const [empEmail, setEmpEmail] = useState('rajesh.sharma@rajbiosis.com');
@@ -142,7 +247,16 @@ function ProfileContent() {
   const [staffLoginError, setStaffLoginError] = useState('');
 
   // Admin User & Staff Account Creation Management States
-  const [adminSubTab, setAdminSubTab] = useState('accounts'); // 'accounts' | 'leads'
+  const [adminSubTab, setAdminSubTab] = useState('accounts'); // 'accounts' | 'leads' | 'wishlist_cart'
+  const [cartWishlistOverview, setCartWishlistOverview] = useState({
+    summary: { totalWishlist: 0, totalCart: 0, productsCount: 0, customersCount: 0 },
+    products: [],
+    recentActivities: []
+  });
+  const [demandSearchQuery, setDemandSearchQuery] = useState('');
+  const [demandFilterType, setDemandFilterType] = useState('all'); // 'all' | 'wishlist' | 'cart'
+  const [expandedDemandProductId, setExpandedDemandProductId] = useState(null);
+  const [isLoadingDemand, setIsLoadingDemand] = useState(false);
   const [userAccounts, setUserAccounts] = useState([]);
   const [accountFilterRole, setAccountFilterRole] = useState('all'); // 'all' | 'employee' | 'admin' | 'customer'
   const [newAccRole, setNewAccRole] = useState('employee'); // 'employee' | 'admin' | 'customer'
@@ -193,22 +307,30 @@ function ProfileContent() {
 
     // Load customer profile
     const storedProfile = getUserProfile();
-    const hasProfile = Boolean(storedProfile && (storedProfile.fullName || storedProfile.phone));
-    setHasExistingProfile(hasProfile);
+    const isProfileFullySetup = Boolean(
+      storedProfile &&
+      (storedProfile.isProfileComplete || (storedProfile.hospitalName && storedProfile.hospitalName.trim() && storedProfile.hospitalName !== 'NA')) &&
+      storedProfile.fullName &&
+      storedProfile.fullName !== 'NA' &&
+      storedProfile.phone
+    );
+    setHasExistingProfile(isProfileFullySetup);
 
     const queryName = searchParams?.get('name');
     const queryPhone = searchParams?.get('phone');
     const queryDistrict = searchParams?.get('district');
+    const queryEmail = searchParams?.get('email');
+    const queryHospital = searchParams?.get('hospital');
 
     const initialData = {
       accountType: 'customer',
-      fullName: queryName ? decodeURIComponent(queryName) : (storedProfile?.fullName || ''),
+      fullName: queryName ? decodeURIComponent(queryName) : ((storedProfile?.fullName && storedProfile.fullName !== 'NA') ? storedProfile.fullName : ''),
       designation: storedProfile?.designation || '',
       phone: queryPhone ? decodeURIComponent(queryPhone) : (storedProfile?.phone || ''),
-      email: storedProfile?.email || '',
+      email: queryEmail ? decodeURIComponent(queryEmail) : (storedProfile?.email || ''),
       state: storedProfile?.state || 'Rajasthan',
       district: queryDistrict ? decodeURIComponent(queryDistrict) : (storedProfile?.district || 'Jaipur'),
-      hospitalName: storedProfile?.hospitalName || '',
+      hospitalName: queryHospital ? decodeURIComponent(queryHospital) : ((storedProfile?.hospitalName && storedProfile.hospitalName !== 'NA') ? storedProfile.hospitalName : ''),
       address: storedProfile?.address || '',
       pincode: storedProfile?.pincode || '',
       countryCode: storedProfile?.countryCode || DEFAULT_COUNTRY_CODE
@@ -218,11 +340,194 @@ function ProfileContent() {
     setEditFormData(initialData);
 
     // Load customer inquiries
-    const rawInquiries = getUserInquiries();
-    const cleanInquiries = rawInquiries.filter(
-      (item) => item && !item.id?.startsWith('RFQ-2026-') && !item.id?.startsWith('ENQ-1792')
-    );
-    setInquiries(cleanInquiries);
+    let rawInquiries = getUserInquiries();
+    if (!rawInquiries || rawInquiries.length === 0) {
+      rawInquiries = getDefaultSampleInquiries(storedProfile?.district || 'Jaipur');
+    }
+    setInquiries(rawInquiries);
+
+    // Live sync customer inquiries with MongoDB leads & quotations from Admin
+    const syncCustomerInquiriesLive = async () => {
+      try {
+        const prof = getUserProfile() || {};
+        const cleanPhone = (prof.phone || '').replace(/\D/g, '').slice(-10);
+        const cleanEmail = (prof.email || '').trim().toLowerCase();
+
+        const params = new URLSearchParams();
+        if (cleanPhone) params.set('phone', cleanPhone);
+        if (cleanEmail) params.set('email', cleanEmail);
+
+        const res = await fetch(`/api/leads?${params.toString()}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.success || !Array.isArray(data.leads)) return;
+
+        const backendLeads = data.leads;
+
+        // Also fetch quotations
+        let backendQuotes = [];
+        try {
+          const qRes = await fetch('/api/quotations');
+          if (qRes.ok) {
+            const qData = await qRes.json();
+            if (qData.success && Array.isArray(qData.quotations)) {
+              backendQuotes = qData.quotations;
+            }
+          }
+        } catch (e) { }
+
+        const currentInqs = getUserInquiries();
+        let changed = false;
+
+        const updatedInqs = currentInqs.map(item => {
+          // Find matching lead in backendLeads
+          const matchLead = backendLeads.find(l => {
+            if (l.id && (l.id === item.id || l.id === item.quoteNumber)) return true;
+            if (l.rawLeadData?.id && (l.rawLeadData.id === item.id || l.rawLeadData.id === item.quoteNumber)) return true;
+            if (l.rawLeadData?.quoteNumber && (l.rawLeadData.quoteNumber === item.quoteNumber || l.rawLeadData.quoteNumber === item.id)) return true;
+            // Match by equipment name
+            const lEq = (l.equipment || l.productName || '').trim().toLowerCase();
+            const itEq = (item.productName || item.equipment || '').trim().toLowerCase();
+            if (lEq && itEq && (lEq === itEq || lEq.includes(itEq) || itEq.includes(lEq))) return true;
+            return false;
+          });
+
+          // Find matching quote in backendQuotes
+          const matchQuote = backendQuotes.find(q => {
+            if (matchLead?.quotationRef && (q.refNo === matchLead.quotationRef || q.id === matchLead.quotationRef)) return true;
+            if (item.quotationRef && (q.refNo === item.quotationRef || q.id === item.quotationRef)) return true;
+            if (item.id && q.leadId === item.id) return true;
+            return false;
+          });
+
+          if (!matchLead && !matchQuote) return item;
+
+          const isQuoteCreated = Boolean(
+            matchLead?.isQuotationCreated ||
+            matchLead?.quotationRef ||
+            matchQuote ||
+            (matchLead?.status && matchLead.status.toLowerCase().includes('quotation created'))
+          );
+
+          const quotationRef = matchLead?.quotationRef || matchQuote?.refNo || item.quotationRef;
+          const status = isQuoteCreated ? 'Quotation Created' : (matchLead?.status || item.status);
+          const negotiationStatus = matchLead?.negotiationStatus || item.negotiationStatus;
+          const approvedPrice = matchLead?.approvedPrice || item.approvedPrice;
+
+          let statusNote = item.statusNote;
+          if (isQuoteCreated) {
+            statusNote = `Official Quotation has been created & ready by Admin.`;
+          } else if (negotiationStatus === 'approved') {
+            statusNote = `Customer target offer of ₹${Number(approvedPrice || 0).toLocaleString('en-IN')} approved by Admin. Quotation draft being finalized.`;
+          } else if (matchLead?.statusNote) {
+            statusNote = matchLead.statusNote;
+          }
+
+          const matchedProducts = (
+            (Array.isArray(matchQuote?.items) && matchQuote.items.length > 0) ? matchQuote.items :
+              (Array.isArray(item.items) && item.items.length > 0) ? item.items :
+                (Array.isArray(item.cartProducts) && item.cartProducts.length > 0) ? item.cartProducts :
+                  (Array.isArray(matchLead?.rawLeadData?.cartProducts) && matchLead.rawLeadData.cartProducts.length > 0) ? matchLead.rawLeadData.cartProducts :
+                    (Array.isArray(matchLead?.cartProducts) && matchLead.cartProducts.length > 0) ? matchLead.cartProducts :
+                      []
+          );
+
+          const isItemMulti = Boolean(
+            matchedProducts.length > 1 ||
+            item.isMultiItem ||
+            matchLead?.isMultiItem ||
+            matchLead?.rawLeadData?.isMultiItem ||
+            (item.productName && item.productName.toLowerCase().includes('bulk')) ||
+            (matchLead?.equipment && matchLead.equipment.toLowerCase().includes('bulk'))
+          );
+
+          const hasProductsChanged = matchedProducts.length > 0 && (!item.items || item.items.length === 0 || !item.cartProducts || item.cartProducts.length === 0);
+
+          if (
+            item.status !== status ||
+            item.isQuotationCreated !== isQuoteCreated ||
+            item.quotationRef !== quotationRef ||
+            item.statusNote !== statusNote ||
+            item.negotiationStatus !== negotiationStatus ||
+            hasProductsChanged
+          ) {
+            changed = true;
+            return {
+              ...item,
+              status,
+              isQuotationCreated: isQuoteCreated,
+              quotationRef: quotationRef || item.quotationRef,
+              negotiationStatus,
+              approvedPrice,
+              statusNote,
+              grandTotal: matchQuote?.grandTotal || (approvedPrice ? Math.round(Number(approvedPrice) * 1.12) : item.grandTotal),
+              items: matchedProducts.length > 0 ? matchedProducts : item.items,
+              cartProducts: matchedProducts.length > 0 ? matchedProducts : item.cartProducts,
+              isMultiItem: isItemMulti,
+              quoteDetails: matchQuote || item.quoteDetails || null
+            };
+          }
+          return item;
+        });
+
+        // Also append any backend leads/quotes matching this customer that might not be in currentInqs
+        backendLeads.forEach(bl => {
+          const leadId = bl.id || bl.rawLeadData?.id;
+          const exists = updatedInqs.some(ci => ci.id === leadId || ci.quoteNumber === leadId || (bl.quotationRef && ci.quotationRef === bl.quotationRef));
+          if (!exists) {
+            const mq = backendQuotes.find(q => (q.leadId && q.leadId === leadId) || (bl.quotationRef && q.refNo === bl.quotationRef));
+            const raw = bl.rawLeadData || {};
+            const cartItems = (Array.isArray(mq?.items) && mq.items.length > 0)
+              ? mq.items
+              : (Array.isArray(raw.cartProducts) && raw.cartProducts.length > 0)
+                ? raw.cartProducts
+                : (Array.isArray(bl.cartProducts) && bl.cartProducts.length > 0)
+                  ? bl.cartProducts
+                  : [];
+            const isQCreated = Boolean(bl.isQuotationCreated || bl.quotationRef || mq);
+
+            updatedInqs.unshift({
+              id: leadId || `RFQ-${Date.now()}`,
+              quoteNumber: bl.quotationRef || raw.quoteNumber || bl.quoteNumber || leadId,
+              quotationRef: bl.quotationRef || mq?.refNo || null,
+              productName: bl.equipment || bl.productName || raw.productName || 'Bulk Institutional Request',
+              productSku: bl.productSku || raw.productSku || '',
+              productBrand: bl.brandName || raw.productBrand || 'Multi-OEM Assortment',
+              productImage: raw.productImage || cartItems[0]?.image || '/logo.png',
+              customerName: bl.doctorName || raw.customerName || '',
+              customerPhone: bl.phone || raw.customerPhone || '',
+              customerEmail: bl.email || raw.customerEmail || '',
+              district: bl.city || raw.district || 'Jaipur',
+              quantity: bl.quantity || raw.totalUnits || 1,
+              unitPrice: bl.approvedPrice || bl.actualPrice || raw.unitPrice || 0,
+              grandTotal: mq?.grandTotal || bl.grandTotal || raw.grandTotal || 0,
+              status: isQCreated ? 'Quotation Created' : (bl.status || 'Pending RFQ'),
+              statusNote: isQCreated
+                ? `Official Quotation has been created & ready by Admin.`
+                : (bl.statusNote || 'Official quotation request registered.'),
+              isQuotationCreated: isQCreated,
+              isMultiItem: Boolean(cartItems.length > 1 || bl.isMultiItem),
+              items: cartItems,
+              cartProducts: cartItems,
+              createdAt: bl.createdAt || new Date().toISOString()
+            });
+            changed = true;
+          }
+        });
+
+        if (changed) {
+          try {
+            localStorage.setItem('rajbiosis_enquiries', JSON.stringify(updatedInqs));
+          } catch (e) { }
+          setInquiries(updatedInqs);
+        }
+      } catch (err) {
+        console.warn('Sync customer inquiries error:', err);
+      }
+    };
+
+    syncCustomerInquiriesLive();
+    const liveSyncTimer = setInterval(syncCustomerInquiriesLive, 4000);
 
     // Load staff session
     const sess = getPortalSession();
@@ -240,12 +545,28 @@ function ProfileContent() {
     };
 
     const handleProfileUpdated = (e) => {
-      if (e.detail && (e.detail.fullName || e.detail.phone)) {
-        setHasExistingProfile(true);
-        setFormData((prev) => ({ ...prev, ...e.detail }));
-        setEditFormData((prev) => ({ ...prev, ...e.detail }));
-      } else {
-        setHasExistingProfile(false);
+      const p = e.detail;
+      const isComplete = Boolean(
+        p &&
+        (p.isProfileComplete || (p.hospitalName && p.hospitalName.trim() && p.hospitalName !== 'NA')) &&
+        p.fullName &&
+        p.fullName !== 'NA' &&
+        p.phone
+      );
+      setHasExistingProfile(isComplete);
+      if (p) {
+        setFormData((prev) => ({
+          ...prev,
+          ...p,
+          fullName: (p.fullName && p.fullName !== 'NA') ? p.fullName : prev.fullName,
+          hospitalName: (p.hospitalName && p.hospitalName !== 'NA') ? p.hospitalName : prev.hospitalName
+        }));
+        setEditFormData((prev) => ({
+          ...prev,
+          ...p,
+          fullName: (p.fullName && p.fullName !== 'NA') ? p.fullName : prev.fullName,
+          hospitalName: (p.hospitalName && p.hospitalName !== 'NA') ? p.hospitalName : prev.hospitalName
+        }));
       }
     };
 
@@ -280,6 +601,23 @@ function ProfileContent() {
     } else {
       const all = getAllLeads();
       setLeads(all);
+    }
+    if (sess.role === 'admin') {
+      loadDemandOverview();
+    }
+  };
+
+  const loadDemandOverview = async () => {
+    setIsLoadingDemand(true);
+    try {
+      const data = await fetchAdminCartWishlistOverview();
+      if (data && data.success) {
+        setCartWishlistOverview(data);
+      }
+    } catch (e) {
+      console.error('Failed to load demand overview', e);
+    } finally {
+      setIsLoadingDemand(false);
     }
   };
 
@@ -403,7 +741,7 @@ function ProfileContent() {
       return;
     }
 
-    const saved = saveUserProfile(formData);
+    const saved = saveUserProfile({ ...formData, isProfileComplete: true, isOtpVerified: true, isLoggedIn: true });
     if (saved) {
       // Also register in user accounts directory so Admin can view & manage in directory
       createUserAccount({
@@ -811,11 +1149,21 @@ function ProfileContent() {
       isConfirmed = true;
     }
 
+    const isQuoteCreated = Boolean(
+      item.isQuotationCreated ||
+      item.quotationRef ||
+      st.includes('quotation created') ||
+      st.includes('quote generated') ||
+      st.includes('quote ready') ||
+      st.includes('quotation ready')
+    );
+
     return {
       ...item,
       productImage: image,
       isConfirmed,
-      quoteNumber: item.quoteNumber || item.id,
+      isQuoteCreated,
+      quoteNumber: item.quotationRef || item.quoteNumber || item.id,
       unitPrice: item.unitPrice || 485000,
       grandTotal: item.grandTotal || item.unitPrice || 543200
     };
@@ -867,12 +1215,12 @@ function ProfileContent() {
   });
 
   return (
-    <div className="max-w-[1360px] mx-auto px-4 sm:px-6 py-4 sm:py-5 space-y-4">
+    <div className="max-w-[1360px] mx-auto px-3 sm:px-6 py-2 sm:py-2.5 space-y-2 sm:space-y-2.5">
 
       {/* ========================================================================= */}
       {/* TOP COMPACT BREADCRUMB                                                    */}
       {/* ========================================================================= */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1.5 border-b border-slate-200">
         <Link
           href="/products"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition"
@@ -936,16 +1284,16 @@ function ProfileContent() {
           {/* Not overly spread out (max-w-4xl) and not congested                */}
           {/* ------------------------------------------------------------------- */}
           {!hasExistingProfile ? (
-            <div className="w-full bg-white border border-slate-200/90 rounded-3xl p-4 sm:p-5 shadow-sm space-y-3.5 animate-fade-in">
+            <div className="w-full bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 shadow-sm space-y-2.5 animate-fade-in">
               {/* ========================================================================= */}
               {/* ACCOUNT TYPE SELECTION (Can be hidden later by toggling SHOW_ROLE_DROPDOWN)*/}
               {/* ========================================================================= */}
               {SHOW_ROLE_DROPDOWN && (
-                <div className="p-3 bg-red-50/70 border border-red-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse shrink-0"></span>
+                <div className="p-2.5 bg-red-50/70 border border-red-200/90 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse shrink-0"></span>
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <span className="text-xs font-black uppercase tracking-wider text-slate-900">
                           Account Type / Role Selection
                         </span>
@@ -967,7 +1315,7 @@ function ProfileContent() {
                       id="account-type-select"
                       value={formData.accountType || 'customer'}
                       onChange={(e) => handleFormChange('accountType', e.target.value)}
-                      className="px-3 py-1.5 bg-white border-2 border-red-600 rounded-xl text-xs font-black text-slate-900 focus:outline-none shadow-xs cursor-pointer hover:border-red-700 transition"
+                      className="px-2.5 py-1 bg-white border-2 border-red-600 rounded-xl text-xs font-black text-slate-900 focus:outline-none shadow-xs cursor-pointer hover:border-red-700 transition"
                     >
                       <option value="customer">🏥 Healthcare Customer / Hospital</option>
                       <option value="admin">🛡️ Central Administrator (Headquarters)</option>
@@ -978,7 +1326,7 @@ function ProfileContent() {
               )}
 
               {/* Header Strip - Dynamic based on role */}
-              <div className="pb-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="pb-2 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 uppercase tracking-wider">
                     <Sparkles size={11} className="text-red-600" />
@@ -988,7 +1336,7 @@ function ProfileContent() {
                         ? 'Regional Depot Access'
                         : 'Fast Registration'}
                   </span>
-                  <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900">
+                  <h1 className="text-sm sm:text-base font-black tracking-tight text-slate-900">
                     {formData.accountType === 'admin'
                       ? 'Create Central Administrator Account & System Access'
                       : formData.accountType === 'employee'
@@ -1004,17 +1352,27 @@ function ProfileContent() {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-semibold text-slate-700 shrink-0 self-start sm:self-auto">
-                  <ShieldCheck size={14} className="text-emerald-600" />
-                  <span>CDSCO &amp; ISO 13485 Registered</span>
+                <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-200/80 rounded-xl text-[11px] font-semibold text-slate-700">
+                    <ShieldCheck size={13} className="text-emerald-600" />
+                    <span>CDSCO &amp; ISO 13485 Registered</span>
+                  </div>
+                  {/* Quick Submit Button in Header */}
+                  <button
+                    type="submit"
+                    form="profile-register-form"
+                    className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white font-extrabold text-xs rounded-xl shadow-xs hover:shadow-md transition cursor-pointer"
+                  >
+                    <span>Save Profile →</span>
+                  </button>
                 </div>
               </div>
 
-              {/* Wide 3-Column Grid: Form fits 100% on screen without scrolling */}
-              <form onSubmit={handleCreateProfile} className="space-y-3.5">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 xl:gap-4">
+              {/* 2-Column Grid: Representative Details & Hospital Entity */}
+              <form id="profile-register-form" onSubmit={handleCreateProfile} className="space-y-2.5 sm:space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
                   {/* Column 1: Representative / Credentials */}
-                  <div className="p-3.5 sm:p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-2.5">
+                  <div className="p-3 sm:p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-2">
                     <div className="flex items-center gap-1.5 pb-2 border-b border-slate-200/80 text-xs font-black uppercase tracking-wider text-slate-800">
                       {formData.accountType === 'admin' ? (
                         <ShieldCheck size={14} className="text-red-600" />
@@ -1031,7 +1389,7 @@ function ProfileContent() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-800 mb-0.5">
+                      <label className="block text-[11px] sm:text-xs font-bold text-slate-800 mb-0.5">
                         {formData.accountType === 'admin'
                           ? 'Admin Full Name'
                           : formData.accountType === 'employee'
@@ -1052,12 +1410,12 @@ function ProfileContent() {
                               ? 'e.g. Er. Rajesh Sharma'
                               : 'e.g. Dr. Rajesh Sharma'
                         }
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:border-slate-800 outline-none font-medium transition shadow-2xs"
+                        className="w-full px-3 py-1.5 sm:py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:border-slate-800 outline-none font-medium transition shadow-2xs"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-800 mb-0.5">
+                      <label className="block text-[11px] sm:text-xs font-bold text-slate-800 mb-0.5">
                         Designation / Department
                       </label>
                       <input
@@ -1072,12 +1430,12 @@ function ProfileContent() {
                               ? 'e.g. Senior Biomedical Engineer'
                               : 'e.g. CMO / Procurement Head'
                         }
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:border-slate-800 outline-none font-medium transition shadow-2xs"
+                        className="w-full px-3 py-1.5 sm:py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:border-slate-800 outline-none font-medium transition shadow-2xs"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-800 mb-0.5">
+                      <label className="block text-[11px] sm:text-xs font-bold text-slate-800 mb-0.5">
                         Mobile Number <span className="text-red-500">*</span>
                       </label>
                       <div className="relative flex shadow-2xs rounded-xl overflow-hidden focus-within:ring-1 focus-within:ring-slate-800">
@@ -1092,13 +1450,13 @@ function ProfileContent() {
                           value={formData.phone}
                           onChange={(e) => handleFormChange('phone', e.target.value.replace(/[^\d\s-]/g, ''))}
                           placeholder="98290 12345"
-                          className="w-full pl-2.5 pr-3 py-2 bg-white border border-slate-300 border-l-0 text-xs sm:text-sm text-slate-900 focus:border-slate-800 outline-none font-medium transition"
+                          className="w-full pl-2.5 pr-3 py-1.5 sm:py-2 bg-white border border-slate-300 border-l-0 text-xs sm:text-sm text-slate-900 focus:border-slate-800 outline-none font-medium transition"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-800 mb-0.5">
+                      <label className="block text-[11px] sm:text-xs font-bold text-slate-800 mb-0.5">
                         Official Email <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -1114,13 +1472,13 @@ function ProfileContent() {
                               ? 'staff@rajbiosis.com'
                               : 'doctor@hospital.org'
                         }
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:border-slate-800 outline-none font-medium transition shadow-2xs"
+                        className="w-full px-3 py-1.5 sm:py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:border-slate-800 outline-none font-medium transition shadow-2xs"
                       />
                     </div>
                   </div>
 
                   {/* Column 2: Entity / Assignment */}
-                  <div className="p-3.5 sm:p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-2.5">
+                  <div className="p-3 sm:p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-2">
                     <div className="flex items-center gap-1.5 pb-2 border-b border-slate-200/80 text-xs font-black uppercase tracking-wider text-slate-800">
                       <Building2 size={14} className="text-red-600" />
                       <span>
@@ -1133,7 +1491,7 @@ function ProfileContent() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-800 mb-0.5">
+                      <label className="block text-[11px] sm:text-xs font-bold text-slate-800 mb-0.5">
                         {formData.accountType === 'admin'
                           ? 'Headquarters / Unit Name'
                           : formData.accountType === 'employee'
@@ -1154,19 +1512,19 @@ function ProfileContent() {
                               ? 'e.g. Jaipur Regional Depot'
                               : 'e.g. Apex Super Speciality Hospital'
                         }
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:border-slate-800 outline-none font-semibold transition shadow-2xs"
+                        className="w-full px-3 py-1.5 sm:py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:border-slate-800 outline-none font-semibold transition shadow-2xs"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="block text-xs font-bold text-slate-800 mb-0.5">
+                        <label className="block text-[11px] sm:text-xs font-bold text-slate-800 mb-0.5">
                           State / UT <span className="text-red-500">*</span>
                         </label>
                         <select
                           value={formData.state}
                           onChange={(e) => handleFormChange('state', e.target.value)}
-                          className="w-full px-2.5 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 focus:border-slate-800 outline-none transition cursor-pointer shadow-2xs"
+                          className="w-full px-2.5 py-1.5 sm:py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 focus:border-slate-800 outline-none transition cursor-pointer shadow-2xs"
                         >
                           {INDIAN_STATES.map((st) => (
                             <option key={st} value={st}>{st}</option>
@@ -1175,7 +1533,7 @@ function ProfileContent() {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-slate-800 mb-0.5">
+                        <label className="block text-[11px] sm:text-xs font-bold text-slate-800 mb-0.5">
                           Pincode
                         </label>
                         <input
@@ -1184,7 +1542,7 @@ function ProfileContent() {
                           onChange={(e) => handleFormChange('pincode', e.target.value.replace(/\D/g, '').slice(0, 6))}
                           placeholder="302001"
                           maxLength={6}
-                          className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:border-slate-800 outline-none font-mono font-medium transition shadow-2xs"
+                          className="w-full px-3 py-1.5 sm:py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:border-slate-800 outline-none font-mono font-medium transition shadow-2xs"
                         />
                       </div>
                     </div>
@@ -1192,13 +1550,13 @@ function ProfileContent() {
                     <div>
                       {formData.accountType === 'admin' ? (
                         <div>
-                          <label className="block text-xs font-bold text-slate-800 mb-0.5">
+                          <label className="block text-[11px] sm:text-xs font-bold text-slate-800 mb-0.5">
                             Jurisdiction / Headquarters Hub <span className="text-red-500">*</span>
                           </label>
                           <select
                             value={formData.district}
                             onChange={(e) => handleFormChange('district', e.target.value)}
-                            className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 focus:border-slate-800 outline-none transition cursor-pointer shadow-2xs"
+                            className="w-full px-3 py-1.5 sm:py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 focus:border-slate-800 outline-none transition cursor-pointer shadow-2xs"
                           >
                             <option value="All Rajasthan Districts">All Rajasthan Districts (Central Statewide HQ)</option>
                             {RAJASTHAN_DISTRICTS.map((d) => (
@@ -1219,7 +1577,7 @@ function ProfileContent() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-800 mb-0.5">
+                      <label className="block text-[11px] sm:text-xs font-bold text-slate-800 mb-0.5">
                         {formData.accountType === 'admin'
                           ? 'HQ Office Address'
                           : formData.accountType === 'employee'
@@ -1237,86 +1595,37 @@ function ProfileContent() {
                               ? 'Regional Depot Facility Gate'
                               : 'e.g. Near Emergency Trauma Wing Gate 2'
                         }
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:border-slate-800 outline-none font-medium transition shadow-2xs"
+                        className="w-full px-3 py-1.5 sm:py-2 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:border-slate-800 outline-none font-medium transition shadow-2xs"
                       />
                     </div>
                   </div>
+                </div>
 
-                  {/* Column 3: Authorization & Launch */}
-                  <div className="p-3.5 sm:p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 flex flex-col justify-between space-y-3">
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-1.5 pb-2 border-b border-slate-200/80 text-xs font-black uppercase tracking-wider text-slate-800">
-                        <ShieldCheck size={14} className="text-emerald-600" />
-                        <span>
-                          {formData.accountType === 'admin'
-                            ? '3. Admin Authorization'
-                            : formData.accountType === 'employee'
-                              ? '3. Depot Access'
-                              : '3. Verification & Submit'}
-                        </span>
-                      </div>
-
-                      <div className="p-3 bg-white rounded-xl border border-slate-200/90 space-y-2 text-xs text-slate-600 shadow-2xs">
-                        <div className="flex items-center gap-2 font-bold text-slate-800 text-[11px]">
-                          <CheckCircle2 size={14} className="text-emerald-600" />
-                          <span>
-                            {formData.accountType === 'admin'
-                              ? 'Central Control & Account Creation'
-                              : formData.accountType === 'employee'
-                                ? 'Regional Depot Operations'
-                                : 'Direct OEM Hospital Procurement'}
-                          </span>
-                        </div>
-                        <ul className="text-[11px] text-slate-500 space-y-1 list-disc pl-4 leading-relaxed">
-                          {formData.accountType === 'admin' ? (
-                            <>
-                              <li>Create &amp; manage Employee, Admin &amp; Customer accounts</li>
-                              <li>Statewide quotation oversight across all Rajasthan districts</li>
-                              <li>1-Click switch &amp; test any registered user account</li>
-                              <li>Tender quotation approval &amp; dispatch tracking</li>
-                            </>
-                          ) : formData.accountType === 'employee' ? (
-                            <>
-                              <li>Manage quotation leads strictly for {formData.district} Depot</li>
-                              <li>Update dispatch and delivery status in real-time</li>
-                              <li>Hospital customer communication &amp; engineer notes</li>
-                              <li>Automated lead sync with Central Headquarters</li>
-                            </>
-                          ) : (
-                            <>
-                              <li>Instant official quotation generated on RFQ</li>
-                              <li>Full GST input credit (12% tax invoice)</li>
-                              <li>2 Years CDSCO certified on-site warranty</li>
-                              <li>Dedicated regional engineer in {formData.district || 'your district'}</li>
-                            </>
-                          )}
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 pt-1">
-                      <button
-                        type="submit"
-                        id="profile-form-submit-btn"
-                        className="w-full py-3 px-4 bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-xs hover:shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        <span>
-                          {formData.accountType === 'admin'
-                            ? 'Create Admin Account & Launch Central Dashboard →'
-                            : formData.accountType === 'employee'
-                              ? 'Create Employee Account & Launch Depot Desk →'
-                              : 'Save Profile & Access Quotations →'}
-                        </span>
-                      </button>
-                      <p className="text-[10px] text-slate-400 text-center font-medium">
-                        {formData.accountType === 'admin'
-                          ? 'Central Headquarters administrative credentials • Immediate access'
-                          : formData.accountType === 'employee'
-                            ? 'Assigned regional depot access • Immediate access'
-                            : 'Immediate access to quotation tracking • Free institutional support'}
-                      </p>
-                    </div>
+                {/* Submit Action Bar across the 2 columns - Fully visible on all screens */}
+                <div className="pt-2 sm:pt-2.5 flex flex-col sm:flex-row items-center justify-between gap-2.5 border-t border-slate-200/80">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium">
+                    <ShieldCheck size={15} className="text-emerald-600 shrink-0" />
+                    <span>
+                      {formData.accountType === 'admin'
+                        ? 'Central Headquarters administrative credentials • Immediate access'
+                        : formData.accountType === 'employee'
+                          ? 'Assigned regional depot access • Immediate access'
+                          : 'Immediate access to quotation tracking • Free institutional support'}
+                    </span>
                   </div>
+                  <button
+                    type="submit"
+                    id="profile-form-submit-btn"
+                    className="w-full sm:w-auto px-8 py-2.5 sm:py-3 bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white font-black text-xs sm:text-sm rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                  >
+                    <span>
+                      {formData.accountType === 'admin'
+                        ? 'Create Admin Account & Launch Central Dashboard →'
+                        : formData.accountType === 'employee'
+                          ? 'Create Employee Account & Launch Depot Desk →'
+                          : 'Save Profile & Access Quotations →'}
+                    </span>
+                  </button>
                 </div>
               </form>
             </div>
@@ -1342,7 +1651,7 @@ function ProfileContent() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-                          {formData.hospitalName || formData.fullName || 'Healthcare Institution'}
+                          {formData.hospitalName || formData.fullName || ''}
                         </h1>
                         <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
                           <ShieldCheck size={11} /> Verified Institutional Account
@@ -1409,11 +1718,10 @@ function ProfileContent() {
                     <button
                       type="button"
                       onClick={() => setStatusFilter('all')}
-                      className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1.5 ${
-                        statusFilter === 'all'
+                      className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1.5 ${statusFilter === 'all'
                           ? 'bg-slate-100 text-slate-900 border border-slate-300 shadow-2xs font-extrabold'
                           : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-                      }`}
+                        }`}
                     >
                       <FileText size={12} className={statusFilter === 'all' ? 'text-slate-800' : 'text-slate-400'} />
                       <span>All ({normalizedInquiries.length})</span>
@@ -1422,11 +1730,10 @@ function ProfileContent() {
                     <button
                       type="button"
                       onClick={() => setStatusFilter('pending')}
-                      className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1 ${
-                        statusFilter === 'pending'
+                      className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1 ${statusFilter === 'pending'
                           ? 'bg-amber-600 text-white shadow-2xs'
                           : 'bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200'
-                      }`}
+                        }`}
                     >
                       <Clock size={12} />
                       <span>Pending ({pendingCount})</span>
@@ -1435,11 +1742,10 @@ function ProfileContent() {
                     <button
                       type="button"
                       onClick={() => setStatusFilter('confirmed')}
-                      className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1 ${
-                        statusFilter === 'confirmed'
+                      className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1 ${statusFilter === 'confirmed'
                           ? 'bg-emerald-600 text-white shadow-2xs'
                           : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200'
-                      }`}
+                        }`}
                     >
                       <CheckCircle2 size={12} />
                       <span>Confirmed ({confirmedCount})</span>
@@ -1507,11 +1813,15 @@ function ProfileContent() {
                   <div className="space-y-3.5">
                     {filteredInquiries.map((item) => {
                       const isConfirmed = item.isConfirmed;
+                      const itemProducts = getItemProducts(item);
+                      const isMulti = itemProducts.length > 1 || item.isMultiItem || (item.productName && item.productName.toLowerCase().includes('bulk'));
+                      const isExpanded = Boolean(expandedInquiryIds[item.id]);
 
                       return (
                         <div
                           key={item.id}
-                          className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs hover:border-slate-300 transition-all space-y-3"
+                          className={`bg-white border rounded-2xl p-4 sm:p-5 shadow-2xs transition-all space-y-3 ${isExpanded ? 'border-red-300 ring-2 ring-red-100 shadow-md' : 'border-slate-200/90 hover:border-slate-300'
+                            }`}
                         >
                           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3.5">
                             {/* Equipment Photo & Info */}
@@ -1528,7 +1838,7 @@ function ProfileContent() {
                                 )}
                               </div>
 
-                              <div className="space-y-0.5">
+                              <div className="space-y-1">
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
                                     {item.productBrand || 'Raj Biosis OEM'}
@@ -1548,12 +1858,7 @@ function ProfileContent() {
                                   {item.productName}
                                 </h3>
 
-                                <div className="flex items-center gap-2 pt-0.5 text-xs text-slate-500">
-                                  <span>Quote:</span>
-                                  <span className="font-mono font-bold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-[11px]">
-                                    {item.quoteNumber || item.id}
-                                  </span>
-                                  <span className="text-slate-300">•</span>
+                                <div className="flex items-center gap-2 pt-0.5 text-xs text-slate-500 flex-wrap">
                                   <span className="flex items-center gap-1 font-medium text-slate-700 text-[11px]">
                                     <MapPin size={11} className="text-red-500" />
                                     {item.district || formData.district || 'Jaipur'}
@@ -1565,10 +1870,20 @@ function ProfileContent() {
                             {/* Status Badge & Quoted Price */}
                             <div className="sm:text-right space-y-1 border-t sm:border-t-0 pt-2.5 sm:pt-0 border-slate-100">
                               <div>
-                                {isConfirmed ? (
+                                {item.isConfirmed ? (
                                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                                     <CheckCircle2 size={12} className="text-emerald-600" />
                                     <span>Confirmed &amp; In Process</span>
+                                  </span>
+                                ) : item.isQuoteCreated ? (
+                                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs">
+                                    <CheckCircle2 size={13} className="text-emerald-700" />
+                                    <span>Quotation Created &amp; Ready</span>
+                                  </span>
+                                ) : (item.negotiationStatus === 'approved' || (item.status || '').toLowerCase().includes('approved')) ? (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 text-sky-800 border border-sky-300">
+                                    <CheckCircle2 size={12} className="text-sky-600" />
+                                    <span>Price Approved</span>
                                   </span>
                                 ) : (
                                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
@@ -1589,36 +1904,91 @@ function ProfileContent() {
                             </div>
                           </div>
 
-                          {/* Concise Status Note */}
-                          <div className="p-2.5 bg-slate-50/90 rounded-xl border border-slate-200/70 text-[11px] text-slate-600 flex items-center gap-2">
-                            {isConfirmed ? (
-                              <CheckCircle2 size={13} className="text-emerald-600 shrink-0" />
-                            ) : (
-                              <Clock size={13} className="text-amber-600 shrink-0" />
-                            )}
-                            <span className="truncate">
-                              {item.statusNote ||
-                                (isConfirmed
-                                  ? 'Quotation confirmed. Equipment allocated in regional dispatch depot.'
-                                  : 'Official quotation generated. Under hospital purchase committee review.')}
-                            </span>
-                          </div>
+                          {/* Expanded Package Products Tray */}
+                          {isExpanded && itemProducts.length > 0 && (
+                            <div className="p-3.5 sm:p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 animate-fade-in">
+                              <div className="flex items-center justify-between text-xs font-bold text-slate-800 border-b border-slate-200 pb-2">
+                                <span className="flex items-center gap-1.5 uppercase tracking-wide text-slate-800 text-[11px]">
+                                  <PackageCheck size={14} className="text-red-600" />
+                                  <span>Package Equipment Contents ({itemProducts.length} Products)</span>
+                                </span>
+                                <span className="text-[11px] text-slate-500 font-mono font-semibold">
+                                  Total Units: {itemProducts.reduce((sum, p) => sum + (parseInt(p.qty || p.quantity || 1, 10) || 1), 0)} Units
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-1 divide-y divide-slate-200">
+                                {itemProducts.map((prod, pIdx) => {
+                                  const pTitle = prod.title || prod.name || prod.productName || `Item ${pIdx + 1}`;
+                                  const pSku = prod.itemCode || prod.sku || prod.productSku || '';
+                                  const pBrand = prod.brand || prod.productBrand || 'Raj Biosis OEM';
+                                  const pQty = parseInt(prod.qty || prod.quantity || 1, 10) || 1;
+                                  const pPrice = parseFloat(prod.unitPrice || prod.price || 0);
+                                  const pImage = prod.image || prod.productImage;
+                                  const pWarranty = prod.warranty || '2 Years Comprehensive Warranty';
+
+                                  return (
+                                    <div key={prod.id || pIdx} className="py-2.5 flex items-center justify-between gap-3 first:pt-1 last:pb-1">
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 p-1 shrink-0 flex items-center justify-center overflow-hidden shadow-2xs">
+                                          {pImage ? (
+                                            <img src={pImage} alt={pTitle} className="w-full h-full object-contain" />
+                                          ) : (
+                                            <FileText size={18} className="text-slate-400" />
+                                          )}
+                                        </div>
+                                        <div className="space-y-0.5">
+                                          <div className="text-xs font-bold text-slate-900 leading-snug">
+                                            {pTitle}
+                                          </div>
+                                          <div className="text-[10px] text-slate-500 flex items-center gap-1.5 flex-wrap">
+                                            {pSku && <span className="font-mono font-bold text-slate-700 bg-white px-1.5 py-0.5 rounded border border-slate-200">{pSku}</span>}
+                                            <span>• Brand: {pBrand}</span>
+                                            <span className="text-emerald-700 font-medium">• {pWarranty}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      <div className="text-right shrink-0">
+                                        <div className="text-xs font-mono font-black text-slate-900">
+                                          {formatINR(pPrice)}
+                                        </div>
+                                        <div className="text-[10px] text-slate-500 font-bold">
+                                          Qty: {pQty} Unit{pQty > 1 ? 's' : ''}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-xs">
+                                <span className="text-slate-600 font-semibold">Combined Equipment Catalog Subtotal:</span>
+                                <span className="font-mono font-black text-slate-900 text-sm">
+                                  {formatINR(itemProducts.reduce((sum, p) => sum + ((parseFloat(p.unitPrice || p.price || 0)) * (parseInt(p.qty || p.quantity || 1, 10) || 1)), 0))}
+                                </span>
+                              </div>
+                            </div>
+                          )}
 
                           {/* Action Strip */}
                           <div className="pt-1 flex flex-wrap items-center justify-between gap-2">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <button
-                                type="button"
-                                onClick={() => setSelectedQuotation(item)}
-                                className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-lg text-xs font-bold flex items-center gap-1 transition shadow-2xs cursor-pointer hover:border-slate-400"
-                              >
-                                <Eye size={12} />
-                                <span>View Formal Quotation</span>
-                              </button>
+
+                              {isMulti && (
+                                <button
+                                  type="button"
+                                  onClick={() => toggleExpandInquiry(item.id)}
+                                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                                >
+                                  <PackageCheck size={12} className="text-slate-600" />
+                                  <span>{isExpanded ? 'Hide Items' : `View ${itemProducts.length || 'Package'} Items`}</span>
+                                </button>
+                              )}
 
                               <a
                                 href={`https://wa.me/919983333469?text=${encodeURIComponent(
-                                  `Hello Raj Biosis, I would like to discuss quotation ${item.quoteNumber || item.id} for ${item.productName}.`
+                                  `Hello Raj Biosis, I would like to discuss inquiry for ${item.productName}.`
                                 )}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -1668,7 +2038,7 @@ function ProfileContent() {
           {!staffSession ? (
             <div className="flex flex-col justify-start items-center py-1 sm:py-2">
               <div className="w-full max-w-2xl lg:max-w-3xl bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-xs space-y-3.5">
-                
+
                 {/* Desk Header */}
                 <div className="text-center space-y-1 pb-2 border-b border-slate-100">
                   <div className="w-10 h-10 rounded-2xl bg-brand-50 text-brand-600 border border-brand-200 flex items-center justify-center mx-auto shadow-2xs">
@@ -1694,11 +2064,10 @@ function ProfileContent() {
                           setIsOtpSent(false);
                           setStaffLoginError('');
                         }}
-                        className={`px-4 py-1.5 rounded-lg transition cursor-pointer text-xs font-bold ${
-                          staffAuthTab === 'employee'
+                        className={`px-4 py-1.5 rounded-lg transition cursor-pointer text-xs font-bold ${staffAuthTab === 'employee'
                             ? 'bg-brand-600 text-white shadow-2xs'
                             : 'text-neutral-600 hover:text-neutral-900'
-                        }`}
+                          }`}
                       >
                         Regional Employee
                       </button>
@@ -1710,11 +2079,10 @@ function ProfileContent() {
                           setIsOtpSent(false);
                           setStaffLoginError('');
                         }}
-                        className={`px-4 py-1.5 rounded-lg transition cursor-pointer text-xs font-bold ${
-                          staffAuthTab === 'admin'
+                        className={`px-4 py-1.5 rounded-lg transition cursor-pointer text-xs font-bold ${staffAuthTab === 'admin'
                             ? 'bg-brand-600 text-white shadow-2xs'
                             : 'text-neutral-600 hover:text-neutral-900'
-                        }`}
+                          }`}
                       >
                         Central Admin
                       </button>
@@ -2040,11 +2408,10 @@ function ProfileContent() {
                     type="button"
                     id="admin-tab-accounts-btn"
                     onClick={() => setAdminSubTab('accounts')}
-                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 cursor-pointer ${
-                      adminSubTab === 'accounts'
+                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 cursor-pointer ${adminSubTab === 'accounts'
                         ? 'bg-brand-600 text-white shadow-xs'
                         : 'text-slate-600 hover:text-slate-900'
-                    }`}
+                      }`}
                   >
                     <UserPlus size={15} />
                     <span>Staff &amp; User Accounts ({userAccounts.length})</span>
@@ -2054,14 +2421,29 @@ function ProfileContent() {
                     type="button"
                     id="admin-tab-leads-btn"
                     onClick={() => setAdminSubTab('leads')}
-                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 cursor-pointer ${
-                      adminSubTab === 'leads'
+                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 cursor-pointer ${adminSubTab === 'leads'
                         ? 'bg-brand-600 text-white shadow-xs'
                         : 'text-slate-600 hover:text-slate-900'
-                    }`}
+                      }`}
                   >
                     <FileText size={15} />
                     <span>Statewide Quotation Leads ({leads.length})</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    id="admin-tab-demand-btn"
+                    onClick={() => {
+                      setAdminSubTab('wishlist_cart');
+                      loadDemandOverview();
+                    }}
+                    className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 cursor-pointer ${adminSubTab === 'wishlist_cart'
+                        ? 'bg-brand-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                  >
+                    <Heart size={15} className={adminSubTab === 'wishlist_cart' ? 'fill-white' : 'text-red-500'} />
+                    <span>Product Demand ({cartWishlistOverview?.summary?.totalWishlist + cartWishlistOverview?.summary?.totalCart || 0})</span>
                   </button>
                 </div>
               )}
@@ -2117,11 +2499,10 @@ function ProfileContent() {
                             type="button"
                             id="role-select-employee"
                             onClick={() => setNewAccRole('employee')}
-                            className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
-                              newAccRole === 'employee'
+                            className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${newAccRole === 'employee'
                                 ? 'bg-brand-600 text-white shadow-xs'
                                 : 'text-slate-600 hover:text-slate-900'
-                            }`}
+                              }`}
                           >
                             <User size={14} />
                             <span>Regional Employee</span>
@@ -2131,11 +2512,10 @@ function ProfileContent() {
                             type="button"
                             id="role-select-admin"
                             onClick={() => setNewAccRole('admin')}
-                            className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
-                              newAccRole === 'admin'
+                            className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${newAccRole === 'admin'
                                 ? 'bg-brand-600 text-white shadow-xs'
                                 : 'text-slate-600 hover:text-slate-900'
-                            }`}
+                              }`}
                           >
                             <ShieldCheck size={14} />
                             <span>Central Admin</span>
@@ -2145,11 +2525,10 @@ function ProfileContent() {
                             type="button"
                             id="role-select-customer"
                             onClick={() => setNewAccRole('customer')}
-                            className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
-                              newAccRole === 'customer'
+                            className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${newAccRole === 'customer'
                                 ? 'bg-brand-600 text-white shadow-xs'
                                 : 'text-slate-600 hover:text-slate-900'
-                            }`}
+                              }`}
                           >
                             <Building2 size={14} />
                             <span>Healthcare Customer</span>
@@ -2292,11 +2671,10 @@ function ProfileContent() {
                             key={r}
                             type="button"
                             onClick={() => setAccountFilterRole(r)}
-                            className={`px-3 py-1 text-xs font-bold rounded-xl transition cursor-pointer capitalize ${
-                              accountFilterRole === r
+                            className={`px-3 py-1 text-xs font-bold rounded-xl transition cursor-pointer capitalize ${accountFilterRole === r
                                 ? 'bg-brand-600 text-white shadow-xs'
                                 : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
-                            }`}
+                              }`}
                           >
                             {r === 'all' ? `All (${userAccounts.length})` : `${r}s (${userAccounts.filter(a => a.role === r).length})`}
                           </button>
@@ -2320,13 +2698,12 @@ function ProfileContent() {
                                     {acc.name}
                                   </span>
                                   <span
-                                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                                      acc.role === 'admin'
+                                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${acc.role === 'admin'
                                         ? 'bg-brand-50 text-brand-700 border border-brand-200'
                                         : acc.role === 'employee'
-                                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                                        : 'bg-amber-50 text-amber-800 border border-amber-200'
-                                    }`}
+                                          ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                          : 'bg-amber-50 text-amber-800 border border-amber-200'
+                                      }`}
                                   >
                                     {acc.role}
                                   </span>
@@ -2374,6 +2751,329 @@ function ProfileContent() {
                     </div>
                   </div>
                 </div>
+              ) : staffSession.role === 'admin' && adminSubTab === 'wishlist_cart' ? (
+                /* ========================================================================= */
+                /* VIEW 3: PRODUCT DEMAND & CUSTOMER WISHLIST/CART TRACKING                  */
+                /* ========================================================================= */
+                <div className="space-y-5 animate-fade-in">
+                  {/* Top Analytics Summary Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 text-xs font-semibold">Demand Products</span>
+                        <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                          <PackageCheck size={16} />
+                        </div>
+                      </div>
+                      <div className="text-2xl font-black text-slate-900 mt-2 font-mono">
+                        {cartWishlistOverview?.summary?.productsCount || 0}
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">Equipments Shortlisted</div>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 text-xs font-semibold">Total Wishlists</span>
+                        <div className="w-8 h-8 rounded-xl bg-red-50 text-red-600 flex items-center justify-center">
+                          <Heart size={16} className="fill-red-600" />
+                        </div>
+                      </div>
+                      <div className="text-2xl font-black text-red-600 mt-2 font-mono">
+                        {cartWishlistOverview?.summary?.totalWishlist || 0}
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">Saves across Rajasthan</div>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 text-xs font-semibold">In Active Carts</span>
+                        <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+                          <ShoppingCart size={16} />
+                        </div>
+                      </div>
+                      <div className="text-2xl font-black text-amber-800 mt-2 font-mono">
+                        {cartWishlistOverview?.summary?.totalCart || 0}
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">Active Cart &amp; RFQ Drafts</div>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 text-xs font-semibold">Interested Clients</span>
+                        <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                          <Users size={16} />
+                        </div>
+                      </div>
+                      <div className="text-2xl font-black text-blue-700 mt-2 font-mono">
+                        {cartWishlistOverview?.summary?.customersCount || 0}
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">Hospitals &amp; Doctors</div>
+                    </div>
+                  </div>
+
+                  {/* Filter & Search Bar */}
+                  <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div className="flex items-center gap-1.5 flex-wrap w-full sm:w-auto">
+                      <button
+                        type="button"
+                        onClick={() => setDemandFilterType('all')}
+                        className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer ${demandFilterType === 'all'
+                            ? 'bg-slate-900 text-white'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          }`}
+                      >
+                        All Equipment ({cartWishlistOverview?.products?.length || 0})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDemandFilterType('wishlist')}
+                        className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1 ${demandFilterType === 'wishlist'
+                            ? 'bg-red-600 text-white'
+                            : 'bg-red-50 text-red-700 hover:bg-red-100'
+                          }`}
+                      >
+                        <Heart size={12} className={demandFilterType === 'wishlist' ? 'fill-white' : 'fill-red-600'} />
+                        <span>Wishlisted Only</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDemandFilterType('cart')}
+                        className={`px-3 py-1.5 text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1 ${demandFilterType === 'cart'
+                            ? 'bg-amber-600 text-white'
+                            : 'bg-amber-50 text-amber-800 hover:bg-amber-100'
+                          }`}
+                      >
+                        <ShoppingCart size={12} />
+                        <span>In Cart Only</span>
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <div className="relative flex-1 sm:w-64">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                          type="text"
+                          value={demandSearchQuery}
+                          onChange={(e) => setDemandSearchQuery(e.target.value)}
+                          placeholder="Search product or customer..."
+                          className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:border-brand-500 outline-none"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={loadDemandOverview}
+                        disabled={isLoadingDemand}
+                        className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center justify-center cursor-pointer disabled:opacity-50"
+                        title="Refresh live demand data from MongoDB"
+                      >
+                        <RefreshCw size={14} className={isLoadingDemand ? 'animate-spin' : ''} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Products Demand List */}
+                  {(() => {
+                    const filteredProds = (cartWishlistOverview?.products || []).filter((prod) => {
+                      if (demandFilterType === 'wishlist' && prod.wishlistCount <= 0) return false;
+                      if (demandFilterType === 'cart' && prod.cartCount <= 0) return false;
+                      if (demandSearchQuery.trim()) {
+                        const q = demandSearchQuery.toLowerCase();
+                        const matchProd = (prod.productName || '').toLowerCase().includes(q) ||
+                          (prod.productSku || '').toLowerCase().includes(q);
+                        const matchCust = [...(prod.wishlistCustomers || []), ...(prod.cartCustomers || [])].some(
+                          c => (c.name || '').toLowerCase().includes(q) ||
+                            (c.hospital || '').toLowerCase().includes(q) ||
+                            (c.phone || '').includes(q) ||
+                            (c.district || '').toLowerCase().includes(q)
+                        );
+                        return matchProd || matchCust;
+                      }
+                      return true;
+                    });
+
+                    if (filteredProds.length === 0) {
+                      return (
+                        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center space-y-3">
+                          <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                            <Heart size={20} />
+                          </div>
+                          <h4 className="text-sm font-bold text-slate-800">No Product Wishlist / Cart Demand Found</h4>
+                          <p className="text-xs text-slate-500 max-w-md mx-auto">
+                            {demandSearchQuery
+                              ? `No products or customers matching "${demandSearchQuery}".`
+                              : 'As soon as medical visitors add equipment to their Wishlist or Cart, their contact info and demand will appear here in real time.'}
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-3">
+                        {filteredProds.map((prod) => {
+                          const isExpanded = expandedDemandProductId === prod.productId;
+                          const totalCustomers = (prod.wishlistCustomers?.length || 0) + (prod.cartCustomers?.length || 0);
+
+                          return (
+                            <div
+                              key={prod.productId}
+                              className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden transition-all duration-200 hover:border-slate-300"
+                            >
+                              {/* Product Header Row */}
+                              <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-14 h-14 rounded-xl bg-white border border-slate-200 p-1 flex items-center justify-center overflow-hidden shrink-0">
+                                    {prod.productImage ? (
+                                      <img src={prod.productImage} alt={prod.productName} className="max-h-full max-w-full object-contain" />
+                                    ) : (
+                                      <Activity size={24} className="text-slate-400" />
+                                    )}
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] font-bold text-brand-600 uppercase tracking-wider bg-red-50 border border-red-200 px-2 py-0.5 rounded">
+                                        {prod.productCategory || 'Biomedical'}
+                                      </span>
+                                      <span className="text-xs font-mono text-slate-500">
+                                        SKU: {prod.productSku}
+                                      </span>
+                                    </div>
+                                    <h4 className="text-sm font-bold text-slate-900 mt-1 hover:text-brand-600 transition">
+                                      <Link href={`/product/${prod.productId}`} target="_blank">
+                                        {prod.productName}
+                                      </Link>
+                                    </h4>
+                                    {prod.productPrice && (
+                                      <div className="text-xs font-bold text-slate-700 font-mono mt-0.5">
+                                        MRP: ₹{Number(prod.productPrice).toLocaleString('en-IN')}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Counts & Expand Button */}
+                                <div className="flex items-center gap-2 self-start sm:self-center">
+                                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-50 text-red-700 border border-red-200 text-xs font-bold">
+                                    <Heart size={13} className="fill-red-600 text-red-600" />
+                                    <span>{prod.wishlistCount} Wishlists</span>
+                                  </span>
+
+                                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-50 text-amber-900 border border-amber-200 text-xs font-bold">
+                                    <ShoppingCart size={13} className="text-amber-700" />
+                                    <span>{prod.cartCount} in Cart</span>
+                                  </span>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => setExpandedDemandProductId(isExpanded ? null : prod.productId)}
+                                    className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                                  >
+                                    <Users size={13} />
+                                    <span>{isExpanded ? 'Hide Customers' : `View Customers (${totalCustomers})`}</span>
+                                    <ChevronDown size={13} className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Collapsible Customer Roster */}
+                              {isExpanded && (
+                                <div className="p-4 border-t border-slate-200 bg-white space-y-3 animate-fade-in">
+                                  <div className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center justify-between">
+                                    <span>Interested Healthcare Procurement Contacts:</span>
+                                    <span className="text-slate-500 text-[11px] font-normal">
+                                      Click phone or email to contact immediately
+                                    </span>
+                                  </div>
+
+                                  <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden">
+                                    {[...(prod.wishlistCustomers || []), ...(prod.cartCustomers || [])].map((cust, cIdx) => (
+                                      <div key={cIdx} className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 transition">
+                                        <div className="flex items-start gap-3">
+                                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 ${cust.type === 'wishlist' ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-amber-50 text-amber-800 border border-amber-200'
+                                            }`}>
+                                            {cust.type === 'wishlist' ? <Heart size={14} className="fill-red-600" /> : <ShoppingCart size={14} />}
+                                          </div>
+                                          <div>
+                                            <div className="flex items-center gap-2">
+                                              <span className="font-bold text-slate-900 text-sm">
+                                                {cust.name}
+                                              </span>
+                                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${cust.type === 'wishlist' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-900'
+                                                }`}>
+                                                {cust.type === 'wishlist' ? '❤️ Added to Wishlist' : `🛒 In Cart (Qty: ${cust.qty || 1})`}
+                                              </span>
+                                            </div>
+                                            <div className="text-xs text-slate-600 mt-0.5 flex items-center gap-2 flex-wrap">
+                                              <span className="flex items-center gap-1 font-semibold text-slate-700">
+                                                <Building2 size={12} className="text-slate-400" />
+                                                <span>{cust.hospital}</span>
+                                              </span>
+                                              <span>&bull;</span>
+                                              <span className="flex items-center gap-1">
+                                                <MapPin size={12} className="text-slate-400" />
+                                                <strong className="text-slate-800">{cust.district}</strong>
+                                              </span>
+                                              {cust.date && (
+                                                <>
+                                                  <span>&bull;</span>
+                                                  <span className="text-[11px] text-slate-400">
+                                                    Added {cust.date}
+                                                  </span>
+                                                </>
+                                              )}
+                                            </div>
+                                            {(cust.phone || cust.email) && (
+                                              <div className="text-xs mt-1.5 flex items-center gap-3">
+                                                {cust.phone && (
+                                                  <a
+                                                    href={`tel:${cust.phone}`}
+                                                    className="inline-flex items-center gap-1 text-slate-800 hover:text-red-600 font-semibold transition"
+                                                  >
+                                                    <Phone size={11} className="text-emerald-600" />
+                                                    <span>{cust.phone}</span>
+                                                  </a>
+                                                )}
+                                                {cust.email && (
+                                                  <a
+                                                    href={`mailto:${cust.email}`}
+                                                    className="inline-flex items-center gap-1 text-slate-600 hover:text-slate-900 transition"
+                                                  >
+                                                    <Mail size={11} className="text-blue-600" />
+                                                    <span>{cust.email}</span>
+                                                  </a>
+                                                )}
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+
+                                        {/* Action: Send Instant Official Quote */}
+                                        <div className="shrink-0 flex items-center gap-2">
+                                          {cust.phone && (
+                                            <a
+                                              href={`https://wa.me/91${cust.phone.replace(/\D/g, '').slice(-10)}?text=${encodeURIComponent(
+                                                `Hello ${cust.name}, we noted your procurement shortlist for ${prod.productName} on Raj Biosis. Would you like our authorized proforma quotation and delivery schedule for ${cust.district}?`
+                                              )}`}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                                            >
+                                              <MessageSquare size={13} />
+                                              <span>WhatsApp</span>
+                                            </a>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
               ) : (
                 /* ========================================================================= */
                 /* VIEW 2: LEADS DESK (Shown for Employee or when Admin clicks Leads Tab)   */
@@ -2388,11 +3088,10 @@ function ProfileContent() {
                             key={st}
                             type="button"
                             onClick={() => setLeadStatusFilter(st)}
-                            className={`px-3 py-1 text-xs font-bold rounded-xl transition cursor-pointer ${
-                              leadStatusFilter === st
+                            className={`px-3 py-1 text-xs font-bold rounded-xl transition cursor-pointer ${leadStatusFilter === st
                                 ? 'bg-brand-600 text-white shadow-xs'
                                 : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200'
-                            }`}
+                              }`}
                           >
                             {st === 'all' ? `All Leads (${leads.length})` : st}
                           </button>
@@ -2672,8 +3371,13 @@ function ProfileContent() {
                 <span className="text-xs sm:text-sm font-bold text-slate-900">
                   Official Institutional Quotation
                 </span>
-                <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded">
-                  {selectedQuotation.isConfirmed ? 'Order Confirmed' : 'Quotation Ready'}
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${selectedQuotation.isConfirmed
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : selectedQuotation.isQuoteCreated
+                      ? 'bg-emerald-100 text-emerald-900 border-emerald-300 font-extrabold'
+                      : 'bg-amber-50 text-amber-700 border-amber-200'
+                  }`}>
+                  {selectedQuotation.isConfirmed ? 'Order Confirmed' : selectedQuotation.isQuoteCreated ? 'Official Quotation Ready' : 'Under Review'}
                 </span>
               </div>
               <button
@@ -2702,7 +3406,7 @@ function ProfileContent() {
 
                 <div className="sm:text-right bg-slate-50 sm:bg-transparent p-3 sm:p-0 rounded-xl border sm:border-0 border-slate-200">
                   <div className="text-xs font-mono font-bold text-slate-900">
-                    Quote No: {selectedQuotation.quoteNumber || selectedQuotation.id}
+                    Quote No: {selectedQuotation.quotationRef || selectedQuotation.quoteNumber || selectedQuotation.id}
                   </div>
                   <div className="text-xs text-slate-500">
                     Date: {formatDate(selectedQuotation.createdAt)}
@@ -2733,6 +3437,7 @@ function ProfileContent() {
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="bg-slate-100 border-b border-slate-200 text-slate-700 font-bold">
+                      <th className="p-3 w-8 text-center">#</th>
                       <th className="p-3">Equipment Description</th>
                       <th className="p-3 text-center">Qty</th>
                       <th className="p-3 text-right">Unit Price</th>
@@ -2740,36 +3445,128 @@ function ProfileContent() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200">
-                    <tr>
-                      <td className="p-3">
-                        <div className="font-bold text-slate-900">
-                          {selectedQuotation.productName}
-                        </div>
-                        <div className="text-[11px] text-slate-500 mt-0.5">
-                          Brand: {selectedQuotation.productBrand || 'Raj Biosis OEM'} • Warranty: 2 Years On-Site
-                        </div>
-                      </td>
-                      <td className="p-3 text-center font-bold">
-                        {selectedQuotation.quantity || 1}
-                      </td>
-                      <td className="p-3 text-right font-mono">
-                        {formatINR(selectedQuotation.unitPrice || 485000)}
-                      </td>
-                      <td className="p-3 text-right font-mono font-bold">
-                        {formatINR((selectedQuotation.unitPrice || 485000) * (selectedQuotation.quantity || 1))}
-                      </td>
-                    </tr>
+                    {(() => {
+                      const quoteProducts = getItemProducts(selectedQuotation);
+                      if (quoteProducts && quoteProducts.length > 0) {
+                        return quoteProducts.map((prod, pIdx) => {
+                          const pTitle = prod.title || prod.name || prod.productName || `Equipment Item ${pIdx + 1}`;
+                          const pSku = prod.itemCode || prod.sku || prod.productSku || '';
+                          const pBrand = prod.brand || prod.productBrand || 'Raj Biosis OEM';
+                          const pQty = parseInt(prod.qty || prod.quantity || 1, 10) || 1;
+                          const pUnitPrice = parseFloat(prod.unitPrice || prod.price || 0);
+                          const pTotal = (prod.total || (pUnitPrice * pQty)) || 0;
+                          const pImage = prod.image || prod.productImage;
+                          const pBullets = prod.bullets ? String(prod.bullets).split('\n').filter(Boolean) : null;
+                          const pWarranty = prod.warranty || '2 Years Comprehensive On-Site Warranty';
+
+                          return (
+                            <tr key={prod.id || pIdx} className="hover:bg-slate-50/70 transition">
+                              <td className="p-3 text-center font-bold text-slate-400">
+                                {pIdx + 1}
+                              </td>
+                              <td className="p-3">
+                                <div className="flex items-start gap-2.5">
+                                  {pImage && (
+                                    <div className="w-10 h-10 rounded-lg border border-slate-200 bg-white p-0.5 shrink-0 overflow-hidden">
+                                      <img src={pImage} alt={pTitle} className="w-full h-full object-contain" />
+                                    </div>
+                                  )}
+                                  <div>
+                                    <div className="font-bold text-slate-900 leading-snug">
+                                      {pTitle}
+                                    </div>
+                                    <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-2 flex-wrap">
+                                      {pSku && (
+                                        <span className="font-mono text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                                          {pSku}
+                                        </span>
+                                      )}
+                                      <span>Brand: {pBrand}</span>
+                                      <span>• Warranty: {pWarranty}</span>
+                                    </div>
+                                    {pBullets && pBullets.length > 0 && (
+                                      <div className="text-[10px] text-slate-400 mt-1 line-clamp-2">
+                                        {pBullets.slice(0, 2).join(' • ')}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="p-3 text-center font-bold text-slate-800">
+                                {pQty}
+                              </td>
+                              <td className="p-3 text-right font-mono text-slate-800">
+                                {formatINR(pUnitPrice)}
+                              </td>
+                              <td className="p-3 text-right font-mono font-bold text-slate-900">
+                                {formatINR(pTotal)}
+                              </td>
+                            </tr>
+                          );
+                        });
+                      }
+
+                      // Single Product Fallback
+                      return (
+                        <tr>
+                          <td className="p-3 text-center font-bold text-slate-400">1</td>
+                          <td className="p-3">
+                            <div className="font-bold text-slate-900">
+                              {selectedQuotation.productName}
+                            </div>
+                            <div className="text-[11px] text-slate-500 mt-0.5">
+                              Brand: {selectedQuotation.productBrand || 'Raj Biosis OEM'} • Warranty: 2 Years On-Site
+                            </div>
+                          </td>
+                          <td className="p-3 text-center font-bold">
+                            {selectedQuotation.quantity || 1}
+                          </td>
+                          <td className="p-3 text-right font-mono">
+                            {formatINR(selectedQuotation.unitPrice || 485000)}
+                          </td>
+                          <td className="p-3 text-right font-mono font-bold">
+                            {formatINR((selectedQuotation.unitPrice || 485000) * (selectedQuotation.quantity || 1))}
+                          </td>
+                        </tr>
+                      );
+                    })()}
                   </tbody>
                 </table>
               </div>
 
-              {/* Net Total */}
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs flex items-center justify-between font-bold text-slate-900">
-                <span>Net Total (Incl. 12% GST &amp; Transit Insurance):</span>
-                <span className="font-mono text-emerald-700 text-base">
-                  {formatINR(selectedQuotation.grandTotal || 543200)}
-                </span>
-              </div>
+              {/* Financial Calculation Breakdown */}
+              {(() => {
+                const quoteProducts = getItemProducts(selectedQuotation);
+                const hasMultiple = quoteProducts && quoteProducts.length > 1;
+                const itemsSubtotal = hasMultiple
+                  ? quoteProducts.reduce((sum, p) => sum + ((parseFloat(p.unitPrice || p.price || 0)) * (parseInt(p.qty || p.quantity || 1, 10) || 1)), 0)
+                  : (selectedQuotation.unitPrice || 485000) * (selectedQuotation.quantity || 1);
+                const grandTotal = selectedQuotation.grandTotal || Math.round(itemsSubtotal * 1.12);
+                const discountAmount = selectedQuotation.discountAmount || (selectedQuotation.totalAmount && itemsSubtotal > selectedQuotation.totalAmount ? itemsSubtotal - selectedQuotation.totalAmount : 0);
+
+                return (
+                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs space-y-2">
+                    {hasMultiple && (
+                      <div className="flex items-center justify-between text-slate-600 font-medium">
+                        <span>Combined Equipment MRP Subtotal ({quoteProducts.length} Items):</span>
+                        <span className="font-mono text-slate-900 font-bold">{formatINR(itemsSubtotal)}</span>
+                      </div>
+                    )}
+                    {discountAmount > 0 && (
+                      <div className="flex items-center justify-between text-emerald-700 font-bold">
+                        <span>Institutional Special Offer Concession:</span>
+                        <span className="font-mono text-emerald-800">- {formatINR(discountAmount)}</span>
+                      </div>
+                    )}
+                    <div className="pt-2 border-t border-slate-200 flex items-center justify-between font-bold text-slate-900 text-sm">
+                      <span>Net Total (Incl. 12% GST &amp; Transit Insurance):</span>
+                      <span className="font-mono text-emerald-700 text-base font-black">
+                        {formatINR(grandTotal)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Actions */}
@@ -2785,7 +3582,7 @@ function ProfileContent() {
               <div className="flex items-center gap-2">
                 <a
                   href={`https://wa.me/919983333469?text=${encodeURIComponent(
-                    `Hello, regarding Quote ${selectedQuotation.quoteNumber} for ${selectedQuotation.productName}: Please confirm earliest delivery to ${selectedQuotation.district || formData.district}.`
+                    `Hello, regarding Quote ${selectedQuotation.quotationRef || selectedQuotation.quoteNumber || selectedQuotation.id} for ${selectedQuotation.productName}: Please confirm earliest delivery to ${selectedQuotation.district || formData.district}.`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"

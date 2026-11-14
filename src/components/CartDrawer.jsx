@@ -32,7 +32,14 @@ import {
   CART_UPDATED_EVENT,
   OPEN_CART_EVENT
 } from '../utils/cart';
-import { getUserProfile, saveUserProfile, getActiveDistrict, saveUserInquiry } from '../utils/userProfile';
+import {
+  getUserProfile,
+  saveUserProfile,
+  getActiveDistrict,
+  saveUserInquiry,
+  isCustomerLoggedIn,
+  setCustomerLoggedIn
+} from '../utils/userProfile';
 import { recordCustomerLead } from '../utils/leads';
 import CountryCodeSelector from './CountryCodeSelector';
 import DistrictSelector from './DistrictSelector';
@@ -54,6 +61,7 @@ export default function CartDrawer() {
   const [district, setDistrict] = useState('Jaipur');
   const [customerName, setCustomerName] = useState('');
   const [formError, setFormError] = useState('');
+  const [cartError, setCartError] = useState('');
 
   // OTP State
   const [generatedOtp, setGeneratedOtp] = useState('');
@@ -61,6 +69,71 @@ export default function CartDrawer() {
   const [otpError, setOtpError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [quoteToken, setQuoteToken] = useState('');
+  const [activeOffer, setActiveOffer] = useState(null);
+
+  // Fetch active special offer for this customer / storewide
+  const fetchOffers = async (overridePhone) => {
+    try {
+      const prof = typeof window !== 'undefined' ? getUserProfile() : null;
+      const ph = (overridePhone || prof?.phone || phone || '').replace(/\D/g, '').slice(-10);
+      const url = ph ? `/api/cart-wishlist?phone=${encodeURIComponent(ph)}&checkOffers=true` : `/api/cart-wishlist?checkOffers=true`;
+      const res = await fetch(url).catch(() => null);
+      if (res && res.ok) {
+        const data = await res.json().catch(() => null);
+        if (data?.success && data.activeOffer) {
+          setActiveOffer(data.activeOffer);
+        } else {
+          setActiveOffer(null);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to load active offers:', err);
+    }
+  };
+
+  const isItemEligibleForOffer = (item, offer) => {
+    if (!offer || !offer.active) return false;
+    if (offer.validTill && new Date(offer.validTill) < new Date()) return false;
+    if (offer.productScope === 'all_catalog') return true;
+    if (Array.isArray(offer.selectedProductIds) && offer.selectedProductIds.length > 0) {
+      return offer.selectedProductIds.includes(item.id) || offer.selectedProductIds.includes(item.sku);
+    }
+    return true;
+  };
+
+  const getItemDiscountedPrice = (item, offer) => {
+    if (!isItemEligibleForOffer(item, offer)) return item.price;
+    if (offer.type === 'percentage') {
+      const pct = Number(offer.value || 0);
+      if (pct > 0 && item.price) {
+        return Math.round(item.price * (1 - pct / 100));
+      }
+    }
+    return item.price;
+  };
+
+  const calculateCartTotals = () => {
+    const originalSubtotal = cartItems.reduce((acc, item) => acc + ((item.price || 0) * (item.qty || 1)), 0);
+    let totalDiscount = 0;
+
+    if (activeOffer && (!activeOffer.validTill || new Date(activeOffer.validTill) >= new Date())) {
+      if (activeOffer.type === 'percentage') {
+        const pct = Number(activeOffer.value || 0);
+        cartItems.forEach(item => {
+          if (isItemEligibleForOffer(item, activeOffer)) {
+            const itemOriginalTotal = (item.price || 0) * (item.qty || 1);
+            totalDiscount += Math.round(itemOriginalTotal * (pct / 100));
+          }
+        });
+      } else if (activeOffer.type === 'flat') {
+        const flatVal = Number(activeOffer.value || 0);
+        totalDiscount = Math.min(flatVal, originalSubtotal);
+      }
+    }
+
+    const netTotal = Math.max(0, originalSubtotal - totalDiscount);
+    return { originalSubtotal, totalDiscount, netTotal };
+  };
 
   // Auto redirect timer for incomplete profile
   const [redirectCountdown, setRedirectCountdown] = useState(5);
@@ -69,6 +142,7 @@ export default function CartDrawer() {
   useEffect(() => {
     const syncCart = () => {
       setCartItems(getCart());
+      fetchOffers();
     };
     syncCart();
 
@@ -118,17 +192,28 @@ export default function CartDrawer() {
     };
   }, [isOpen]);
 
-  // Handle countdown on success
+  // Handle countdown on success - ONLY redirect if profile is incomplete!
   useEffect(() => {
     let timer = null;
     if (quoteStep === 'success') {
-      if (redirectCountdown > 0) {
-        timer = setTimeout(() => {
-          setRedirectCountdown(prev => prev - 1);
-        }, 1000);
-      } else {
-        setIsOpen(false);
-        router.push('/profile');
+      const prof = typeof window !== 'undefined' ? getUserProfile() : null;
+      const isComplete = Boolean(
+        prof && (
+          prof.isProfileComplete ||
+          (prof.hospitalName && prof.hospitalName.trim() && prof.hospitalName.trim().toUpperCase() !== 'NA')
+        )
+      );
+
+      // Only auto-redirect if hospital & billing details are NOT complete!
+      if (!isComplete) {
+        if (redirectCountdown > 0) {
+          timer = setTimeout(() => {
+            setRedirectCountdown(prev => prev - 1);
+          }, 1000);
+        } else {
+          setIsOpen(false);
+          router.push('/profile');
+        }
       }
     }
     return () => {
@@ -168,9 +253,128 @@ export default function CartDrawer() {
     }).format(val);
   };
 
+  // Direct quote submission for already logged-in / verified customers without asking OTP
+  const submitDirectlyForLoggedInUser = () => {
+    setIsSubmitting(true);
+    setFormError('');
+    setOtpError('');
+    setCartError('');
+
+    const prof = getUserProfile() || {};
+    const cleanPhone = (phone || prof.phone || '').trim();
+    const cleanEmail = (email || prof.email || '').trim();
+    const displayName = (customerName || prof.fullName || '').trim();
+    const selectedDistrict = (district || prof.district || activeDistrict || 'Jaipur').trim();
+    const currentCountryCode = countryCode || prof.countryCode || DEFAULT_COUNTRY_CODE;
+
+    const totals = calculateCartTotals();
+    const totalEst = totals.netTotal;
+
+    const inquiryRecord = {
+      id: `RFQ-CART-${Date.now().toString().slice(-6)}`,
+      isMultiItem: true,
+      itemsCount: cartItems.length,
+      totalUnits: cartItems.reduce((acc, item) => acc + (item.qty || 1), 0),
+      cartProducts: cartItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        sku: item.sku,
+        qty: item.qty || 1,
+        unitPrice: item.price,
+        isNegotiable: Boolean(item.isNegotiable),
+        expectedPrice: item.expectedPrice || null,
+        brand: item.brand,
+        image: item.image
+      })),
+      productName: `Bulk Institutional Request (${cartItems.length} Products)`,
+      productSku: `MULTI-${cartItems.length}-ITEMS`,
+      productCategory: 'multi-procurement',
+      productBrand: 'Multi-OEM Assortment',
+      productImage: cartItems[0]?.image || '/logo.png',
+      unitPrice: totalEst,
+      totalAmount: totalEst,
+      catalogMrpTotal: totals.originalSubtotal,
+      specialDiscountAmount: totals.totalDiscount,
+      appliedOffer: activeOffer ? {
+        id: activeOffer.id,
+        title: activeOffer.title,
+        type: activeOffer.type,
+        value: activeOffer.value,
+        perkText: activeOffer.perkText
+      } : null,
+      gstRate: '12%',
+      gstAmount: Math.round(totalEst * 0.12),
+      grandTotal: Math.round(totalEst * 1.12),
+      customerName: displayName || 'NA',
+      customerPhone: `${currentCountryCode} ${cleanPhone}`,
+      customerEmail: cleanEmail,
+      district: selectedDistrict,
+      status: 'Pending RFQ (Multi-Item)',
+      statusNote: `Quotation for ${cartItems.length} equipment items registered with target price preferences for ${selectedDistrict}.`,
+      deliveryEstimate: `24-48 Hours Express Dispatch from ${selectedDistrict} Regional Depot`,
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      saveUserInquiry(inquiryRecord);
+
+      // Save to centralized leads for District Employee & Admin
+      recordCustomerLead({
+        ...inquiryRecord,
+        customerName: displayName || prof.fullName || 'NA',
+        hospitalName: prof.hospitalName || 'NA',
+        customerPhone: `${currentCountryCode} ${cleanPhone}`,
+        customerEmail: cleanEmail,
+        district: selectedDistrict,
+        productName: `Bulk Request (${cartItems.length} Products)`,
+        productSku: `MULTI-${cartItems.length}-ITEMS`,
+        qty: cartItems.reduce((acc, item) => acc + (item.qty || 1), 0),
+        unitPrice: totalEst,
+        grandTotal: Math.round(totalEst * 1.12),
+        isMultiItem: true,
+        cartProducts: cartItems
+      });
+
+      // Clear cart on successful quotation submission
+      clearCart();
+    } catch (err) {
+      console.error('Error submitting multi-item quote', err);
+    } finally {
+      setIsSubmitting(false);
+      setQuoteStep('success');
+      setRedirectCountdown(5);
+    }
+  };
+
+  const handleQuickQuoteClick = () => {
+    const unpricedInCart = cartItems.find(
+      i => i.isNegotiable && (!i.expectedPrice || parseFloat(String(i.expectedPrice).replace(/[^0-9.]/g, '')) <= 0)
+    );
+    if (unpricedInCart) {
+      setCartError(`"${unpricedInCart.name}" is a price-negotiable item. Please enter your Target Price before proceeding.`);
+      return;
+    }
+    setCartError('');
+
+    const prof = getUserProfile();
+    const loggedIn = isCustomerLoggedIn();
+
+    if (loggedIn && prof && (prof.phone || prof.email)) {
+      submitDirectlyForLoggedInUser();
+      return;
+    }
+
+    setQuoteStep('contact_form');
+  };
+
   // Step 1 -> Step 2: Validate Contact Info & Generate OTP
   const handleProceedToOtp = (e) => {
     e.preventDefault();
+        const unpricedInCart = cartItems.find(i => i.isNegotiable && (!i.expectedPrice || parseFloat(String(i.expectedPrice).replace(/[^0-9.]/g, '')) <= 0));
+    if (unpricedInCart) {
+      setFormError(`"${unpricedInCart.name}" is a price-negotiable item. Please enter your Target / Expected Unit Price (₹) before proceeding.`);
+      return;
+    }
     const cleanDigits = phone.replace(/\D/g, '');
     if (!cleanDigits || cleanDigits.length < 7) {
       setFormError('Please enter a valid 10-digit mobile number.');
@@ -208,15 +412,11 @@ export default function CartDrawer() {
     setIsSubmitting(true);
     setOtpError('');
 
-    const token = `RB-CART-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-    setQuoteToken(token);
-
-    // Build comprehensive inquiry data
-    const totalEst = cartItems.reduce((acc, item) => acc + ((item.price || 100000) * (item.qty || 1)), 0);
+    const totals = calculateCartTotals();
+    const totalEst = totals.netTotal;
 
     const inquiryRecord = {
       id: `RFQ-CART-${Date.now().toString().slice(-6)}`,
-      quoteNumber: token,
       isMultiItem: true,
       itemsCount: cartItems.length,
       totalUnits: cartItems.reduce((acc, item) => acc + (item.qty || 1), 0),
@@ -238,14 +438,23 @@ export default function CartDrawer() {
       productImage: cartItems[0]?.image || '/logo.png',
       unitPrice: totalEst,
       totalAmount: totalEst,
+      catalogMrpTotal: totals.originalSubtotal,
+      specialDiscountAmount: totals.totalDiscount,
+      appliedOffer: activeOffer ? {
+        id: activeOffer.id,
+        title: activeOffer.title,
+        type: activeOffer.type,
+        value: activeOffer.value,
+        perkText: activeOffer.perkText
+      } : null,
       gstRate: '12%',
       gstAmount: Math.round(totalEst * 0.12),
       grandTotal: Math.round(totalEst * 1.12),
-      customerName: customerName || 'Hospital Procurement Officer',
+      customerName: customerName || 'NA',
       customerPhone: `${countryCode} ${phone.trim()}`,
       customerEmail: email.trim(),
       district: district.trim(),
-      status: 'Quotation Dispatched (Multi-Item RFQ)',
+      status: 'Pending RFQ (Multi-Item)',
       statusNote: `Quotation for ${cartItems.length} equipment items registered with target price preferences for ${district}.`,
       deliveryEstimate: `24-48 Hours Express Dispatch from ${district} Regional Depot`,
       createdAt: new Date().toISOString()
@@ -258,7 +467,7 @@ export default function CartDrawer() {
       const prof = getUserProfile() || {};
       saveUserProfile({
         ...prof,
-        fullName: customerName || prof.fullName || 'Medical Client',
+        fullName: customerName || prof.fullName || 'NA',
         phone: phone.trim(),
         countryCode: countryCode,
         email: email.trim(),
@@ -268,8 +477,8 @@ export default function CartDrawer() {
       // Save to centralized leads for District Employee & Admin
       recordCustomerLead({
         ...inquiryRecord,
-        customerName: customerName || prof.fullName || 'Hospital Procurement Officer',
-        hospitalName: prof.hospitalName || `${district.trim()} Healthcare Institution`,
+        customerName: customerName || prof.fullName || 'NA',
+        hospitalName: prof.hospitalName || 'NA',
         customerPhone: `${countryCode} ${phone.trim()}`,
         customerEmail: email.trim(),
         district: district.trim(),
@@ -289,13 +498,24 @@ export default function CartDrawer() {
     } finally {
       setIsSubmitting(false);
       setQuoteStep('success');
-      setRedirectCountdown(20);
+      setCustomerLoggedIn(true);
+      const prof = typeof window !== 'undefined' ? getUserProfile() : null;
+      const isComplete = Boolean(
+        prof && (
+          prof.isProfileComplete ||
+          (prof.hospitalName && prof.hospitalName.trim() && prof.hospitalName.trim().toUpperCase() !== 'NA')
+        )
+      );
+      if (!isComplete) {
+        setRedirectCountdown(5);
+      }
     }
   };
 
   if (!isOpen) return null;
 
   const totalQuantity = cartItems.reduce((acc, item) => acc + (item.qty || 1), 0);
+  const cartTotals = calculateCartTotals();
 
   return (
     <div
@@ -367,7 +587,7 @@ export default function CartDrawer() {
                 </div>
                 <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
                   <span>Regional Delivery Depot:</span>
-                  <span className="font-bold text-brand-700">{district} Hub (24-48 Hours)</span>
+                  <span className="font-bold text-brand-700">{district} Hub</span>
                 </div>
                 <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
                   <span>Contact Number:</span>
@@ -375,32 +595,46 @@ export default function CartDrawer() {
                 </div>
               </div>
 
-              {/* Profile Completion Alert */}
-              <div className="p-4 bg-amber-50 border border-amber-300 rounded-2xl space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold text-amber-900">
-                  <span className="flex items-center gap-1.5">
-                    <Building2 size={15} className="text-amber-700" />
-                    <span>Complete Hospital &amp; Billing Profile</span>
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-950 font-mono text-[11px] font-extrabold flex items-center gap-1">
-                    <Clock size={11} />
-                    <span>Auto-redirect in {redirectCountdown}s</span>
-                  </span>
-                </div>
-                <p className="text-xs text-amber-800 leading-relaxed">
-                  Add your hospital name, department, designation, and GST details so the official institutional proforma invoice is ready.
-                </p>
-                <button
-                  onClick={() => {
-                    setIsOpen(false);
-                    router.push('/profile');
-                  }}
-                  className="w-full mt-2 py-2.5 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <span>Go to Profile Now</span>
-                  <ArrowRight size={14} />
-                </button>
-              </div>
+              {/* Profile Completion Alert - ONLY show if hospital details are incomplete */}
+              {(() => {
+                const prof = typeof window !== 'undefined' ? getUserProfile() : null;
+                const isComplete = Boolean(
+                  prof && (
+                    prof.isProfileComplete ||
+                    (prof.hospitalName && prof.hospitalName.trim() && prof.hospitalName.trim().toUpperCase() !== 'NA')
+                  )
+                );
+
+                if (isComplete) return null;
+
+                return (
+                  <div className="p-4 bg-amber-50 border border-amber-300 rounded-2xl space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-amber-900">
+                      <span className="flex items-center gap-1.5">
+                        <Building2 size={15} className="text-amber-700" />
+                        <span>Complete Hospital &amp; Billing Profile</span>
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-950 font-mono text-[11px] font-extrabold flex items-center gap-1">
+                        <Clock size={11} />
+                        <span>Auto-redirect in {redirectCountdown}s</span>
+                      </span>
+                    </div>
+                    <p className="text-xs text-amber-800 leading-relaxed">
+                      Add your hospital name, department, designation, and GST details so the official institutional proforma invoice is ready.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setIsOpen(false);
+                        router.push('/profile');
+                      }}
+                      className="w-full mt-2 py-2.5 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <span>Go to Profile Now</span>
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="pt-4 border-t border-slate-200 flex items-center gap-3">
@@ -617,6 +851,48 @@ export default function CartDrawer() {
               <>
                 {/* Items Scrollable List */}
                 <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+                  {/* Active Special Offer Banner if applied */}
+                  {activeOffer && (
+                    <div className="p-3.5 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-300 rounded-2xl shadow-xs">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                            <Sparkles size={16} />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-black text-emerald-950 uppercase tracking-wide">
+                                {activeOffer.title || 'Special Management Concession'}
+                              </span>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-black bg-emerald-600 text-white shadow-2xs">
+                                {activeOffer.type === 'percentage'
+                                  ? `${activeOffer.value}% OFF`
+                                  : activeOffer.type === 'flat'
+                                  ? `₹${Number(activeOffer.value).toLocaleString('en-IN')} OFF`
+                                  : 'COMPLIMENTARY PERK'}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-emerald-800 font-medium mt-0.5">
+                              {activeOffer.productScope === 'all_catalog'
+                                ? 'Applied storewide across all catalog equipment!'
+                                : 'Applied to eligible items in your procurement cart!'}
+                              {activeOffer.perkText && (
+                                <span className="block font-bold text-emerald-900 mt-0.5">
+                                  🎁 Privilege Perk: {activeOffer.perkText}
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      {activeOffer.validTill && (
+                        <div className="mt-2 pt-1.5 border-t border-emerald-200/60 flex items-center justify-between text-[10px] text-emerald-700 font-mono">
+                          <span>Validity: Till {new Date(activeOffer.validTill).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                          <span className="font-bold text-emerald-900">Official Executive Rate</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   {cartItems.map((item) => (
                     <div
                       key={item.id}
@@ -676,12 +952,28 @@ export default function CartDrawer() {
                           </button>
                         </div>
 
-                        {/* Unit & Subtotal Estimate */}
+                        {/* Unit & Subtotal Estimate with Live Offer */}
                         <div className="text-right">
-                          <span className="text-[10px] text-slate-400 block font-semibold">Standard Unit Price</span>
-                          <span className="text-xs font-bold text-slate-800">
-                            {formatINR(item.price)}
-                          </span>
+                          {isItemEligibleForOffer(item, activeOffer) && activeOffer.type === 'percentage' && activeOffer.value > 0 ? (
+                            <div>
+                              <span className="text-[10px] text-slate-400 block font-semibold line-through font-mono">
+                                MRP: {formatINR(item.price)}
+                              </span>
+                              <span className="text-xs font-black text-emerald-700 font-mono flex items-center justify-end gap-1">
+                                <span>{formatINR(getItemDiscountedPrice(item, activeOffer))}</span>
+                                <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1 py-0.2 rounded font-bold">
+                                  -{activeOffer.value}%
+                                </span>
+                              </span>
+                            </div>
+                          ) : (
+                            <div>
+                              <span className="text-[10px] text-slate-400 block font-semibold">Standard Unit Price</span>
+                              <span className="text-xs font-bold text-slate-800">
+                                {formatINR(item.price)}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -736,16 +1028,40 @@ export default function CartDrawer() {
                   </div>
                 </div>
 
-                {/* Footer Actions */}
+                {/* Footer Actions with Live Financial Breakdown */}
                 <div className="p-4 sm:p-6 border-t border-slate-200 bg-slate-50/90 space-y-3 shrink-0">
-                  <div className="flex items-center justify-between text-xs text-slate-600 font-semibold">
-                    <span>Selected Equipment:</span>
-                    <span className="font-bold text-slate-900">{cartItems.length} Products &bull; {totalQuantity} Units</span>
-                  </div>
+                      {/* Financial Summary Card */}
+                      <div className="bg-white rounded-xl p-3 border border-slate-200/80 space-y-1.5 text-xs shadow-2xs">
+                        <div className="flex items-center justify-between text-slate-500 font-medium">
+                          <span>Catalog MRP Subtotal:</span>
+                          <span className="font-mono font-bold text-slate-800">{formatINR(cartTotals.originalSubtotal)}</span>
+                        </div>
+                        {cartTotals.totalDiscount > 0 && (
+                          <div className="flex items-center justify-between text-emerald-700 font-bold">
+                            <span className="flex items-center gap-1">
+                              <Sparkles size={12} className="text-emerald-600" />
+                              <span>Special Offer Concession:</span>
+                            </span>
+                            <span className="font-mono text-emerald-800">- {formatINR(cartTotals.totalDiscount)}</span>
+                          </div>
+                        )}
+                        <div className="pt-1.5 border-t border-slate-100 flex items-center justify-between text-slate-900 font-extrabold text-sm">
+                          <span>Estimated Net Total:</span>
+                          <span className="font-mono text-emerald-900 text-base font-black">{formatINR(cartTotals.netTotal)}</span>
+                        </div>
+                      </div>
+
+                  {/* Cart Error Notice */}
+                  {cartError && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs font-bold text-red-700 flex items-center gap-2">
+                      <AlertCircle size={15} className="shrink-0" />
+                      <span>{cartError}</span>
+                    </div>
+                  )}
 
                   {/* Get Quotation Quickly Button */}
                   <button
-                    onClick={() => setQuoteStep('contact_form')}
+                    onClick={handleQuickQuoteClick}
                     className="w-full py-3.5 sm:py-4 bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white font-extrabold text-sm sm:text-base rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <FileText size={18} />

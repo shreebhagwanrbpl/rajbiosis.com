@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { MapPin, ChevronDown, Check, Edit3, List, Search, X } from 'lucide-react';
 import { ALL_DISTRICTS, INDIAN_STATES } from '../data/districts';
+import { saveActiveDistrict } from '../utils/userProfile';
 
 export default function DistrictSelector({
   value = '',
@@ -12,13 +13,18 @@ export default function DistrictSelector({
   required = false,
   placeholder = 'Search district across India...',
   className = '',
-  label = 'District'
+  label = 'District',
+  size = 'default',
+  inputClassName = '',
+  labelClassName = ''
 }) {
   const [isManual, setIsManual] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [filterState, setFilterState] = useState(selectedState || '');
   const dropdownRef = useRef(null);
+
+  const isLarge = size === 'lg';
 
   // If initial value isn't in standard list and is set, allow manual mode
   useEffect(() => {
@@ -63,10 +69,10 @@ export default function DistrictSelector({
   };
 
   return (
-    <div className={`space-y-1.5 ${className}`}>
-      <div className="flex items-center justify-between">
-        <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-          <MapPin size={13} className="text-slate-500" />
+    <div className={`space-y-1 ${className}`}>
+      <div className="flex items-center justify-between mb-1">
+        <label className={labelClassName || (isLarge ? "text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5" : "text-xs font-semibold text-slate-700 flex items-center gap-1.5")}>
+          <MapPin size={isLarge ? 14 : 13} className="text-slate-500" />
           <span>{label}</span>
           {required && <span className="text-red-500">*</span>}
         </label>
@@ -78,12 +84,12 @@ export default function DistrictSelector({
             setIsManual(!isManual);
             setIsOpen(false);
           }}
-          className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 transition inline-flex items-center gap-1 cursor-pointer"
+          className={`${isLarge ? 'text-xs' : 'text-[11px]'} font-semibold text-slate-500 hover:text-brand-600 transition inline-flex items-center gap-1 cursor-pointer`}
         >
           {isManual ? (
             <>
               <List size={12} />
-              <span>Choose from list (All India)</span>
+              <span>Choose from list</span>
             </>
           ) : (
             <>
@@ -97,14 +103,17 @@ export default function DistrictSelector({
       {isManual ? (
         /* Manual Text Input Mode */
         <div className="relative">
-          <MapPin size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <MapPin size={isLarge ? 16 : 15} className={`absolute ${isLarge ? 'left-3.5' : 'left-3.5'} top-1/2 -translate-y-1/2 text-slate-400`} />
           <input
             type="text"
             required={required}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder="Enter district / city name..."
-            className="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 focus:border-slate-800 focus:bg-white text-xs sm:text-sm text-slate-900 rounded-xl outline-none font-medium transition"
+            className={inputClassName || (isLarge
+              ? "w-full h-11 sm:h-12 pl-9 pr-3.5 bg-white border border-slate-300 hover:border-slate-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/15 text-sm sm:text-base text-slate-900 rounded-xl outline-none font-semibold transition shadow-2xs placeholder:text-slate-400"
+              : "w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 focus:border-slate-800 focus:bg-white text-xs sm:text-sm text-slate-900 rounded-xl outline-none font-medium transition"
+            )}
           />
         </div>
       ) : (
@@ -113,13 +122,16 @@ export default function DistrictSelector({
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="w-full pl-8 pr-3 py-2 bg-white hover:bg-slate-50 border border-slate-300 focus:border-slate-800 text-left text-xs text-slate-900 rounded-xl outline-none font-semibold flex items-center justify-between transition cursor-pointer shadow-2xs"
+            className={inputClassName || (isLarge
+              ? "w-full h-11 sm:h-12 pl-9 pr-3.5 bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/15 text-left text-sm sm:text-base text-slate-900 rounded-xl outline-none font-semibold flex items-center justify-between transition cursor-pointer shadow-2xs"
+              : "w-full pl-8 pr-3 py-2 bg-white hover:bg-slate-50 border border-slate-300 focus:border-slate-800 text-left text-xs text-slate-900 rounded-xl outline-none font-semibold flex items-center justify-between transition cursor-pointer shadow-2xs"
+            )}
           >
-            <MapPin size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <span className={value ? 'font-semibold text-slate-900' : 'text-slate-400'}>
+            <MapPin size={isLarge ? 16 : 13} className={`absolute ${isLarge ? 'left-3' : 'left-2.5'} top-1/2 -translate-y-1/2 text-slate-400`} />
+            <span className={value ? 'font-semibold text-slate-900 truncate' : 'text-slate-400 truncate'}>
               {value || placeholder}
             </span>
-            <ChevronDown size={14} className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown size={isLarge ? 16 : 14} className={`text-slate-400 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {isOpen && (

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
   PhoneCall,
@@ -20,13 +21,39 @@ import {
   User,
   ShieldCheck,
   MapPin,
-  ShoppingCart
+  ShoppingCart,
+  CheckCircle2,
+  Camera,
+  LogOut,
+  Edit3,
+  Building2,
+  Mail,
+  Phone,
+  Trash2,
+  Lock,
+  Clock,
+  Truck,
+  Award,
+  Heart
 } from 'lucide-react';
 import { CATEGORIES } from '../data/categories';
 import { PRODUCTS } from '../data/products';
-import { getActiveDistrict } from '../utils/userProfile';
+import { getActiveDistrict, saveUserProfile, clearUserProfile, saveActiveDistrict } from '../utils/userProfile';
 import { getCartCount, openCartDrawer, CART_UPDATED_EVENT } from '../utils/cart';
+import { getWishlistCount, WISHLIST_UPDATED_EVENT } from '../utils/wishlist';
 import { BRAND_LOGOS } from '../data/brands';
+import { DEFAULT_COUNTRY_CODE } from '../data/internationalCodes';
+import { RAJASTHAN_DISTRICTS } from '../data/districts';
+import CountryCodeSelector from './CountryCodeSelector';
+
+const QUICK_AVATARS = [
+  { id: 'doc-m', icon: '👨‍⚕️', label: 'Doctor' },
+  { id: 'doc-f', icon: '👩‍⚕️', label: 'Surgeon' },
+  { id: 'admin', icon: '👔', label: 'Admin' },
+  { id: 'engineer', icon: '🔬', label: 'Biomedical' },
+  { id: 'clinic', icon: '🏥', label: 'Clinic' },
+  { id: 'icu', icon: '🩺', label: 'Specialist' }
+];
 
 export default function Header({ onOpenQuoteModal }) {
   const router = useRouter();
@@ -38,15 +65,25 @@ export default function Header({ onOpenQuoteModal }) {
   const [userProfile, setUserProfile] = useState(null);
   const [activeDistrict, setActiveDistrictState] = useState('Jaipur');
   const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
   const searchRef = useRef(null);
   const dropdownRef = useRef(null);
 
   // Sync user profile, active district, and cart count from localStorage
   useEffect(() => {
+    setMounted(true);
+
     const syncCart = () => {
       setCartCount(getCartCount());
     };
     syncCart();
+
+    const syncWishlist = () => {
+      setWishlistCount(getWishlistCount());
+    };
+    syncWishlist();
 
     const syncProfile = () => {
       if (typeof window !== 'undefined') {
@@ -85,14 +122,30 @@ export default function Header({ onOpenQuoteModal }) {
       router.push('/profile');
     };
 
+    const handleOpenQuickForm = () => {
+      router.push('/profile');
+    };
+
+    const handleDistrictChange = (e) => {
+      if (e && e.detail) {
+        setActiveDistrictState(e.detail);
+      }
+    };
+
     window.addEventListener('user-profile-updated', handleProfileUpdate);
+    window.addEventListener('active-district-changed', handleDistrictChange);
     window.addEventListener('open-profile-modal', handleOpenProfile);
+    window.addEventListener('open-profile-quick-form', handleOpenQuickForm);
     window.addEventListener(CART_UPDATED_EVENT, syncCart);
+    window.addEventListener(WISHLIST_UPDATED_EVENT, syncWishlist);
 
     return () => {
       window.removeEventListener('user-profile-updated', handleProfileUpdate);
+      window.removeEventListener('active-district-changed', handleDistrictChange);
       window.removeEventListener('open-profile-modal', handleOpenProfile);
+      window.removeEventListener('open-profile-quick-form', handleOpenQuickForm);
       window.removeEventListener(CART_UPDATED_EVENT, syncCart);
+      window.removeEventListener(WISHLIST_UPDATED_EVENT, syncWishlist);
     };
   }, [router]);
 
@@ -110,7 +163,7 @@ export default function Header({ onOpenQuoteModal }) {
     }
   };
 
-  // Close search suggestions & dropdowns when clicking outside
+  // Close search suggestions & category dropdown when clicking outside or pressing Escape
   useEffect(() => {
     function handleClickOutside(event) {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -120,8 +173,20 @@ export default function Header({ onOpenQuoteModal }) {
         setCategoriesOpen(false);
       }
     }
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setIsSearching(false);
+        setCategoriesOpen(false);
+      }
+    }
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   // Handle instant search matching
@@ -152,7 +217,8 @@ export default function Header({ onOpenQuoteModal }) {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-neutral-200 shadow-sm transition-all">
+    <>
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-neutral-200 shadow-sm transition-all">
       {/* Action Bar: Best Deals, Special Offers, New Arrivals, Regional Depot, 24x7 Helpline */}
       <div className="bg-slate-50 text-slate-700 text-[11px] sm:text-xs py-2 border-b border-slate-200/80 shadow-2xs">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-10 flex items-center justify-between gap-4 overflow-x-auto scrollbar-none py-0.5">
@@ -212,25 +278,17 @@ export default function Header({ onOpenQuoteModal }) {
           <Link
             href="/profile"
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white hover:bg-slate-100 text-slate-800 border border-slate-200/90 font-bold text-[10px] sm:text-[11px] transition-all cursor-pointer shrink-0 shadow-2xs group"
-            title={`Active Regional Depot: ${activeDistrict} (Click to change district)`}
+            title={`Active Regional Depot: ${mounted ? activeDistrict : 'Jaipur'} (Click to change district)`}
+            suppressHydrationWarning
           >
             <MapPin size={12} className="text-brand-600 shrink-0" />
             <span className="text-slate-500 font-medium hidden sm:inline">Delivering to:</span>
-            <span className="text-brand-700 font-extrabold">{activeDistrict}</span>
+            <span className="text-brand-700 font-extrabold" suppressHydrationWarning>{mounted ? activeDistrict : 'Jaipur'}</span>
             <span className="text-[9px] bg-slate-100 group-hover:bg-brand-50 text-slate-600 group-hover:text-brand-700 px-1.5 py-0.5 rounded font-mono font-semibold">
               Change
             </span>
           </Link>
 
-          {/* Admin Portal Access */}
-          <Link
-            href="/profile?tab=admin"
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 hover:bg-brand-100 text-brand-800 border border-brand-200/90 font-bold text-[10px] sm:text-[11px] transition-all cursor-pointer shrink-0 shadow-2xs"
-            title="Authorized Administrator Access"
-          >
-            <ShieldCheck size={12} className="text-brand-600 shrink-0" />
-            <span>Admin Portal</span>
-          </Link>
 
           {/* 5. Helpline styled as a Premium Card (Aligned with Request Quote) */}
           <a
@@ -378,39 +436,74 @@ export default function Header({ onOpenQuoteModal }) {
 
           {/* Right Action Hub: Clean Profile Link + Cart + Quote + Mobile Menu */}
           <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* Minimalist Light Profile Link */}
+            {/* Direct Profile Link (Navigates to /profile where customer sets up or views their profile) */}
             <Link
               href="/profile"
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 transition shadow-2xs"
-              title="My Profile & Hospital Credentials"
+              onClick={(e) => {
+                if (typeof window !== 'undefined' && window.location.pathname === '/profile') {
+                  e.preventDefault();
+                  window.dispatchEvent(new CustomEvent('switch-to-profile-view'));
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                  router.push('/profile');
+                }
+              }}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition shadow-2xs text-[#172033] hover:text-[#E8242A] bg-white hover:bg-slate-50 border-[#E2E8F0] cursor-pointer"
               id="navbar-profile-btn"
+              title={mounted && userProfile?.fullName ? `${userProfile.fullName} (${activeDistrict})` : 'Healthcare Profile'}
+              suppressHydrationWarning
             >
-              <div className="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">
-                {userProfile?.fullName ? (
-                  userProfile.fullName.charAt(0).toUpperCase()
+              <div className="w-5 h-5 rounded-full overflow-hidden bg-slate-100 border border-[#E2E8F0] text-slate-700 flex items-center justify-center text-[10px] font-bold shrink-0">
+                {mounted && userProfile?.photo ? (
+                  <img src={userProfile.photo} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   <User size={12} className="text-slate-600" />
                 )}
               </div>
-              <span className="text-slate-800 font-semibold flex items-center gap-1">
-                {userProfile?.fullName ? (
+              <span className="text-[#172033] font-semibold flex items-center gap-1" suppressHydrationWarning>
+                {mounted && userProfile?.fullName ? (
                   <>
-                    <span className="font-bold truncate max-w-[90px] inline-block align-bottom">
+                    <span className="font-bold truncate max-w-[85px] inline-block align-bottom">
                       {userProfile.fullName.split(' ')[0]}
                     </span>
-                    <span className="text-[10px] text-brand-600 font-medium hidden sm:inline">
+                    <span className="text-[10px] text-[#E8242A] font-medium hidden sm:inline">
                       • {activeDistrict}
                     </span>
                   </>
                 ) : (
                   <>
                     <span>Profile</span>
-                    <span className="text-[10px] text-brand-600 font-medium hidden sm:inline">
-                      ({activeDistrict})
+                    <span className="text-[10px] text-[#E8242A] font-medium hidden sm:inline">
+                      ({mounted ? activeDistrict : 'Jaipur'})
                     </span>
                   </>
                 )}
               </span>
+            </Link>
+
+            {/* Equipment Wishlist Button with Dynamic Live Badge */}
+            <Link
+              href="/wishlist"
+              className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-red-600 bg-white hover:bg-slate-50 border border-slate-200 transition shadow-2xs group cursor-pointer"
+              title="View Saved Equipment Wishlist"
+              id="navbar-wishlist-btn"
+            >
+              <div className="relative flex items-center justify-center">
+                <Heart
+                  size={17}
+                  className={`transition-colors ${
+                    mounted && wishlistCount > 0
+                      ? 'fill-red-600 text-red-600'
+                      : 'text-slate-700 group-hover:text-red-600'
+                  }`}
+                />
+                {mounted && wishlistCount > 0 && (
+                  <span className="absolute -top-2.5 -right-2.5 bg-red-600 text-white rounded-full text-[10px] font-black h-4.5 min-w-[18px] px-1 flex items-center justify-center shadow-xs">
+                    {wishlistCount}
+                  </span>
+                )}
+              </div>
+              <span className="hidden sm:inline font-bold">Wishlist</span>
             </Link>
 
             {/* Shopping Cart Button with Dynamic Live Badge */}
@@ -423,7 +516,7 @@ export default function Header({ onOpenQuoteModal }) {
             >
               <div className="relative flex items-center justify-center">
                 <ShoppingCart size={17} className="text-slate-700 group-hover:text-red-600 transition-colors" />
-                {cartCount > 0 && (
+                {mounted && cartCount > 0 && (
                   <span className="absolute -top-2.5 -right-2.5 bg-red-600 text-white rounded-full text-[10px] font-black h-4.5 min-w-[18px] px-1 flex items-center justify-center shadow-xs">
                     {cartCount}
                   </span>
@@ -474,9 +567,9 @@ export default function Header({ onOpenQuoteModal }) {
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs">
-                  {userProfile?.fullName ? (
-                    userProfile.fullName.charAt(0).toUpperCase()
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-white border border-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs">
+                  {userProfile?.photo ? (
+                    <img src={userProfile.photo} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
                     <User size={14} className="text-slate-600" />
                   )}
@@ -515,6 +608,21 @@ export default function Header({ onOpenQuoteModal }) {
           >
             All Products ({PRODUCTS.length})
           </Link>
+          <Link
+            href="/wishlist"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold text-neutral-800 hover:bg-neutral-100"
+          >
+            <div className="flex items-center gap-2">
+              <Heart size={16} className={mounted && wishlistCount > 0 ? "fill-red-600 text-red-600" : "text-slate-600"} />
+              <span>Saved Equipment Wishlist</span>
+            </div>
+            {mounted && wishlistCount > 0 && (
+              <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                {wishlistCount}
+              </span>
+            )}
+          </Link>
 
           <div className="pt-2 border-t border-neutral-100">
             <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider px-2 mb-1">Categories</div>
@@ -550,5 +658,7 @@ export default function Header({ onOpenQuoteModal }) {
         </div>
       )}
     </header>
+
+  </>
   );
 }

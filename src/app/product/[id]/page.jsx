@@ -43,14 +43,17 @@ export default function ProductPage({ params }) {
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(seo.schemaProduct) }}
+            suppressHydrationWarning
           />
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(seo.schemaFAQ) }}
+            suppressHydrationWarning
           />
           <script
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(seo.schemaBreadcrumbs) }}
+            suppressHydrationWarning
           />
         </>
       )}

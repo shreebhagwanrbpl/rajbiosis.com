@@ -20,6 +20,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { getActiveDistrict, USER_PROFILE_EVENT } from '../../utils/userProfile';
+import { fetchLiveProductsFromAdmin } from '../../utils/adminSync';
 
 function ProductsCatalogContent() {
   const searchParams = useSearchParams();
@@ -33,6 +34,45 @@ function ProductsCatalogContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [district, setDistrict] = useState('Jaipur');
+  const [liveProducts, setLiveProducts] = useState(PRODUCTS);
+  const [liveCategories, setLiveCategories] = useState(CATEGORIES);
+  const [isLoadingLive, setIsLoadingLive] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadAdminData() {
+      setIsLoadingLive(true);
+      try {
+        const adminData = await fetchLiveProductsFromAdmin();
+        if (isMounted && adminData && Array.isArray(adminData) && adminData.length > 0) {
+          setLiveProducts(adminData);
+
+          // Generate categories from live products
+          const catMap = new Map();
+          adminData.forEach(p => {
+            const rawCat = p.category || 'General';
+            const catId = rawCat.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            if (!catMap.has(catId)) {
+              catMap.set(catId, { id: catId, name: rawCat, rawName: rawCat });
+            }
+          });
+
+          if (catMap.size > 0) {
+            setLiveCategories([
+              { id: 'all', name: 'All Biomedical Equipment' },
+              ...Array.from(catMap.values())
+            ]);
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load live products from admin:', e);
+      } finally {
+        if (isMounted) setIsLoadingLive(false);
+      }
+    }
+    loadAdminData();
+    return () => { isMounted = false; };
+  }, []);
 
   const ITEMS_PER_PAGE = 8; // High performance pagination for thousands of products
 
@@ -64,7 +104,7 @@ function ProductsCatalogContent() {
 
   // Filter & Sort Pipeline
   const filteredProducts = useMemo(() => {
-    let result = [...PRODUCTS];
+    let result = [...liveProducts];
 
     // Search query filter
     if (searchQuery.trim()) {

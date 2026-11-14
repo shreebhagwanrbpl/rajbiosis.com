@@ -75,7 +75,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={plusJakartaSans.variable}>
+    <html lang="en" className={plusJakartaSans.variable} suppressHydrationWarning>
       <head>
         {/* Official Raj Biosis Pvt. Ltd. Favicon */}
         <link rel="icon" type="image/png" href="/logo.png" />
@@ -85,7 +85,7 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className={`${plusJakartaSans.className} bg-neutral-50 text-neutral-900 font-sans selection:bg-brand-600 selection:text-white pb-14 lg:pb-0`}>
+      <body className={`${plusJakartaSans.className} bg-neutral-50 text-neutral-900 font-sans selection:bg-brand-600 selection:text-white pb-14 lg:pb-0`} suppressHydrationWarning>
         {children}
         <ProductEnquiryModal />
         <CartDrawer />

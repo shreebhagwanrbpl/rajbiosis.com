@@ -53,6 +53,7 @@ export default function CategoryPage({ params }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(seo.schemaBreadcrumbs) }}
+          suppressHydrationWarning
         />
       )}
 

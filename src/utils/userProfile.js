@@ -1,3 +1,4 @@
+import { syncProfileToAdmin } from './adminSync';
 // User profile and localized district utility helpers
 import { DEFAULT_DISTRICT } from '../data/districts';
 import { DEFAULT_COUNTRY_CODE } from '../data/internationalCodes';
@@ -9,29 +10,91 @@ export const USER_INQUIRIES_EVENT = 'user-inquiries-updated';
 export const USER_PROFILE_AUDIT_KEY = 'rajbiosis_profile_audit_log';
 export const USER_PROFILE_AUDIT_EVENT = 'user-profile-audit-updated';
 
+export const DEFAULT_HOSPITAL_PROFILE = {
+  fullName: 'Dr. Rajesh Sharma',
+  designation: 'CMO / Procurement Head',
+  hospitalName: 'Apex Super Speciality Hospital',
+  countryCode: DEFAULT_COUNTRY_CODE || '+91',
+  phone: '98290 12345',
+  email: 'doctor@hospital.org',
+  state: 'Rajasthan',
+  district: 'Jaipur',
+  pincode: '302001',
+  address: 'Near Emergency Trauma Wing Gate 2',
+  isOtpVerified: true,
+  isLoggedIn: true
+};
+
 /**
  * Get sample default enquiries for realistic display when customer visits profile.
- * Represents all 4 key lifecycle stages:
-/**
- * No dummy quotations - real inquiries will be added when customer requests them
  */
-export function getDefaultSampleInquiries() {
-  return [];
+export function getDefaultSampleInquiries(district = 'Jaipur') {
+  return [
+    {
+      id: 'RFQ-880124',
+      quoteNumber: 'RB-QT-2026-8801',
+      productId: 'prod-vent-x9',
+      productName: 'RajBiosis-Vent Pro-X9 Turbine Mechanical Ventilator',
+      productSku: 'RAJ-ICU-8801',
+      productCategory: 'ICU & Critical Care',
+      productBrand: 'Raj Biosis OEM',
+      productImage: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80',
+      quantity: 2,
+      unitPrice: 485000,
+      actualPrice: 485000,
+      totalAmount: 970000,
+      gstRate: '12%',
+      gstAmount: 116400,
+      grandTotal: 1086400,
+      status: 'Quotation Sent (Instant Authorized)',
+      statusNote: 'Authorized digital proforma quotation generated with 2-year on-site SLA and priority depot dispatch.',
+      deliveryEstimate: `24-48 Hours Express Dispatch to ${district}`,
+      validTill: '30 Days from issue',
+      createdAt: new Date().toISOString(),
+      date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+    },
+    {
+      id: 'RFQ-604112',
+      quoteNumber: 'RB-QT-2026-6041',
+      productId: 'prod-mon-12x',
+      productName: 'CardioPulse Multi-Para Patient Monitor 12.1"',
+      productSku: 'RAJ-ICU-604',
+      productCategory: 'ICU & Critical Care',
+      productBrand: 'Mindray',
+      productImage: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80',
+      quantity: 4,
+      unitPrice: 68500,
+      actualPrice: 68500,
+      totalAmount: 274000,
+      gstRate: '12%',
+      gstAmount: 32880,
+      grandTotal: 306880,
+      status: 'Dispatched (Regional Hub)',
+      statusNote: `Consignment calibrated and in transit from Jaipur Central Depot to ${district}.`,
+      deliveryEstimate: 'Arriving Tomorrow by 2:00 PM',
+      validTill: 'Delivered',
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+      date: new Date(Date.now() - 86400000).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+    }
+  ];
 }
 
 /**
  * Get current user inquiries safely from localStorage
  */
 export function getUserInquiries() {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === 'undefined') return getDefaultSampleInquiries();
   try {
     const raw = localStorage.getItem(USER_INQUIRIES_KEY);
-    if (!raw) return [];
+    if (!raw) return getDefaultSampleInquiries();
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return getDefaultSampleInquiries();
+    }
+    return parsed;
   } catch (err) {
     console.error('Error reading user inquiries:', err);
-    return [];
+    return getDefaultSampleInquiries();
   }
 }
 
@@ -45,9 +108,8 @@ export function saveUserInquiry(inquiryData) {
     const newEntry = {
       ...inquiryData,
       id: inquiryData.id || `RFQ-${Date.now().toString().slice(-6)}`,
-      quoteNumber: inquiryData.quoteNumber || `RB-QT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-      status: inquiryData.status || 'Quotation Sent',
-      statusNote: inquiryData.statusNote || 'Official quotation generated and delivered.',
+      status: inquiryData.status || 'Pending RFQ',
+      statusNote: inquiryData.statusNote || 'Official quotation request registered.',
       createdAt: inquiryData.createdAt || new Date().toISOString()
     };
     const updated = [newEntry, ...current.filter((item) => item.id !== newEntry.id)];
@@ -102,8 +164,13 @@ export function getUserProfile() {
   if (typeof window === 'undefined') return null;
   try {
     const raw = localStorage.getItem(USER_PROFILE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && (parsed.fullName || parsed.phone)) {
+        return parsed;
+      }
+    }
+    return null;
   } catch (err) {
     console.error('Error reading user profile:', err);
     return null;
@@ -124,6 +191,133 @@ export function getActiveDistrict() {
     if (explicit && explicit.trim()) return explicit.trim();
   }
   return DEFAULT_DISTRICT;
+}
+
+/**
+ * Save active district and notify listeners across header and components
+ */
+export function saveActiveDistrict(districtName) {
+  if (typeof window === 'undefined' || !districtName) return;
+  try {
+    localStorage.setItem('rajbiosis_active_district', districtName.trim());
+    window.dispatchEvent(new CustomEvent('active-district-changed', { detail: districtName.trim() }));
+  } catch (e) {}
+}
+
+export const CUSTOMER_LOGGED_IN_KEY = 'rajbiosis_customer_logged_in';
+
+/**
+ * Check if the customer is already logged in / verified via OTP
+ */
+export function isCustomerLoggedIn() {
+  if (typeof window === 'undefined') return false;
+  try {
+    const profile = getUserProfile();
+    if (!profile) return false;
+
+    const flag = localStorage.getItem(CUSTOMER_LOGGED_IN_KEY);
+    if (flag === 'true') return true;
+    if (profile.isOtpVerified || profile.isLoggedIn) return true;
+    if (profile.phone && profile.phone.trim() && profile.email && profile.email.trim()) {
+      return true;
+    }
+  } catch (err) {
+    console.error('Error checking customer login status:', err);
+  }
+  return false;
+}
+
+/**
+ * Set customer logged in state in localStorage
+ */
+export function setCustomerLoggedIn(status = true) {
+  if (typeof window === 'undefined') return;
+  try {
+    if (status) {
+      localStorage.setItem(CUSTOMER_LOGGED_IN_KEY, 'true');
+    } else {
+      localStorage.removeItem(CUSTOMER_LOGGED_IN_KEY);
+    }
+  } catch (err) {}
+}
+
+/**
+ * Require customer authentication before proceeding with Wishlist or Cart action.
+ * If customer is not logged in, opens the exact same Get Quote / OTP verification modal.
+ */
+export function requireCustomerAuth(action, product, qty = 1) {
+  if (typeof window === 'undefined') return false;
+  if (isCustomerLoggedIn()) {
+    return true;
+  }
+  window.dispatchEvent(
+    new CustomEvent('open-product-enquiry', {
+      detail: {
+        ...product,
+        intentAction: action,
+        intentQty: qty
+      }
+    })
+  );
+  return false;
+}
+
+export const LOCATION_DETECTED_KEY = 'rajbiosis_detected_location';
+
+let cachedLocationPromise = null;
+
+/**
+ * Auto-detect user's district and state using IP reverse geocoding.
+ * Only hits the API once: once stored in localStorage, it NEVER hits the API again.
+ */
+export async function autoDetectLocation(force = false) {
+  if (typeof window === 'undefined') return null;
+
+  // 1. Check if already stored in localStorage - return immediately with 0 network calls!
+  if (!force) {
+    try {
+      const stored = localStorage.getItem(LOCATION_DETECTED_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.city) return parsed;
+      }
+      const active = localStorage.getItem('rajbiosis_active_district');
+      if (active && active.trim() && active !== DEFAULT_DISTRICT) {
+        return { city: active.trim(), state: 'Rajasthan' };
+      }
+    } catch (e) {}
+  }
+
+  // 2. Prevent multiple simultaneous requests in flight
+  if (cachedLocationPromise) {
+    return cachedLocationPromise;
+  }
+
+  // 3. First time execution only: hit the API once, save to localStorage permanently
+  cachedLocationPromise = (async () => {
+    try {
+      const res = await fetch('https://api.bigdatacloud.net/data/reverse-geocode-client?localityLanguage=en');
+      if (!res.ok) return null;
+      const data = await res.json();
+      const city = data.city || data.locality || '';
+      const state = data.principalSubdivision || '';
+      if (city) {
+        const loc = { city, state };
+        try {
+          localStorage.setItem(LOCATION_DETECTED_KEY, JSON.stringify(loc));
+          saveActiveDistrict(city);
+        } catch (e) {}
+        return loc;
+      }
+    } catch (err) {
+      console.warn('IP location detection skipped:', err);
+    } finally {
+      cachedLocationPromise = null;
+    }
+    return null;
+  })();
+
+  return cachedLocationPromise;
 }
 
 /**
@@ -177,95 +371,118 @@ export function recordAdvancePayment(quoteId, utrNumber) {
  * and notify all listeners.
  */
 export function saveUserProfile(profileData) {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined') return null;
   try {
     const existing = getUserProfile() || {};
-    
-    // Track what changed (Previous vs New value) for database & admin sync
-    const fieldsToTrack = [
-      { key: 'fullName', label: 'Full Name' },
-      { key: 'designation', label: 'Designation' },
-      { key: 'phone', label: 'Mobile Number' },
-      { key: 'countryCode', label: 'Country Code' },
-      { key: 'email', label: 'Email Address' },
-      { key: 'hospitalName', label: 'Hospital / Clinic Name' },
-      { key: 'state', label: 'State' },
-      { key: 'district', label: 'District' },
-      { key: 'address', label: 'Delivery Street Address' },
-      { key: 'pincode', label: 'Postal Pincode' }
-    ];
 
-    const changes = [];
-    const isFirstCreation = !(existing && (existing.fullName || existing.phone));
-
-    if (!isFirstCreation) {
-      fieldsToTrack.forEach(({ key, label }) => {
-        const oldVal = (existing[key] || '').toString().trim();
-        const newVal = (profileData[key] || '').toString().trim();
-        if (oldVal !== newVal) {
-          changes.push({
-            field: key,
-            fieldLabel: label,
-            oldValue: oldVal || '(empty)',
-            newValue: newVal || '(empty)'
-          });
-        }
-      });
-    }
-
-    let auditHistory = getProfileAuditLog();
-
-    if (changes.length > 0) {
-      const auditEntry = {
-        id: `AUD-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
-        timestamp: new Date().toISOString(),
-        updatedBy: profileData.fullName || existing.fullName || 'Authorized Buyer',
-        summary: `Updated ${changes.length} field(s)`,
-        changes,
-        previousSnapshot: { ...existing },
-        newSnapshot: { ...profileData },
-        syncStatus: 'ready_for_database_sync'
-      };
-
-      auditHistory = [auditEntry, ...auditHistory];
-      localStorage.setItem(USER_PROFILE_AUDIT_KEY, JSON.stringify(auditHistory));
-      window.dispatchEvent(new CustomEvent(USER_PROFILE_AUDIT_EVENT, { detail: auditHistory }));
-      console.log('[Admin & Database Sync]: Profile updated. Change audit log:', auditEntry);
-    } else if (isFirstCreation) {
-      const initialEntry = {
-        id: `AUD-INIT-${Date.now()}`,
-        timestamp: new Date().toISOString(),
-        updatedBy: profileData.fullName || 'Authorized Buyer',
-        summary: 'Initial profile registered',
-        changes: [
-          { field: 'fullName', fieldLabel: 'Account Registered', oldValue: '(none)', newValue: profileData.fullName || 'User' }
-        ],
-        newSnapshot: { ...profileData },
-        syncStatus: 'ready_for_database_sync'
-      };
-      auditHistory = [initialEntry, ...auditHistory];
-      localStorage.setItem(USER_PROFILE_AUDIT_KEY, JSON.stringify(auditHistory));
-      window.dispatchEvent(new CustomEvent(USER_PROFILE_AUDIT_EVENT, { detail: auditHistory }));
-    }
+    // Strip out heavy/recursive metadata from updated profile
+    const { auditHistory: _existingAudit, ...cleanExisting } = existing;
+    const { auditHistory: _dataAudit, ...cleanData } = profileData || {};
 
     const updated = {
-      ...existing,
-      ...profileData,
-      countryCode: profileData.countryCode || existing.countryCode || DEFAULT_COUNTRY_CODE,
-      auditHistory,
+      ...cleanExisting,
+      ...cleanData,
+      countryCode: cleanData.countryCode || cleanExisting.countryCode || DEFAULT_COUNTRY_CODE || '+91',
       updatedAt: new Date().toISOString()
     };
 
-    localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(updated));
-    if (updated.district) {
-      localStorage.setItem('rajbiosis_active_district', updated.district.trim());
+    // 1. Save core user profile to localStorage safely
+    try {
+      localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(updated));
+    } catch (quotaErr) {
+      console.warn('LocalStorage quota issue detected, clearing audit logs and retrying:', quotaErr);
+      try {
+        localStorage.removeItem(USER_PROFILE_AUDIT_KEY);
+        localStorage.setItem(USER_PROFILE_KEY, JSON.stringify(updated));
+      } catch (fatalStorageErr) {
+        console.error('Critical storage error:', fatalStorageErr);
+      }
     }
 
-    window.dispatchEvent(new CustomEvent(USER_PROFILE_EVENT, { detail: updated }));
+    if (updated.district) {
+      try {
+        localStorage.setItem('rajbiosis_active_district', updated.district.trim());
+      } catch (e) {}
+    }
+
+    if ((updated.phone && updated.phone.trim()) || (updated.email && updated.email.trim())) {
+      try { setCustomerLoggedIn(true); } catch (e) {}
+    }
+
+    // 2. Safe Audit Log (Lightweight flat snapshot, strings only, zero recursion)
+    try {
+      const fieldsToTrack = [
+        'fullName', 'designation', 'phone', 'countryCode', 'email',
+        'hospitalName', 'state', 'district', 'address', 'pincode'
+      ];
+      const changes = [];
+      const isFirstCreation = !(cleanExisting && (cleanExisting.fullName || cleanExisting.phone));
+
+      if (!isFirstCreation) {
+        fieldsToTrack.forEach((key) => {
+          const oldVal = (cleanExisting[key] || '').toString().trim();
+          const newVal = (cleanData[key] || '').toString().trim();
+          if (oldVal !== newVal) {
+            changes.push({
+              field: key,
+              oldValue: oldVal || '(empty)',
+              newValue: newVal || '(empty)'
+            });
+          }
+        });
+      }
+
+      if (changes.length > 0 || isFirstCreation) {
+        const flatSnapshot = (source) => {
+          const res = {};
+          fieldsToTrack.forEach((k) => {
+            if (source[k] !== undefined && source[k] !== null) {
+              res[k] = String(source[k]);
+            }
+          });
+          return res;
+        };
+
+        const auditEntry = {
+          id: 'AUD-' + Date.now(),
+          timestamp: new Date().toISOString(),
+          updatedBy: cleanData.fullName || cleanExisting.fullName || 'User',
+          summary: isFirstCreation ? 'Initial profile registered' : 'Updated ' + changes.length + ' field(s)',
+          changes,
+          previousSnapshot: flatSnapshot(cleanExisting),
+          newSnapshot: flatSnapshot(cleanData),
+          syncStatus: 'ready'
+        };
+
+        let auditHistory = getProfileAuditLog();
+        auditHistory = [auditEntry, ...auditHistory].slice(0, 10);
+        try {
+          localStorage.setItem(USER_PROFILE_AUDIT_KEY, JSON.stringify(auditHistory));
+          window.dispatchEvent(new CustomEvent(USER_PROFILE_AUDIT_EVENT, { detail: auditHistory }));
+        } catch (e) {}
+      }
+    } catch (auditErr) {
+      console.warn('Audit logging skipped safely:', auditErr);
+    }
+
+    // 3. Dispatch profile event & background sync to Admin
+    try {
+      window.dispatchEvent(new CustomEvent(USER_PROFILE_EVENT, { detail: updated }));
+    } catch (evtErr) {
+      console.warn('Profile event dispatch error:', evtErr);
+    }
+
+    try {
+      syncProfileToAdmin(updated);
+    } catch (syncErr) {}
+
     return updated;
   } catch (err) {
     console.error('Error saving user profile:', err);
-    return null;
+    return {
+      ...(profileData || {}),
+      updatedAt: new Date().toISOString()
+    };
   }
 }
 
@@ -316,6 +533,7 @@ export function clearUserProfile() {
   }
 
   localStorage.removeItem(USER_PROFILE_KEY);
+  localStorage.removeItem(CUSTOMER_LOGGED_IN_KEY);
   localStorage.removeItem('rajbiosis_active_district');
   window.dispatchEvent(new CustomEvent(USER_PROFILE_EVENT, { detail: null }));
 }
