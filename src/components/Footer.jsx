@@ -1,12 +1,44 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { HeartPulse, PhoneCall, Mail, MapPin, ShieldCheck } from 'lucide-react';
+import { HeartPulse, PhoneCall, Mail, MapPin, ShieldCheck, Building2, Compass, CheckCircle2, ArrowRight } from 'lucide-react';
 import { CATEGORIES } from '../data/categories';
+import { getActiveDistrict } from '../utils/userProfile';
+import { getOfficeForDistrict, HEAD_OFFICE } from '../data/offices';
 
 export default function Footer() {
   const activeCategories = CATEGORIES.filter(c => c.id !== 'all');
+  const [activeDistrict, setActiveDistrict] = useState('Jaipur');
+  const [officeData, setOfficeData] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const initial = getActiveDistrict();
+    setActiveDistrict(initial);
+    setOfficeData(getOfficeForDistrict(initial));
+
+    const handleDistrictChange = (e) => {
+      const dist = e.detail || 'Jaipur';
+      setActiveDistrict(dist);
+      setOfficeData(getOfficeForDistrict(dist));
+    };
+
+    window.addEventListener('active-district-changed', handleDistrictChange);
+    return () => {
+      window.removeEventListener('active-district-changed', handleDistrictChange);
+    };
+  }, []);
+
+  const openLocationModal = () => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('open-location-modal'));
+    }
+  };
+
+  const isHeadOfficeOnly = !officeData || officeData.isHeadOfficeOnly;
+  const localBranch = officeData?.local;
 
   return (
     <footer className="bg-white border-t border-neutral-200 text-neutral-600 text-xs">
@@ -14,7 +46,7 @@ export default function Footer() {
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
 
-          {/* Brand Info (2 Cols) */}
+          {/* Brand Info & Dynamic Local/Head Office (2 Cols) */}
           <div className="lg:col-span-2 space-y-4">
             <Link href="/" className="flex items-center gap-3">
               <img
@@ -36,20 +68,95 @@ export default function Footer() {
               Raj Biosis Pvt. Ltd. is a dedicated manufacturer and supplier of critical care, operating theatre, and diagnostic imaging equipment for hospitals and clinical facilities across India.
             </p>
 
-            <div className="space-y-2 pt-2 text-xs">
-              <div className="flex items-center gap-2 text-neutral-700">
-                <PhoneCall size={14} className="text-brand-600 shrink-0" />
-                <span className="font-semibold">Toll-Free: 9983333469 </span>
+            {/* Dynamic Office Address Card(s) Based on User Location */}
+            <div className="pt-2 space-y-3">
+              
+              {/* Location Status Bar */}
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px]">
+                <div className="flex items-center gap-1.5 font-semibold text-slate-800" suppressHydrationWarning>
+                  <MapPin size={13} className="text-brand-600 shrink-0" />
+                  <span>Serving Your Location:</span>
+                  <strong className="text-brand-700 font-bold">{mounted ? activeDistrict : 'Jaipur'}</strong>
+                </div>
+                <button
+                  type="button"
+                  onClick={openLocationModal}
+                  className="text-brand-600 hover:text-brand-700 font-bold underline cursor-pointer text-[10px]"
+                >
+                  Change City
+                </button>
               </div>
-              <div className="flex items-center gap-2 text-neutral-700">
-                <Mail size={14} className="text-brand-600 shrink-0" />
-                <span>mail@rajbiosis.com</span>
+
+              {/* SCENARIO 1: User is outside Jaipur (e.g. Churu) -> Show Local Branch Office */}
+              {!isHeadOfficeOnly && localBranch && (
+                <div className="p-3 rounded-2xl bg-red-50/60 border border-red-200/90 text-xs space-y-1.5" suppressHydrationWarning>
+                  <div className="flex items-center justify-between">
+                    <div className="font-black text-slate-900 text-xs flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-brand-600 shrink-0" />
+                      <span>{localBranch.city} Regional Service Station</span>
+                    </div>
+                    <span className="text-[10px] bg-red-100 text-brand-800 font-bold px-2 py-0.5 rounded-full">
+                      Your Local Branch
+                    </span>
+                  </div>
+
+                  <div className="text-neutral-700 text-[11px] leading-relaxed">
+                    {localBranch.address}
+                  </div>
+
+                  <div className="pt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-neutral-800 font-medium">
+                    <div className="flex items-center gap-1">
+                      <PhoneCall size={12} className="text-brand-600 shrink-0" />
+                      <span>{localBranch.phone}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Mail size={12} className="text-brand-600 shrink-0" />
+                      <span>{localBranch.email}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-1 text-[10px] text-emerald-800 font-semibold flex items-center gap-1">
+                    <CheckCircle2 size={11} className="text-emerald-600 shrink-0" />
+                    <span>{localBranch.sla}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* SCENARIO 2: Corporate Headquarters in Jaipur (Always shown) */}
+              <div className={`p-3 rounded-2xl border text-xs space-y-1.5 ${isHeadOfficeOnly ? 'bg-slate-50 border-slate-200' : 'bg-white border-slate-200/90'}`} suppressHydrationWarning>
+                <div className="flex items-center justify-between">
+                  <div className="font-black text-slate-900 text-xs flex items-center gap-1.5">
+                    <Building2 size={13} className="text-brand-600 shrink-0" />
+                    <span>Corporate Headquarters {isHeadOfficeOnly ? '& Central Depot' : ''}</span>
+                  </div>
+                  <span className="text-[10px] bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded-full">
+                    Jaipur HQ
+                  </span>
+                </div>
+
+                <div className="text-neutral-700 text-[11px] leading-relaxed">
+                  {HEAD_OFFICE.address}
+                </div>
+
+                <div className="pt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-neutral-800 font-medium">
+                  <div className="flex items-center gap-1">
+                    <PhoneCall size={12} className="text-brand-600 shrink-0" />
+                    <span>Toll-Free: {HEAD_OFFICE.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Mail size={12} className="text-brand-600 shrink-0" />
+                    <span>{HEAD_OFFICE.email}</span>
+                  </div>
+                </div>
+
+                {isHeadOfficeOnly && (
+                  <div className="pt-1 text-[10px] text-emerald-800 font-semibold flex items-center gap-1">
+                    <CheckCircle2 size={11} className="text-emerald-600 shrink-0" />
+                    <span>{HEAD_OFFICE.sla}</span>
+                  </div>
+                )}
               </div>
-              <div className="flex items-start gap-2 text-neutral-700">
-                <MapPin size={14} className="text-brand-600 shrink-0 mt-0.5" />
-                <span>1st Floor, F-4,Plot No.16, D- Block, Tagor Nagar,Nr.200 FT
-                  Jaipur - 302021, Rajasthan, India</span>
-              </div>
+
             </div>
           </div>
 
@@ -147,7 +254,7 @@ export default function Footer() {
             <span>•</span>
             <Link href="/contact" className="hover:text-neutral-800 transition">Institutional Terms</Link>
             <span>•</span>
-            <Link href="/contact" className="hover:text-neutral-800 transition">Privacy & Data Handling</Link>
+            <Link href="/contact" className="hover:text-neutral-800 transition">Privacy &amp; Data Handling</Link>
           </div>
         </div>
       </div>

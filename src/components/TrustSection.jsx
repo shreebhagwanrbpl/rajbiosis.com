@@ -1,70 +1,72 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { ShieldCheck, Award, Wrench, Truck, FileCheck, PhoneCall } from 'lucide-react';
+import { ShieldCheck, Tag, Truck, Headphones } from 'lucide-react';
 
 export default function TrustSection() {
   const trustPoints = [
     {
-      icon: <ShieldCheck size={22} className="text-brand-600" />,
-      title: 'CDSCO & ISO 13485 Registered',
-      description: 'Manufactured and audited in strict accordance with ISO 13485:2016 medical device standards and Central Drugs Standard Control Organisation (CDSCO) guidelines.'
+      icon: ShieldCheck,
+      title: 'Genuine & Authentic Products',
+      description: 'Manufactured and audited in strict accordance with ISO 13485:2016 and CDSCO medical device standards.'
     },
     {
-      icon: <Award size={22} className="text-brand-600" />,
-      title: 'Factory-Accredited Pre-Calibration',
-      description: 'Every equipment unit undergoes comprehensive pre-delivery electrical safety tests (IEC 62353) and precision metrology calibration with valid test certificates.'
+      icon: Tag,
+      title: 'Competitive Pricing',
+      description: 'Direct-from-manufacturer pricing with volume tier discounts and customized institutional quotations.'
     },
     {
-      icon: <Wrench size={22} className="text-brand-600" />,
-      title: 'Biomedical Engineer Installation',
-      description: 'Certified biomedical engineers provide turnkey on-site unboxing, clinical setup, staff training, and comprehensive AMC/CMC lifecycle support.'
+      icon: Truck,
+      title: 'Reliable Supply Chain',
+      description: 'Temperature-monitored pan-India logistical transit with comprehensive transit insurance and rapid dispatch.'
     },
     {
-      icon: <Truck size={22} className="text-brand-600" />,
-      title: 'Pan-India Hospital Delivery',
-      description: 'Direct temperature-monitored logistical transit with transit insurance to Tier 1, 2, and 3 healthcare centres across India with rapid dispatch.'
+      icon: Headphones,
+      title: 'After-Sales Support',
+      description: 'Certified biomedical engineers provide on-site unboxing, clinical setup, staff training, and AMC/CMC support.'
     }
   ];
 
   return (
-    <section className="py-12 sm:py-16 bg-neutral-50/70 border-b border-neutral-200">
+    <section className="py-16 sm:py-24 bg-neutral-50/70 border-b border-neutral-200/80">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <span className="text-xs font-semibold text-brand-600 uppercase tracking-wider block mb-1">
-            Quality & Compliance
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">
+        {/* Section Header */}
+        <div className="text-center max-w-xl mx-auto mb-12">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-brand-700 border border-red-200 text-xs font-bold mb-2">
+            <span>Quality &amp; Compliance</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
             Institutional Procurement Assurance
           </h2>
-          <p className="text-xs sm:text-sm text-neutral-600 font-normal mt-1">
-            Raj Biosis Pvt. Ltd. supplies critical medical infrastructure directly to government hospitals, corporate healthcare chains, and independent nursing homes.
-          </p>
         </div>
 
-        {/* 4 Trust Pillars Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {trustPoints.map((item, idx) => (
-            <div
-              key={idx}
-              className="bg-white p-6 rounded-2xl border border-neutral-200/90 shadow-xs flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-brand-50 border border-brand-100 flex items-center justify-center mb-4">
-                  {item.icon}
+        {/* 4 Trust Pillars Grid with Airy Spacing & Premium Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-7">
+          {trustPoints.map((item, idx) => {
+            const IconComponent = item.icon;
+            return (
+              <div
+                key={idx}
+                className="bg-white p-7 rounded-3xl border border-slate-200/90 shadow-2xs hover:shadow-xl hover:border-brand-300 transition-all duration-300 flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="w-12 h-12 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center mb-5 group-hover:bg-brand-600 group-hover:border-brand-600 transition-all duration-300">
+                    <IconComponent
+                      size={22}
+                      className="text-brand-600 group-hover:text-white transition-colors duration-300"
+                    />
+                  </div>
+                  <h3 className="text-base font-extrabold text-slate-900 mb-2 leading-snug">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed font-normal">
+                    {item.description}
+                  </p>
                 </div>
-                <h3 className="text-sm sm:text-base font-bold text-neutral-900 mb-1.5">
-                  {item.title}
-                </h3>
-                <p className="text-xs text-neutral-600 leading-relaxed font-normal">
-                  {item.description}
-                </p>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
       </div>

@@ -1,46 +1,27 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ShieldCheck, ArrowRight, FileText, Truck, ShoppingCart, Tag, Check, Heart } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { FileText, Tag, Heart, ShoppingCart, Check } from 'lucide-react';
 import { isInWishlist, toggleWishlist, WISHLIST_UPDATED_EVENT } from '../utils/wishlist';
-import { getActiveDistrict, USER_PROFILE_EVENT, requireCustomerAuth } from '../utils/userProfile';
+import { requireCustomerAuth } from '../utils/userProfile';
 import { addToCart, openCartDrawer } from '../utils/cart';
 
-export default function ProductCard({ product, onOpenQuote }) {
-  const [district, setDistrict] = useState('Jaipur');
+export default function ProductCard({ product, onOpenQuote, className = '' }) {
+  const router = useRouter();
   const [justAdded, setJustAdded] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
-    setDistrict(getActiveDistrict());
     setIsWishlisted(isInWishlist(product.id));
 
     const handleWishlistUpdate = () => {
       setIsWishlisted(isInWishlist(product.id));
     };
 
-    const handleProfileUpdate = (e) => {
-      if (e && e.detail && e.detail.district) {
-        setDistrict(e.detail.district);
-      } else {
-        setDistrict(getActiveDistrict());
-      }
-    };
-
-    const handleDistrictChange = (e) => {
-      if (e && e.detail) {
-        setDistrict(e.detail);
-      }
-    };
-
     window.addEventListener(WISHLIST_UPDATED_EVENT, handleWishlistUpdate);
-    window.addEventListener(USER_PROFILE_EVENT, handleProfileUpdate);
-    window.addEventListener('active-district-changed', handleDistrictChange);
     return () => {
       window.removeEventListener(WISHLIST_UPDATED_EVENT, handleWishlistUpdate);
-      window.removeEventListener(USER_PROFILE_EVENT, handleProfileUpdate);
-      window.removeEventListener('active-district-changed', handleDistrictChange);
     };
   }, [product.id]);
 
@@ -66,171 +47,124 @@ export default function ProductCard({ product, onOpenQuote }) {
     openCartDrawer();
   };
 
-  // Format price in Indian Rupee format
-  const formatINR = (val) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(val);
+  const handleCardClick = (e) => {
+    // If click originated from interactive child like Get Quote, Cart, or Wishlist, don't trigger navigation
+    if (e.target.closest('button')) return;
+    router.push(`/product/${product.id}`);
   };
 
-  // Get key technical highlights from specs (first 2 entries)
-  const specHighlights = product.specs
-    ? Object.entries(product.specs).slice(0, 2)
-    : [];
-
   return (
-    <div className="product-card group flex flex-col justify-between bg-white relative">
+    <div
+      onClick={handleCardClick}
+      className={`product-card group flex flex-col justify-between bg-white relative h-full cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 rounded-2xl border border-slate-200/90 overflow-hidden select-none ${className}`}
+    >
       <div>
-        {/* Product Image Area with Wide Aspect Ratio (Shorter & Wider) */}
-        <div className="relative aspect-[16/10] sm:aspect-[16/9] max-h-[165px] bg-neutral-50 overflow-hidden p-2.5 border-b border-neutral-100">
-          <Link
-            href={`/product/${product.id}`}
-            className="block w-full h-full"
-          >
-            <img
-              src={product.image}
-              alt={product.name}
-              loading="lazy"
-              className="w-full h-full object-contain object-center transition-transform duration-300 group-hover:scale-105"
-            />
-          </Link>
+        {/* Product Image Area - Full-Width Edge-to-Edge with Zero Gaps on Left/Right */}
+        <div className="relative aspect-[16/10] sm:aspect-[16/9] h-48 sm:h-52 w-full bg-slate-100 overflow-hidden border-b border-slate-100">
+          <img
+            src={product.image}
+            alt={product.name}
+            loading="lazy"
+            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+          />
 
-          {/* Brand Badge */}
-          {product.brand && (
-            <div className="pointer-events-none absolute top-2 left-2 bg-white/95 backdrop-blur-xs text-neutral-600 text-[9px] font-semibold px-1.5 py-0.5 rounded border border-neutral-200">
-              {product.brand}
-            </div>
-          )}
-
-          {/* Wishlist Heart Floating Button on Image (Prominent Red Background) */}
+          {/* Wishlist Heart Floating Button on Image */}
           <button
             type="button"
             onClick={handleToggleWishlist}
             className={`absolute top-2.5 right-2.5 w-8 h-8 rounded-full shadow-md flex items-center justify-center transition-all duration-200 cursor-pointer z-30 hover:scale-110 active:scale-95 ${
               isWishlisted
                 ? 'bg-red-600 text-white ring-2 ring-red-300 shadow-red-600/30'
-                : 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/30'
+                : 'bg-white hover:bg-slate-50 text-slate-600 hover:text-red-600 border border-slate-200'
             }`}
             title={isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"}
             aria-label={isWishlisted ? "Remove from Wishlist" : "Save to Wishlist"}
           >
             <Heart
               size={15}
-              className={`transition-all duration-200 text-white ${
-                isWishlisted ? 'fill-white scale-110' : 'stroke-[2.2]'
+              className={`transition-all duration-200 ${
+                isWishlisted ? 'fill-white text-white scale-110' : 'stroke-[2.2]'
               }`}
             />
           </button>
 
-          {/* Model / SKU Chip */}
-          <div className="pointer-events-none absolute bottom-2 left-2 bg-neutral-900/80 backdrop-blur-xs text-white text-[9px] font-mono px-1.5 py-0.5 rounded">
-            {product.sku}
-          </div>
-
           {/* Negotiable Badge */}
           {product.isNegotiable && (
-            <div className="pointer-events-none absolute bottom-2 right-2 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-2xs flex items-center gap-0.5">
+            <div className="pointer-events-none absolute bottom-2 right-2.5 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-2xs flex items-center gap-0.5">
               <Tag size={9} />
               <span>Negotiable</span>
             </div>
           )}
         </div>
 
-        {/* Content Body - Compact and Wide */}
-        <div className="p-3 sm:p-3.5">
+        {/* Content Body - Clean, Spacious & Uncluttered (Dispatch Pill removed as requested) */}
+        <div className="p-4 sm:p-4.5">
           {/* Category Tag */}
-          <div className="flex items-center justify-between mb-0.5">
+          <div className="flex items-center justify-between mb-1.5">
             <span className="text-[10px] font-bold text-brand-600 uppercase tracking-wider block">
               {product.category?.replace(/-/g, ' ')}
             </span>
             {product.isNegotiable && (
-              <span className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1 py-0.2 rounded">
+              <span className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded">
                 Bid Open
               </span>
             )}
           </div>
 
-          {/* Product Name (2-line clamp, compact height) */}
-          <h3 className="text-xs sm:text-sm font-bold text-neutral-900 leading-snug line-clamp-2 min-h-[2.1rem] group-hover:text-brand-600 transition-colors">
-            <Link href={`/product/${product.id}`}>
-              {product.name}
-            </Link>
+          {/* Product Name (Bold, 2-line clamp) */}
+          <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-snug line-clamp-2 min-h-[2.5rem] group-hover:text-brand-600 transition-colors">
+            {product.name}
           </h3>
-
-          {/* Localized District Fast Delivery Pill */}
-          <div className="mt-1.5 flex items-center gap-1.5 text-[9px] sm:text-[10px] font-semibold text-slate-600 bg-slate-50 border border-slate-200/90 px-2 py-0.5 rounded-md">
-            <Truck size={11} className="text-brand-600 shrink-0" />
-            <span className="truncate" suppressHydrationWarning>
-              Dispatch to <strong className="text-slate-900" suppressHydrationWarning>{district}</strong>
-            </span>
-          </div>
-
-          {/* Key Technical Highlights (Compact Specs) */}
-          {specHighlights.length > 0 && (
-            <div className="mt-2 pt-1.5 border-t border-neutral-100 space-y-0.5 text-[11px]">
-              {specHighlights.slice(0, 2).map(([key, val], idx) => (
-                <div key={idx} className="flex items-baseline justify-between gap-1 text-[10px] leading-tight">
-                  <span className="text-neutral-400 font-medium truncate shrink-0">{key}:</span>
-                  <span className="font-semibold text-neutral-700 text-right truncate">{val}</span>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Footer Area: Price & Clear Actions */}
-      <div className="p-3 sm:p-3.5 pt-0">
-        <div className="pt-2 border-t border-neutral-100 flex items-center justify-between mb-2">
+      {/* Footer Area: Price & Action Buttons */}
+      <div className="p-4 sm:p-4.5 pt-0">
+        <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between mb-3">
           <div>
-            <span className="text-[9px] font-semibold text-neutral-400 uppercase tracking-wider block leading-none">
+            <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block leading-none">
               Pricing
             </span>
             <div className="text-xs font-bold text-slate-800 tracking-tight mt-0.5">
               Price on Request
             </div>
           </div>
-          <span className="text-[9px] font-medium text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-            OEM Direct
-          </span>
         </div>
 
-        {/* 3 Action Buttons: Specs, + Cart, Get Quote */}
-        <div className="grid grid-cols-12 gap-1.5">
-          <Link
-            href={`/product/${product.id}`}
-            className="col-span-3 inline-flex items-center justify-center py-1.5 px-1 text-[11px] font-semibold text-neutral-700 bg-white hover:bg-neutral-50 border border-neutral-300 rounded-lg transition shadow-2xs text-center"
-          >
-            <span>Specs</span>
-          </Link>
-
+        {/* Actions Row: Icon-only Add to Cart Button (No name as requested) + Prominent Get Quote Button */}
+        <div className="flex items-center gap-2">
+          {/* Add to Cart: Icon Only Button */}
           <button
             type="button"
             onClick={handleAddToCart}
-            className="col-span-4 inline-flex items-center justify-center gap-1 py-1.5 px-1 text-[11px] font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg transition shadow-2xs cursor-pointer text-center"
-            title="Add equipment to cart"
+            className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all shadow-2xs shrink-0 cursor-pointer ${
+              justAdded
+                ? 'bg-emerald-50 border-emerald-300 text-emerald-600 scale-95'
+                : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700 hover:text-slate-900 active:scale-95'
+            }`}
+            title={justAdded ? 'Added to Cart' : 'Add to Cart'}
+            aria-label="Add to Cart"
           >
             {justAdded ? (
-              <Check size={12} className="text-emerald-600" />
+              <Check size={16} className="text-emerald-600" />
             ) : (
-              <ShoppingCart size={12} className="text-slate-600" />
+              <ShoppingCart size={16} />
             )}
-            <span>{justAdded ? 'Added' : '+ Cart'}</span>
           </button>
 
+          {/* Get Quote: Primary Action Button */}
           <button
             type="button"
             onClick={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               if (typeof window !== 'undefined') {
                 window.dispatchEvent(new CustomEvent('open-product-enquiry', { detail: product }));
               }
             }}
-            className="col-span-5 inline-flex items-center justify-center gap-1 py-1.5 px-1 text-[11px] font-bold text-white bg-brand-600 hover:bg-brand-700 active:scale-95 rounded-lg transition shadow-2xs cursor-pointer text-center"
+            className="flex-1 inline-flex items-center justify-center gap-2 h-10 px-3 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 active:scale-[0.98] rounded-xl transition-all shadow-xs cursor-pointer text-center group/btn"
           >
-            <FileText size={12} />
+            <FileText size={14} />
             <span>Get Quote</span>
           </button>
         </div>

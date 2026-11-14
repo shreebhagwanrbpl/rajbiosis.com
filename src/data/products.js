@@ -144,6 +144,62 @@ export const PRODUCTS = [
     ]
   },
   {
+    id: "prod-vol-infusion",
+    sku: "RAJ-ICU-INF8",
+    name: "AccuRate Pro Volumetric Infusion Pump with Drug Library",
+    category: "icu-critical-care",
+    brand: "B. Braun",
+    price: 34500,
+    mrp: 48000,
+    rating: 4.8,
+    reviewsCount: 31,
+    stockStatus: "In Stock (Dispatch in 24h)",
+    stockCount: 22,
+    badge: "Clinical Precision",
+    isNegotiable: true,
+    certifications: ["CE Certified", "ISO 13485"],
+    warranty: "2 Years Replacement Warranty",
+    image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
+    shortDesc: "Microprocessor-controlled volumetric infusion system with dose error reduction.",
+    specs: {
+      "Flow Rate": "0.1 to 1200 ml/h in 0.1 ml/h increments",
+      "Accuracy": "±3% volumetric infusion compliance",
+      "Battery": "Lithium-ion backup delivering 7 hours continuous runtime"
+    },
+    features: [
+      "Customizable 300+ ICU drug library with soft and hard limits",
+      "Anti-bolus system reduces unwanted bolus release after occlusion"
+    ]
+  },
+  {
+    id: "prod-icu-transport-vent",
+    sku: "RAJ-ICU-VENT3",
+    name: "PortaVent Mobile Emergency Transport Ventilator",
+    category: "icu-critical-care",
+    brand: "Dräger",
+    price: 295000,
+    mrp: 380000,
+    rating: 4.9,
+    reviewsCount: 19,
+    stockStatus: "In Stock (Dispatch in 24h)",
+    stockCount: 8,
+    badge: "Emergency Grade",
+    isNegotiable: false,
+    certifications: ["CE Certified", "EN 794-3", "ISO 13485"],
+    warranty: "2 Years Warranty",
+    image: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80",
+    shortDesc: "Rugged turbine-driven emergency transport ventilator for ambulances and intrahospital transfer.",
+    specs: {
+      "Modes": "IPPV, SIMV, CPAP, ASV, Bi-Level Non-Invasive",
+      "Weight": "4.3 kg rugged aluminum housing",
+      "Battery": "Dual hot-swappable batteries for 9 hours runtime"
+    },
+    features: [
+      "Shockproof and vibration-tested for harsh ambulance transit",
+      "Integrated electronic turbine eliminating external gas compressor"
+    ]
+  },
+  {
     id: "prod-xray-dr",
     sku: "RAJ-RAD-500D",
     name: "RajScan Elite High-Frequency 500mA Digital X-Ray System",
@@ -286,6 +342,62 @@ export const PRODUCTS = [
     ]
   },
   {
+    id: "prod-portable-ultra",
+    sku: "RAJ-RAD-US1",
+    name: "NanoEcho Handheld Wireless Point-of-Care Ultrasound",
+    category: "radiology-imaging",
+    brand: "GE Healthcare",
+    price: 185000,
+    mrp: 240000,
+    rating: 4.8,
+    reviewsCount: 27,
+    stockStatus: "In Stock (Dispatch in 24h)",
+    stockCount: 12,
+    badge: "Wireless POCUS",
+    isNegotiable: true,
+    certifications: ["CE Certified", "US-FDA", "AERB Exempt"],
+    warranty: "2 Years Replacement Warranty",
+    image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
+    shortDesc: "Pocket-sized wireless handheld ultrasound with dual phased and linear array probes.",
+    specs: {
+      "Probes": "Dual-head phased and linear multi-frequency array (2.5MHz - 10MHz)",
+      "Connectivity": "Direct Wi-Fi 5GHz & Bluetooth to iOS/Android tablets",
+      "Imaging Modes": "B-Mode, M-Mode, Color Doppler, Power Doppler"
+    },
+    features: [
+      "Instant bedside vascular access, cardiac, and FAST trauma assessments",
+      "IPX7 waterproof probe body fully submersible for clinical disinfection"
+    ]
+  },
+  {
+    id: "prod-flat-dr-panel",
+    sku: "RAJ-RAD-DRP",
+    name: "AeroDetect 14x17 Wireless CsI Digital Radiography Flat Panel",
+    category: "radiology-imaging",
+    brand: "Siemens Healthineers",
+    price: 360000,
+    mrp: 480000,
+    rating: 4.9,
+    reviewsCount: 34,
+    stockStatus: "In Stock (Dispatch in 24h)",
+    stockCount: 9,
+    badge: "Retrofit Kit",
+    isNegotiable: false,
+    certifications: ["CE Certified", "AERB Approved", "ISO 13485"],
+    warranty: "3 Years Comprehensive Panel Warranty",
+    image: "https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&w=800&q=80",
+    shortDesc: "High-DQE Cesium Iodide wireless flat panel detector for instant X-ray retrofitting.",
+    specs: {
+      "Scintillator": "Direct-deposited Cesium Iodide (CsI:Tl) with amorphous silicon TFT",
+      "Pixel Pitch": "139 micron high-resolution active matrix",
+      "Image Cycle Time": "Less than 3 seconds preview transmission over Wi-Fi"
+    },
+    features: [
+      "Converts existing conventional analog X-Ray machines into full digital DR",
+      "Carbon fiber armor body with 300kg uniform distributed load resistance"
+    ]
+  },
+  {
     id: "prod-cautery-400",
     sku: "RAJ-SURG-ES400",
     name: "ElectroSurg Max 400W Vessel Sealer & Bipolar Cautery",
@@ -421,6 +533,62 @@ export const PRODUCTS = [
       "One-touch real-time 4K video recording to external USB storage drive",
       "Digital blood vessel and tissue enhancement filter algorithm (WLI / FICE modes)",
       "Includes deluxe wheeled instrument trolley with isolation transformer"
+    ]
+  },
+  {
+    id: "prod-anes-workstation",
+    sku: "RAJ-OT-ANES",
+    name: "AuraVane Integrated Anaesthesia Workstation with Vaporizer",
+    category: "surgical-ot",
+    brand: "Mindray",
+    price: 540000,
+    mrp: 720000,
+    rating: 4.9,
+    reviewsCount: 22,
+    stockStatus: "Available on Order (3-5 Days)",
+    stockCount: 5,
+    badge: "OT Workstation",
+    isNegotiable: true,
+    certifications: ["CE Certified", "ISO 13485", "CDSCO Registered"],
+    warranty: "2 Years Comprehensive Warranty",
+    image: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80",
+    shortDesc: "High-precision anesthesia delivery system with electronic flowmeters and ventilator.",
+    specs: {
+      "Ventilator": "Integrated pneumatic ventilator with SIMV, PCV, PSV and Volume modes",
+      "Vaporizer": "Selectatec dual-mounting with Isoflurane / Sevoflurane key-filler",
+      "Breathing System": "Heated integrated compact breathing circuit with autoclavable canister"
+    },
+    features: [
+      "10.4-inch color display monitoring ventilation mechanics & gas curves",
+      "Auxiliary O2 and suction outlets integrated directly into chassis"
+    ]
+  },
+  {
+    id: "prod-smoke-evac",
+    sku: "RAJ-OT-SMK",
+    name: "PureVac Surgical Smoke Evacuator & ULPA Filter System",
+    category: "surgical-ot",
+    brand: "BOWA",
+    price: 85000,
+    mrp: 115000,
+    rating: 4.7,
+    reviewsCount: 16,
+    stockStatus: "In Stock (Dispatch in 24h)",
+    stockCount: 15,
+    badge: "Safety Standard",
+    isNegotiable: false,
+    certifications: ["CE Certified", "ISO 13485"],
+    warranty: "2 Years Replacement Warranty",
+    image: "https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=800&q=80",
+    shortDesc: "Quad-stage ULPA filtration surgical smoke evacuation system for electrosurgical suites.",
+    specs: {
+      "Filtration": "4-Stage ULPA filter capturing 99.999% of 0.12 micron particles",
+      "Flow Capacity": "Variable 3-speed brushless motor up to 45 CFM suction",
+      "Noise Level": "Ultra quiet operation under 52 dBA"
+    },
+    features: [
+      "Automatic RF sensor synchronization activates with electrosurgical pencils",
+      "RFID filter tracking displays precise remaining clinical filter lifespan"
     ]
   },
   {

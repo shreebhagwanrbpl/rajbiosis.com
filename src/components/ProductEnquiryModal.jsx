@@ -873,7 +873,7 @@ export default function ProductEnquiryModal() {
                               <Mail size={11} className="text-red-600" />
                               <span>Company Email:</span>
                             </span>
-                            <a href="mailto:mail@rajbiosis.com" className="font-mono text-slate-900 font-bold text-[11px] hover:underline truncate max-w-[155px]">mail@rajbiosis.com</a>
+                            <a href="mailto:info@rajbiosis.com" className="font-mono text-slate-900 font-bold text-[11px] hover:underline truncate max-w-[155px]">info@rajbiosis.com</a>
                           </div>
                           <div className="flex items-start justify-between text-slate-600 sm:col-span-2 pt-0.5 border-t border-red-100/80">
                             <span className="text-[11px] font-medium shrink-0 mr-2 flex items-center gap-1">

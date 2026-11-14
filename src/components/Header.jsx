@@ -275,10 +275,15 @@ export default function Header({ onOpenQuoteModal }) {
           </Link>
 
           {/* 4. Active District Delivery Hub Badge */}
-          <Link
-            href="/profile"
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('open-location-modal'));
+              }
+            }}
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white hover:bg-slate-100 text-slate-800 border border-slate-200/90 font-bold text-[10px] sm:text-[11px] transition-all cursor-pointer shrink-0 shadow-2xs group"
-            title={`Active Regional Depot: ${mounted ? activeDistrict : 'Jaipur'} (Click to change district)`}
+            title={`Active Regional Depot: ${mounted ? activeDistrict : 'Jaipur'} (Click to change location or view branch office)`}
             suppressHydrationWarning
           >
             <MapPin size={12} className="text-brand-600 shrink-0" />
@@ -287,7 +292,7 @@ export default function Header({ onOpenQuoteModal }) {
             <span className="text-[9px] bg-slate-100 group-hover:bg-brand-50 text-slate-600 group-hover:text-brand-700 px-1.5 py-0.5 rounded font-mono font-semibold">
               Change
             </span>
-          </Link>
+          </button>
 
 
           {/* 5. Helpline styled as a Premium Card (Aligned with Request Quote) */}
@@ -481,48 +486,42 @@ export default function Header({ onOpenQuoteModal }) {
               </span>
             </Link>
 
-            {/* Equipment Wishlist Button with Dynamic Live Badge */}
+            {/* Equipment Wishlist Button (Icon Only - No text name) */}
             <Link
               href="/wishlist"
-              className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-red-600 bg-white hover:bg-slate-50 border border-slate-200 transition shadow-2xs group cursor-pointer"
-              title="View Saved Equipment Wishlist"
+              className="relative flex items-center justify-center w-9 h-9 rounded-xl text-slate-700 hover:text-red-600 bg-white hover:bg-slate-50 border border-slate-200 transition shadow-2xs group cursor-pointer shrink-0"
+              title="Saved Equipment Wishlist"
               id="navbar-wishlist-btn"
             >
-              <div className="relative flex items-center justify-center">
-                <Heart
-                  size={17}
-                  className={`transition-colors ${
-                    mounted && wishlistCount > 0
-                      ? 'fill-red-600 text-red-600'
-                      : 'text-slate-700 group-hover:text-red-600'
-                  }`}
-                />
-                {mounted && wishlistCount > 0 && (
-                  <span className="absolute -top-2.5 -right-2.5 bg-red-600 text-white rounded-full text-[10px] font-black h-4.5 min-w-[18px] px-1 flex items-center justify-center shadow-xs">
-                    {wishlistCount}
-                  </span>
-                )}
-              </div>
-              <span className="hidden sm:inline font-bold">Wishlist</span>
+              <Heart
+                size={17}
+                className={`transition-colors ${
+                  mounted && wishlistCount > 0
+                    ? 'fill-red-600 text-red-600'
+                    : 'text-slate-700 group-hover:text-red-600'
+                }`}
+              />
+              {mounted && wishlistCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full text-[10px] font-black h-4.5 min-w-[18px] px-1 flex items-center justify-center shadow-xs">
+                  {wishlistCount}
+                </span>
+              )}
             </Link>
 
-            {/* Shopping Cart Button with Dynamic Live Badge */}
+            {/* Shopping Cart Button with Dynamic Live Badge (Icon Only - No text name) */}
             <button
               type="button"
               onClick={() => openCartDrawer()}
-              className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 transition shadow-2xs group cursor-pointer"
+              className="relative flex items-center justify-center w-9 h-9 rounded-xl text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 transition shadow-2xs group cursor-pointer shrink-0"
               title="View Selected Equipment & Cart"
               id="navbar-cart-btn"
             >
-              <div className="relative flex items-center justify-center">
-                <ShoppingCart size={17} className="text-slate-700 group-hover:text-red-600 transition-colors" />
-                {mounted && cartCount > 0 && (
-                  <span className="absolute -top-2.5 -right-2.5 bg-red-600 text-white rounded-full text-[10px] font-black h-4.5 min-w-[18px] px-1 flex items-center justify-center shadow-xs">
-                    {cartCount}
-                  </span>
-                )}
-              </div>
-              <span className="hidden sm:inline font-bold">Cart</span>
+              <ShoppingCart size={17} className="text-slate-700 group-hover:text-red-600 transition-colors" />
+              {mounted && cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-red-600 text-white rounded-full text-[10px] font-black h-4.5 min-w-[18px] px-1 flex items-center justify-center shadow-xs">
+                  {cartCount}
+                </span>
+              )}
             </button>
 
             {/* Direct Institutional Enquiry CTA */}

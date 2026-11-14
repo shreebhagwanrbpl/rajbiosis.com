@@ -6,6 +6,7 @@ import PromotionalModals from '../components/PromotionalModals';
 import ProductEnquiryModal from '../components/ProductEnquiryModal';
 import GlobalTooltip from '../components/GlobalTooltip';
 import CartDrawer from '../components/CartDrawer';
+import LocationPromptModal from '../components/LocationPromptModal';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -89,6 +90,7 @@ export default function RootLayout({ children }) {
         {children}
         <ProductEnquiryModal />
         <CartDrawer />
+        <LocationPromptModal />
         <PromotionalModals />
         <BackToTop />
         <MobileBottomNav />

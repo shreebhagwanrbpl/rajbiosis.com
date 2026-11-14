@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import { PhoneCall, Mail, MapPin, Clock, ShieldCheck, CheckCircle2, FileText, Send } from 'lucide-react';
+import { PhoneCall, Mail, MapPin, Clock, ShieldCheck, CheckCircle2, FileText, Send, Building2, Compass } from 'lucide-react';
 import { CATEGORIES } from '../../data/categories';
 import { PRODUCTS } from '../../data/products';
+import { getActiveDistrict } from '../../utils/userProfile';
+import { getOfficeForDistrict, HEAD_OFFICE } from '../../data/offices';
 
 export default function ContactPage() {
   const [hospitalName, setHospitalName] = useState('');
@@ -17,6 +19,33 @@ export default function ContactPage() {
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [ticketId, setTicketId] = useState('');
+  const [activeDistrict, setActiveDistrict] = useState('Jaipur');
+  const [officeData, setOfficeData] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const initial = getActiveDistrict();
+    setActiveDistrict(initial);
+    setOfficeData(getOfficeForDistrict(initial));
+
+    const handleDistrictChange = (e) => {
+      const dist = e.detail || 'Jaipur';
+      setActiveDistrict(dist);
+      setOfficeData(getOfficeForDistrict(dist));
+    };
+
+    window.addEventListener('active-district-changed', handleDistrictChange);
+    return () => {
+      window.removeEventListener('active-district-changed', handleDistrictChange);
+    };
+  }, []);
+
+  const openLocationModal = () => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('open-location-modal'));
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -56,9 +85,21 @@ export default function ContactPage() {
           {/* Left Contact Details & Quick Links (5 Cols) */}
           <div className="lg:col-span-5 space-y-6">
             <div className="bg-white p-6 sm:p-8 rounded-3xl border border-neutral-200 shadow-xs space-y-6">
-              <h2 className="text-base font-bold text-neutral-950">
-                Institutional Support Desks
-              </h2>
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+                <h2 className="text-base font-bold text-neutral-950">
+                  Institutional Support Desks
+                </h2>
+                <button
+                  type="button"
+                  onClick={openLocationModal}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-600 hover:text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full cursor-pointer"
+                  suppressHydrationWarning
+                >
+                  <MapPin size={11} />
+                  <span>Depot: {mounted ? activeDistrict : 'Jaipur'}</span>
+                  <span className="underline ml-0.5">(Change)</span>
+                </button>
+              </div>
 
               <div className="space-y-4 text-xs text-neutral-700">
                 <div className="flex items-start gap-3">
@@ -67,8 +108,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <span className="font-bold text-neutral-950 block text-xs">National Toll-Free Helpline</span>
-                    <span className="text-sm font-black text-neutral-950">9983333469 </span>
-                    <span className="text-[11px] text-neutral-600 font-medium block mt-0.5">Mon - Sat: 8:00 AM - 8:00 PM IST</span>
+                    <span className="text-sm font-black text-neutral-950">9983333469</span>
+                    <span className="text-[11px] text-neutral-600 font-medium block mt-0.5">Mon - Sat: 8:00 AM - 8:00 PM IST (24x7 Emergency ICU Support)</span>
                   </div>
                 </div>
 
@@ -77,30 +118,69 @@ export default function ContactPage() {
                     <Mail size={16} />
                   </div>
                   <div>
-                    <span className="font-bold text-neutral-950 block text-xs">Procurement Email</span>
+                    <span className="font-bold text-neutral-950 block text-xs">Procurement &amp; Tender Email</span>
                     <span className="text-neutral-900 font-bold">mail@rajbiosis.com</span>
-                    <span className="text-[11px] text-neutral-600 font-medium block mt-0.5">Formal RFP, GeM tenders & PO submissions</span>
+                    <span className="text-[11px] text-neutral-600 font-medium block mt-0.5">Formal RFP, GeM tenders &amp; PO submissions</span>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0 mt-0.5">
-                    <MapPin size={16} />
+                {/* SCENARIO 1: Non-Jaipur user (e.g. Churu) -> Show Local Branch Office */}
+                {officeData && !officeData.isHeadOfficeOnly && officeData.local && (
+                  <div className="p-3.5 rounded-2xl bg-red-50/70 border border-red-200/90 space-y-1.5" suppressHydrationWarning>
+                    <div className="flex items-center justify-between">
+                      <span className="font-black text-slate-900 text-xs flex items-center gap-1.5">
+                        <MapPin size={13} className="text-brand-600 shrink-0" />
+                        <span>{officeData.local.city} Regional Service Station</span>
+                      </span>
+                      <span className="text-[10px] bg-red-100 text-brand-800 font-bold px-2 py-0.5 rounded-full">
+                        Your Branch Office
+                      </span>
+                    </div>
+                    <p className="text-neutral-700 text-[11px] leading-relaxed">
+                      {officeData.local.address}
+                    </p>
+                    <div className="pt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-neutral-800 font-medium">
+                      <span>📞 {officeData.local.phone}</span>
+                      <span>✉️ {officeData.local.email}</span>
+                    </div>
+                    <div className="pt-1 text-[10px] text-emerald-800 font-bold flex items-center gap-1">
+                      <CheckCircle2 size={11} className="text-emerald-600 shrink-0" />
+                      <span>{officeData.local.sla}</span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="font-bold text-neutral-950 block text-xs">Headquarters & Central Warehouse</span>
-                    <span className="text-neutral-800 font-medium">
-                      Raj Biosis Pvt. Ltd.<br />
-                      Biomedical Park, Phase II, Electronic City,<br />
-                      Bengaluru, Karnataka - 560100, India
+                )}
+
+                {/* SCENARIO 2: Corporate Headquarters in Jaipur (Always shown) */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5" suppressHydrationWarning>
+                  <div className="flex items-center justify-between">
+                    <span className="font-black text-slate-900 text-xs flex items-center gap-1.5">
+                      <Building2 size={13} className="text-brand-600 shrink-0" />
+                      <span>Corporate Headquarters {officeData?.isHeadOfficeOnly ? '& Central Depot' : ''}</span>
+                    </span>
+                    <span className="text-[10px] bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded-full">
+                      Jaipur HQ
                     </span>
                   </div>
+                  <p className="text-neutral-700 text-[11px] leading-relaxed">
+                    {HEAD_OFFICE.address}
+                  </p>
+                  <div className="pt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-neutral-800 font-medium">
+                    <span>📞 {HEAD_OFFICE.phone}</span>
+                    <span>✉️ {HEAD_OFFICE.email}</span>
+                  </div>
+                  {officeData?.isHeadOfficeOnly && (
+                    <div className="pt-1 text-[10px] text-emerald-800 font-bold flex items-center gap-1">
+                      <CheckCircle2 size={11} className="text-emerald-600 shrink-0" />
+                      <span>{HEAD_OFFICE.sla}</span>
+                    </div>
+                  )}
                 </div>
+
               </div>
 
               <div className="pt-4 border-t border-neutral-200 flex items-center gap-2 text-xs text-neutral-700 font-semibold">
                 <ShieldCheck size={16} className="text-brand-600 shrink-0" />
-                <span>CDSCO Registered Medical Device Importer & Manufacturer</span>
+                <span>CDSCO Registered Medical Device Importer &amp; Manufacturer (ISO 13485:2016)</span>
               </div>
             </div>
 
