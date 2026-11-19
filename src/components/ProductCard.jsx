@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FileText, Tag, Heart, ShoppingCart, Check } from 'lucide-react';
+import { FileText, Tag, Heart, ShoppingCart, Check, Plus, Minus } from 'lucide-react';
 import { isInWishlist, toggleWishlist, WISHLIST_UPDATED_EVENT } from '../utils/wishlist';
 import { requireCustomerAuth } from '../utils/userProfile';
 import { addToCart, openCartDrawer } from '../utils/cart';
 
 export default function ProductCard({ product, onOpenQuote, className = '' }) {
   const router = useRouter();
+  const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
@@ -38,13 +39,28 @@ export default function ProductCard({ product, onOpenQuote, className = '' }) {
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!requireCustomerAuth('cart', product, 1)) {
+    if (!requireCustomerAuth('cart', product, quantity)) {
       return;
     }
-    addToCart(product, 1);
+    addToCart(product, quantity);
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 2000);
     openCartDrawer();
+  };
+
+  const handleOpenQuote = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('open-product-enquiry', {
+          detail: {
+            ...product,
+            quantity: quantity
+          }
+        })
+      );
+    }
   };
 
   const handleCardClick = (e) => {
@@ -56,16 +72,21 @@ export default function ProductCard({ product, onOpenQuote, className = '' }) {
   return (
     <div
       onClick={handleCardClick}
+      onMouseEnter={() => router.prefetch(`/product/${product.id}`)}
       className={`product-card group flex flex-col justify-between bg-white relative h-full cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 rounded-2xl border border-slate-200/90 overflow-hidden select-none ${className}`}
     >
       <div>
         {/* Product Image Area - Full-Width Edge-to-Edge with Zero Gaps on Left/Right */}
-        <div className="relative aspect-[16/10] sm:aspect-[16/9] h-48 sm:h-52 w-full bg-slate-100 overflow-hidden border-b border-slate-100">
+        <div className="relative aspect-[16/10] sm:aspect-[16/9] h-48 sm:h-52 w-full bg-slate-50 overflow-hidden border-b border-slate-100 flex items-center justify-center p-2">
           <img
-            src={product.image}
-            alt={product.name}
+            src={product.image || 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=500&q=80'}
+            alt={product.name || product.title}
             loading="lazy"
-            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-contain object-center transition-transform duration-500 group-hover:scale-105"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=500&q=80';
+            }}
           />
 
           {/* Wishlist Heart Floating Button on Image */}
@@ -125,14 +146,56 @@ export default function ProductCard({ product, onOpenQuote, className = '' }) {
             <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block leading-none">
               Pricing
             </span>
-            <div className="text-xs font-bold text-slate-800 tracking-tight mt-0.5">
+            <div className="text-xs font-bold text-slate-900 tracking-tight mt-0.5">
               Price on Request
             </div>
           </div>
+          <span className="text-[9px] font-bold text-brand-700 bg-red-50 border border-red-200/60 px-2 py-0.5 rounded-full">
+            Official Quote
+          </span>
         </div>
 
-        {/* Actions Row: Icon-only Add to Cart Button (No name as requested) + Prominent Get Quote Button */}
-        <div className="flex items-center gap-2">
+        {/* Actions Row: Quantity Selector (-/+) + Add to Cart + Get Quote */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Quantity Selector (- / +) */}
+          <div
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            className="flex items-center border border-slate-200/90 rounded-xl bg-slate-50/90 h-10 px-1 shrink-0 shadow-2xs"
+          >
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setQuantity((q) => Math.max(1, q - 1));
+              }}
+              className="w-6 h-7 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-200/70 rounded-md transition font-black cursor-pointer active:scale-90"
+              title="Decrease Quantity"
+              aria-label="Decrease Quantity"
+            >
+              <Minus size={12} />
+            </button>
+            <span className="w-5 text-center font-bold text-xs text-slate-900 select-none">
+              {quantity}
+            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setQuantity((q) => q + 1);
+              }}
+              className="w-6 h-7 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-200/70 rounded-md transition font-black cursor-pointer active:scale-90"
+              title="Increase Quantity"
+              aria-label="Increase Quantity"
+            >
+              <Plus size={12} />
+            </button>
+          </div>
+
           {/* Add to Cart: Icon Only Button */}
           <button
             type="button"
@@ -142,7 +205,7 @@ export default function ProductCard({ product, onOpenQuote, className = '' }) {
                 ? 'bg-emerald-50 border-emerald-300 text-emerald-600 scale-95'
                 : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700 hover:text-slate-900 active:scale-95'
             }`}
-            title={justAdded ? 'Added to Cart' : 'Add to Cart'}
+            title={justAdded ? `Added ${quantity} to Cart` : 'Add to Cart'}
             aria-label="Add to Cart"
           >
             {justAdded ? (
@@ -155,17 +218,11 @@ export default function ProductCard({ product, onOpenQuote, className = '' }) {
           {/* Get Quote: Primary Action Button */}
           <button
             type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (typeof window !== 'undefined') {
-                window.dispatchEvent(new CustomEvent('open-product-enquiry', { detail: product }));
-              }
-            }}
-            className="flex-1 inline-flex items-center justify-center gap-2 h-10 px-3 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 active:scale-[0.98] rounded-xl transition-all shadow-xs cursor-pointer text-center group/btn"
+            onClick={handleOpenQuote}
+            className="flex-1 min-w-0 inline-flex items-center justify-center gap-1.5 h-10 px-2 sm:px-3 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 active:scale-[0.98] rounded-xl transition-all shadow-xs cursor-pointer text-center group/btn truncate"
           >
-            <FileText size={14} />
-            <span>Get Quote</span>
+            <FileText size={14} className="shrink-0" />
+            <span className="truncate">Get Quote</span>
           </button>
         </div>
       </div>

@@ -18,6 +18,7 @@ import { requestBrowserLocation, applyUserDistrict } from '../utils/locationServ
 import { getActiveDistrict } from '../utils/userProfile';
 import { getOfficeForDistrict, HEAD_OFFICE } from '../data/offices';
 import { ALL_DISTRICTS } from '../data/districts';
+import toast from 'react-hot-toast';
 
 const POPULAR_HUBS = [
   { name: 'Jaipur', label: 'Jaipur (Head Office)', type: 'head' },
@@ -105,6 +106,7 @@ export default function LocationPromptModal() {
 
   const showToast = (msg) => {
     setToastMessage(msg);
+    toast.success(msg, { id: 'location-district-toast' });
     setTimeout(() => {
       setToastMessage('');
     }, 4500);
@@ -264,20 +266,20 @@ export default function LocationPromptModal() {
 
       {/* 3. Comprehensive Location & Office Hub Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl max-w-xl w-full shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh]">
-            
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-xl w-full shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[90vh]">
+
             {/* Modal Header */}
-            <div className="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center">
-                  <MapPin size={20} />
+            <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
+                  <MapPin size={18} />
                 </div>
                 <div>
-                  <h3 className="text-base sm:text-lg font-black text-slate-900 leading-tight">
+                  <h3 className="text-sm sm:text-lg font-black text-slate-900 leading-tight">
                     Select Your Hospital Location
                   </h3>
-                  <p className="text-xs text-slate-500 font-medium">
+                  <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
                     Current active delivery depot: <span className="font-bold text-brand-600">{activeDistrict}</span>
                   </p>
                 </div>
@@ -285,15 +287,15 @@ export default function LocationPromptModal() {
 
               <button
                 onClick={() => setIsOpen(false)}
-                className="w-8 h-8 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 flex items-center justify-center transition cursor-pointer"
+                className="w-8 h-8 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 flex items-center justify-center transition cursor-pointer shrink-0"
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-5 sm:p-6 overflow-y-auto space-y-5">
-              
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5">
+
               {/* GPS Auto-Detect Button */}
               <button
                 onClick={handleAutoDetect}
@@ -334,9 +336,9 @@ export default function LocationPromptModal() {
                     <div className="bg-white p-3 rounded-xl border border-slate-200/90 text-xs space-y-1">
                       <div className="flex items-center justify-between">
                         <span className="font-extrabold text-slate-900">
-                          📍 {officeData.local.city} Regional Service Station:
+                          📍 {officeData.local.city} Main City Regional Office:
                         </span>
-                        <span className="text-[10px] font-bold text-brand-600">Local Branch</span>
+                        <span className="text-[10px] font-bold text-brand-600">Main City Branch</span>
                       </div>
                       <div className="text-slate-600 text-[11px] leading-relaxed">
                         {officeData.local.address}
@@ -347,6 +349,32 @@ export default function LocationPromptModal() {
                       </div>
                     </div>
                   )}
+
+                  {/* Central City Interactive Google Map Embed */}
+                  <div className="rounded-xl overflow-hidden border border-slate-200/90 shadow-2xs bg-slate-100">
+                    <div className="bg-slate-50 px-3 py-1.5 border-b border-slate-200/80 flex items-center justify-between text-[11px]">
+                      <div className="flex items-center gap-1.5 font-bold text-slate-800">
+                        <MapPin size={12} className="text-brand-600" />
+                        <span>{activeDistrict} Central City Map</span>
+                      </div>
+                      <span className="text-[10px] text-brand-700 bg-red-50 font-bold px-2 py-0.5 rounded-full border border-red-200">
+                        Central Hub
+                      </span>
+                    </div>
+                    <div className="relative w-full h-40 sm:h-48">
+                      <iframe
+                        key={activeDistrict}
+                        title={`${activeDistrict} Central City Map`}
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        loading="lazy"
+                        allowFullScreen
+                        referrerPolicy="no-referrer-when-downgrade"
+                        src={officeData.mapEmbedUrl || `https://maps.google.com/maps?q=${encodeURIComponent(activeDistrict + ' city center, India')}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+                      />
+                    </div>
+                  </div>
 
                   {/* Always Show Corporate Headquarters in Jaipur */}
                   <div className="bg-white p-3 rounded-xl border border-slate-200/90 text-xs space-y-1">
@@ -379,11 +407,10 @@ export default function LocationPromptModal() {
                       <button
                         key={hub.name}
                         onClick={() => handleSelectDistrict(hub.name)}
-                        className={`p-2.5 rounded-xl border text-left transition cursor-pointer ${
-                          isSelected
+                        className={`p-2.5 rounded-xl border text-left transition cursor-pointer ${isSelected
                             ? 'bg-brand-50 border-brand-500 text-brand-900 ring-1 ring-brand-500'
                             : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
-                        }`}
+                          }`}
                       >
                         <div className="text-xs font-bold leading-tight flex items-center justify-between">
                           <span>{hub.name}</span>

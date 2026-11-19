@@ -17,16 +17,19 @@ export function generateProductSEO(product) {
   // 1. Dynamic Search-Optimized Meta Title (Under 65 chars, high CTR)
   const metaTitle = `${product.name} (SKU: ${product.sku}) - Price & Specs | Raj Biosis`;
 
+  const formattedPrice = typeof product.price === 'number' ? `₹${product.price.toLocaleString('en-IN')}` : 'On Request';
+  const categoryLabel = (product.category || 'Biomedical Equipment').replace(/-/g, ' ');
+
   // 2. Dynamic High-Relevance Meta Description (Under 160 chars, rich in entities)
-  const metaDescription = `Procure ${product.name} direct from OEM. ${product.shortDesc} Price: ₹${product.price.toLocaleString('en-IN')}. ${specHighlights}. Certified: ${certsList}. Pan-India hospital delivery.`;
+  const metaDescription = `Procure ${product.name} direct from OEM. ${product.shortDesc || ''} Price: ${formattedPrice}. ${specHighlights}. Certified: ${certsList}. Pan-India hospital delivery.`;
 
   // 3. Automated SEO Keywords
   const keywords = [
     product.name,
     product.sku,
-    product.category.replace(/-/g, ' '),
+    categoryLabel,
     `${product.name} price in India`,
-    `${product.category.replace(/-/g, ' ')} equipment`,
+    `${categoryLabel} equipment`,
     `${brandName} hospital systems`,
     'biomedical engineering India',
     'CDSCO certified medical devices',
@@ -110,8 +113,8 @@ export function generateProductSEO(product) {
       {
         '@type': 'ListItem',
         position: 2,
-        name: product.category.replace(/-/g, ' ').toUpperCase(),
-        item: `https://rajbiosis.com/category/${product.category}`
+        name: categoryLabel.toUpperCase(),
+        item: `https://rajbiosis.com/category/${product.category || 'all'}`
       },
       {
         '@type': 'ListItem',

@@ -209,12 +209,9 @@ export default function ClinicalSuiteHero({ onOpenRfq }) {
                   <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                     Featured Core System ({currentSuite.primaryProduct.name.split(' ')[0]})
                   </div>
-                  <div className="flex items-baseline gap-2 mt-0.5">
-                    <span className="text-2xl sm:text-3xl font-black text-slate-900">
-                      {formatINR(currentSuite.primaryProduct.price)}
-                    </span>
-                    <span className="text-xs text-slate-400 line-through">
-                      {formatINR(currentSuite.primaryProduct.mrp)}
+                  <div className="mt-1">
+                    <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                      Price on Request
                     </span>
                   </div>
                   <span className="text-[11px] text-emerald-700 font-semibold">

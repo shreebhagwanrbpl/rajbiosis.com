@@ -13,7 +13,6 @@ export const HEAD_OFFICE = {
   email: 'info@rajbiosis.com',
   secondaryEmail: 'jaipur.hq@rajbiosis.com',
   hours: 'Mon - Sat: 9:00 AM - 8:00 PM IST (24x7 Emergency ICU Support)',
-  sla: 'Same-Day Hospital Dispatch & 4-Hour Emergency Response across Jaipur',
   facilities: [
     'Central Biomedical Calibration Laboratory',
     'Main ISO 13485 Equipment Assembly Depot',
@@ -22,6 +21,39 @@ export const HEAD_OFFICE = {
   ]
 };
 
+/**
+ * Central City Location Generator for all districts & cities.
+ * Displays the authentic Main City Center / Regional Hub instead of localized market names.
+ */
+export function getCityCentralLocation(cityName, state = 'Rajasthan') {
+  if (!cityName) return 'Jaipur Main City Center, Rajasthan, India';
+  const clean = cityName.trim();
+  return `${clean} Main City Center, ${state}, India`;
+}
+
+export function getCityCentralMapUrl(cityName = 'Jaipur', state = 'Rajasthan') {
+  const clean = (cityName || 'Jaipur').trim();
+  const query = `${clean} city center, ${state}, India`;
+  return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+}
+
+/**
+ * Main City Center address mapping for all regional branches & districts.
+ */
+export const POPULAR_CITY_LOCATIONS = new Proxy({}, {
+  get: (target, prop) => {
+    if (typeof prop === 'string') {
+      const cityCapitalized = prop.charAt(0).toUpperCase() + prop.slice(1);
+      return `${cityCapitalized} Main City Center, Rajasthan, India`;
+    }
+    return 'Main City Center, Rajasthan, India';
+  }
+});
+
+export function getPopularLocationForCity(cityName, state = 'Rajasthan') {
+  return getCityCentralLocation(cityName, state);
+}
+
 export const REGIONAL_BRANCHES = [
   {
     id: 'churu-branch',
@@ -29,7 +61,7 @@ export const REGIONAL_BRANCHES = [
     state: 'Rajasthan',
     type: 'Regional Depot & Biomedical Service Station',
     pincode: '331001',
-    address: 'Shop No. 12-14, Medical Market, Near D.B. General Hospital, Station Road, Churu - 331001, Rajasthan',
+    address: POPULAR_CITY_LOCATIONS['churu'],
     phone: '+91 99833 33469 / 01562-250144',
     email: 'churu.desk@rajbiosis.com',
     leadEngineer: 'Er. Rakesh Choudhary (Senior Biomedical Lead - Shekhawati Zone)',
@@ -43,7 +75,7 @@ export const REGIONAL_BRANCHES = [
     state: 'Rajasthan',
     type: 'Western Regional Distribution Hub',
     pincode: '342005',
-    address: 'Plot No. 42-B, Heavy Industrial Area, Phase II, Near AIIMS Road, Jodhpur - 342005, Rajasthan',
+    address: POPULAR_CITY_LOCATIONS['jodhpur'],
     phone: '+91 99833 33469',
     email: 'jodhpur.hub@rajbiosis.com',
     leadEngineer: 'Er. Vikram Bhati',
@@ -57,7 +89,7 @@ export const REGIONAL_BRANCHES = [
     state: 'Rajasthan',
     type: 'Hadoti Regional Hub & Service Center',
     pincode: '324005',
-    address: 'Medical Commercial Complex, Opposite New Medical College Hospital, Jhalawar Road, Kota - 324005, Rajasthan',
+    address: POPULAR_CITY_LOCATIONS['kota'],
     phone: '+91 99833 33469',
     email: 'kota.hub@rajbiosis.com',
     leadEngineer: 'Er. Suresh Meena',
@@ -71,7 +103,7 @@ export const REGIONAL_BRANCHES = [
     state: 'Rajasthan',
     type: 'North Regional Depot & Biomedical Station',
     pincode: '334001',
-    address: 'Ground Floor, Opp. PBM Hospital Emergency Gate, Sadul Colony, Bikaner - 334001, Rajasthan',
+    address: POPULAR_CITY_LOCATIONS['bikaner'],
     phone: '+91 99833 33469',
     email: 'bikaner.hub@rajbiosis.com',
     leadEngineer: 'Er. Amit Bishnoi',
@@ -85,7 +117,7 @@ export const REGIONAL_BRANCHES = [
     state: 'Rajasthan',
     type: 'Mewar Regional Service Center',
     pincode: '313001',
-    address: 'Shop 8-10, Medical Enclave, Near RNT Medical College, Chetak Circle, Udaipur - 313001, Rajasthan',
+    address: POPULAR_CITY_LOCATIONS['udaipur'],
     phone: '+91 99833 33469',
     email: 'udaipur.hub@rajbiosis.com',
     leadEngineer: 'Er. Kailash Sharma',
@@ -97,9 +129,9 @@ export const REGIONAL_BRANCHES = [
     id: 'sikar-branch',
     city: 'Sikar',
     state: 'Rajasthan',
-    type: 'Shekhawati Regional Service Station',
+    type: 'Shekhawati Regional Office Address',
     pincode: '332001',
-    address: 'Commercial Wing, Near S.K. Hospital, Station Road, Sikar - 332001, Rajasthan',
+    address: POPULAR_CITY_LOCATIONS['sikar'],
     phone: '+91 99833 33469',
     email: 'sikar.hub@rajbiosis.com',
     leadEngineer: 'Er. Manoj Verma',
@@ -113,7 +145,7 @@ export const REGIONAL_BRANCHES = [
     state: 'Rajasthan',
     type: 'Central Rajasthan Regional Depot',
     pincode: '305001',
-    address: 'Near JLN Medical College & Hospital, Civil Lines, Ajmer - 305001, Rajasthan',
+    address: POPULAR_CITY_LOCATIONS['ajmer'],
     phone: '+91 99833 33469',
     email: 'ajmer.hub@rajbiosis.com',
     leadEngineer: 'Er. Pradeep Rawat',
@@ -127,7 +159,7 @@ export const REGIONAL_BRANCHES = [
     state: 'Rajasthan',
     type: 'Alwar & NCR Corridor Depot',
     pincode: '301001',
-    address: 'Plot 18, Near Rajiv Gandhi General Hospital, M.I.A. Road, Alwar - 301001, Rajasthan',
+    address: POPULAR_CITY_LOCATIONS['alwar'],
     phone: '+91 99833 33469',
     email: 'alwar.hub@rajbiosis.com',
     leadEngineer: 'Er. Deepak Yadav',
@@ -141,13 +173,69 @@ export const REGIONAL_BRANCHES = [
     state: 'Rajasthan',
     type: 'Northern Frontier Regional Depot',
     pincode: '335001',
-    address: 'Near District Civil Hospital, Sukhadia Circle, Sri Ganganagar - 335001, Rajasthan',
+    address: POPULAR_CITY_LOCATIONS['sri ganganagar'],
     phone: '+91 99833 33469',
     email: 'ganganagar.hub@rajbiosis.com',
     leadEngineer: 'Er. Harpreet Singh',
     hours: 'Mon - Sat: 9:00 AM - 7:00 PM',
     sla: '24-48 Hours Regional Hospital Dispatch & Field Engineering',
     coverage: ['Sri Ganganagar', 'Hanumangarh', 'Suratgarh', 'Anupgarh']
+  },
+  {
+    id: 'bhilwara-branch',
+    city: 'Bhilwara',
+    state: 'Rajasthan',
+    type: 'Textile City Regional Service Hub',
+    pincode: '311001',
+    address: POPULAR_CITY_LOCATIONS['bhilwara'],
+    phone: '+91 99833 33469',
+    email: 'bhilwara.hub@rajbiosis.com',
+    leadEngineer: 'Er. Rakesh Tailor',
+    hours: 'Mon - Sat: 9:00 AM - 7:30 PM',
+    sla: 'Next-Day Hospital Delivery & Biomedical Support',
+    coverage: ['Bhilwara', 'Shahpura', 'Mandalgarh', 'Gulabpura', 'Asind']
+  },
+  {
+    id: 'pali-branch',
+    city: 'Pali',
+    state: 'Rajasthan',
+    type: 'Marwar Industrial Regional Depot',
+    pincode: '306401',
+    address: POPULAR_CITY_LOCATIONS['pali'],
+    phone: '+91 99833 33469',
+    email: 'pali.hub@rajbiosis.com',
+    leadEngineer: 'Er. Mahendra Sen',
+    hours: 'Mon - Sat: 9:00 AM - 7:30 PM',
+    sla: 'Same-Day Marwar Express Dispatch & Support',
+    coverage: ['Pali', 'Sumerpur', 'Falna', 'Sojat', 'Jaitaran']
+  },
+  {
+    id: 'barmer-branch',
+    city: 'Barmer',
+    state: 'Rajasthan',
+    type: 'Thar Western Regional Service Hub',
+    pincode: '344001',
+    address: POPULAR_CITY_LOCATIONS['barmer'],
+    phone: '+91 99833 33469',
+    email: 'barmer.hub@rajbiosis.com',
+    leadEngineer: 'Er. Dinesh Rathore',
+    hours: 'Mon - Sat: 9:00 AM - 7:00 PM',
+    sla: '24-48 Hours Direct Field Engineer Deployment',
+    coverage: ['Barmer', 'Balotra', 'Baytu', 'Siwana', 'Gudamalani']
+  },
+  {
+    id: 'bharatpur-branch',
+    city: 'Bharatpur',
+    state: 'Rajasthan',
+    type: 'Braj Regional Service Station',
+    pincode: '321001',
+    address: POPULAR_CITY_LOCATIONS['bharatpur'],
+    phone: '+91 99833 33469',
+    email: 'bharatpur.hub@rajbiosis.com',
+    leadEngineer: 'Er. Nitin Sharma',
+    hours: 'Mon - Sat: 9:00 AM - 7:30 PM',
+    sla: 'Next-Day Regional Hospital Supply & Service',
+    coverage: ['Bharatpur', 'Bayana', 'Deeg', 'Kumher', 'Nadbai']
   }
 ];
 
@@ -156,34 +244,57 @@ export const REGIONAL_BRANCHES = [
  * If user is in Jaipur:
  *   - Only Head Office is shown (since Jaipur IS the corporate HQ & central depot).
  * If user is in another city (e.g. Churu, Jodhpur, etc.):
- *   - Shows the user's Local Regional Hub / Service Office (with local address, phone, SLA)
- *   - PLUS the Corporate Headquarters in Jaipur!
+ *   - Shows the user's Local Regional Hub / Service Office with its Main City Center address!
+ *   - PLUS the central city map view and Corporate Headquarters in Jaipur!
  */
-export function getOfficeForDistrict(districtName = 'Jaipur') {
+export function getOfficeForDistrict(districtName = 'Jaipur', state = 'Rajasthan') {
   const normalized = (districtName || 'Jaipur').trim();
   const lower = normalized.toLowerCase();
+  const headMap = getCityCentralMapUrl('Tagore Nagar, Jaipur', 'Rajasthan');
+
+  const headWithMap = {
+    ...HEAD_OFFICE,
+    mapEmbedUrl: headMap,
+    mapQuery: 'Tagore Nagar, Jaipur, Rajasthan, India'
+  };
 
   // If in Jaipur: Head office is the primary office
   if (lower === 'jaipur' || lower === 'jaipur rural') {
     return {
       isHeadOfficeOnly: true,
-      currentOffice: HEAD_OFFICE,
+      currentOffice: headWithMap,
       local: null,
-      head: HEAD_OFFICE
+      head: headWithMap,
+      mapEmbedUrl: headMap
     };
   }
 
-  // Check if we have an explicit predefined regional branch
-  const found = REGIONAL_BRANCHES.find(
-    (b) => b.city.toLowerCase() === lower || b.coverage.some((c) => c.toLowerCase().includes(lower))
-  );
+  const centralAddress = getCityCentralLocation(normalized, state);
+  const cityMapUrl = getCityCentralMapUrl(normalized, state);
+
+  // 1. Check if we have an exact city match first
+  let found = REGIONAL_BRANCHES.find((b) => b.city.toLowerCase() === lower);
+
+  // 2. If no direct city branch in predefined array, check if city has coverage
+  if (!found) {
+    found = REGIONAL_BRANCHES.find((b) => b.coverage.some((c) => c.toLowerCase().includes(lower)));
+  }
 
   if (found) {
+    const personalizedFound = {
+      ...found,
+      city: normalized,
+      address: centralAddress,
+      mapEmbedUrl: cityMapUrl,
+      mapQuery: `${normalized} city center, ${state}, India`
+    };
+
     return {
       isHeadOfficeOnly: false,
-      currentOffice: found,
-      local: found,
-      head: HEAD_OFFICE
+      currentOffice: personalizedFound,
+      local: personalizedFound,
+      head: headWithMap,
+      mapEmbedUrl: cityMapUrl
     };
   }
 
@@ -191,10 +302,12 @@ export function getOfficeForDistrict(districtName = 'Jaipur') {
   const dynamicBranch = {
     id: `${lower.replace(/[^a-z0-9]/g, '-')}-hub`,
     city: normalized,
-    state: 'Rajasthan',
-    type: `${normalized} Regional Service Hub & Depot`,
+    state: state,
+    type: `${normalized} Main City Regional Depot & Service Station`,
     pincode: '302001',
-    address: `District Medical Hub, Near District General Hospital, ${normalized}, Rajasthan`,
+    address: centralAddress,
+    mapEmbedUrl: cityMapUrl,
+    mapQuery: `${normalized} city center, ${state}, India`,
     phone: '+91 99833 33469',
     email: `${lower.replace(/[^a-z0-9]/g, '')}.desk@rajbiosis.com`,
     leadEngineer: `Er. Biomedical Lead (${normalized} Zone)`,
@@ -207,6 +320,7 @@ export function getOfficeForDistrict(districtName = 'Jaipur') {
     isHeadOfficeOnly: false,
     currentOffice: dynamicBranch,
     local: dynamicBranch,
-    head: HEAD_OFFICE
+    head: headWithMap,
+    mapEmbedUrl: cityMapUrl
   };
 }

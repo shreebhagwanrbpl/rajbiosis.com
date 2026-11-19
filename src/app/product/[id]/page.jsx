@@ -2,37 +2,33 @@ import { PRODUCTS } from '../../../data/products';
 import ProductDetailClient from './ProductDetailClient';
 import { generateProductSEO } from '../../../utils/seoGenerator';
 
-export function generateStaticParams() {
-  return PRODUCTS.map((product) => ({
-    id: product.id,
-  }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {
-  const product = PRODUCTS.find((p) => p.id === params.id);
-  if (!product) return { title: 'Product Not Found | Raj Biosis' };
+  const product = PRODUCTS.find((p) => p.id === params.id || p.sku === params.id || p._id === params.id);
+  if (!product) return { title: 'Product Details | Raj Biosis' };
 
   const seo = generateProductSEO(product);
 
   return {
-    title: seo.metaTitle,
-    description: seo.metaDescription,
-    keywords: seo.keywords,
+    title: seo ? seo.metaTitle : `${product.name} | Raj Biosis`,
+    description: seo ? seo.metaDescription : product.shortDesc || product.name,
+    keywords: seo ? seo.keywords : `${product.name}, ${product.category}, Raj Biosis`,
     alternates: {
       canonical: `/product/${params.id}`,
     },
     openGraph: {
-      title: seo.metaTitle,
-      description: seo.metaDescription,
+      title: seo ? seo.metaTitle : product.name,
+      description: seo ? seo.metaDescription : product.name,
       url: `https://rajbiosis.com/product/${params.id}`,
       type: 'website',
-      images: [{ url: product.image, alt: product.name }],
+      images: product.image ? [{ url: product.image, alt: product.name }] : [],
     },
   };
 }
 
 export default function ProductPage({ params }) {
-  const product = PRODUCTS.find((p) => p.id === params.id);
+  const product = PRODUCTS.find((p) => p.id === params.id || p.sku === params.id || p._id === params.id);
   const seo = product ? generateProductSEO(product) : null;
 
   return (

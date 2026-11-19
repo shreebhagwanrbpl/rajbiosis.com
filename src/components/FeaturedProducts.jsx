@@ -7,6 +7,8 @@ import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import ProductCard from './ProductCard';
 import BrandCarouselSection from './BrandCarouselSection';
 import { PRODUCTS } from '../data/products';
+import { fetchLiveProductsFromAdmin } from '../utils/adminSync';
+import { slugifyCategory, extractCategoriesFromProducts } from '../utils/categoryHelper';
 
 function ProductCarousel({ products, link, title }) {
   const router = useRouter();
@@ -39,7 +41,6 @@ function ProductCarousel({ products, link, title }) {
     const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
 
     if (direction === 'right') {
-      // If products end on the right, smoothly slide into that category page
       if (scrollLeft >= scrollWidth - clientWidth - 25) {
         router.push(link);
         return;
@@ -51,33 +52,29 @@ function ProductCarousel({ products, link, title }) {
   };
 
   return (
-    <div className="relative flex items-center gap-2 sm:gap-3 w-full">
-      {/* Left Arrow Button */}
-      <button
-        type="button"
-        onClick={() => handleScroll('left')}
-        disabled={!canScrollLeft}
-        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/90 shadow-md flex items-center justify-center text-slate-700 transition cursor-pointer shrink-0 z-10 ${
-          !canScrollLeft
-            ? 'opacity-35 cursor-not-allowed'
-            : 'hover:bg-slate-50 hover:text-slate-900 hover:scale-105 active:scale-95'
-        }`}
-        aria-label="Previous products"
-      >
-        <ChevronLeft size={18} />
-      </button>
+    <div className="relative group/carousel w-full">
+      {/* Left Arrow Button (Floating overlay) */}
+      {canScrollLeft && (
+        <button
+          type="button"
+          onClick={() => handleScroll('left')}
+          className="absolute -left-2 sm:-left-3.5 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/95 backdrop-blur-xs border border-slate-200/90 shadow-lg flex items-center justify-center text-slate-700 hover:bg-white hover:text-slate-900 hover:scale-105 active:scale-95 transition cursor-pointer z-20"
+          aria-label="Previous products"
+        >
+          <ChevronLeft size={18} />
+        </button>
+      )}
 
-      {/* Cards Scroll Track - Exactly 3 Cards in View with Zero Clipping */}
+      {/* Cards Scroll Track - 100% full width on mobile with smooth swipe */}
       <div
         ref={scrollRef}
-        className="flex items-stretch gap-4 sm:gap-5 overflow-x-auto scroll-smooth scrollbar-none py-3 px-1 w-full"
+        className="flex items-stretch gap-3.5 sm:gap-5 overflow-x-auto scroll-smooth scrollbar-none py-2 px-1 w-full"
         style={{ scrollSnapType: 'x mandatory' }}
       >
-        {/* The 6 Featured Products in this Category */}
         {products.map((product) => (
           <div
-            key={product.id}
-            className="w-[86%] sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] shrink-0 flex flex-col"
+            key={product.id || product.sku}
+            className="w-[82vw] max-w-[290px] sm:w-[calc(50%-10px)] sm:max-w-none lg:w-[calc(33.333%-14px)] shrink-0 flex flex-col"
             style={{ scrollSnapAlign: 'start' }}
           >
             <ProductCard product={product} />
@@ -85,14 +82,14 @@ function ProductCarousel({ products, link, title }) {
         ))}
       </div>
 
-      {/* Right Arrow Button - When at end, clicking smoothly navigates to the category page */}
+      {/* Right Arrow Button (Floating overlay) */}
       <button
         type="button"
         onClick={() => handleScroll('right')}
-        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border shadow-md flex items-center justify-center transition cursor-pointer shrink-0 z-10 ${
+        className={`absolute -right-2 sm:-right-3.5 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full border shadow-lg flex items-center justify-center transition cursor-pointer z-20 ${
           isAtEnd
             ? 'bg-brand-600 border-brand-700 text-white hover:bg-brand-700 hover:scale-105 active:scale-95 shadow-brand-600/30'
-            : 'bg-white border-slate-200/90 text-slate-700 hover:bg-slate-50 hover:text-slate-900 hover:scale-105 active:scale-95'
+            : 'bg-white/95 backdrop-blur-xs border-slate-200/90 text-slate-700 hover:bg-white hover:text-slate-900 hover:scale-105 active:scale-95'
         }`}
         title={isAtEnd ? `View All ${title} Products` : "Next products"}
         aria-label={isAtEnd ? `View All ${title} Products` : "Next products"}
@@ -113,18 +110,19 @@ function DepartmentSection({
 }) {
   const isImageRight = imagePosition === 'right';
 
+  if (!products || products.length === 0) return null;
+
   return (
     <section className={`py-12 sm:py-16 md:py-20 border-b border-slate-200/80 ${bgClass}`}>
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-12 items-center">
           
-          {/* Info Column (Compact & Clean) */}
+          {/* Info Column */}
           <div
             className={`lg:col-span-3 xl:col-span-3 space-y-3.5 ${
               isImageRight ? 'order-1' : 'order-1 lg:order-2'
             }`}
           >
-            {/* Red Accent Dash */}
             <div className="w-8 h-1 bg-brand-600 rounded-full" />
             
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
@@ -146,7 +144,7 @@ function DepartmentSection({
             </div>
           </div>
 
-          {/* Products Carousel Column (Wider Stage) */}
+          {/* Products Carousel Column */}
           <div
             className={`lg:col-span-9 xl:col-span-9 min-w-0 ${
               isImageRight ? 'order-2' : 'order-2 lg:order-1'
@@ -162,58 +160,79 @@ function DepartmentSection({
 }
 
 export default function FeaturedProducts() {
-  // Exactly 6 authentic biomedical products per department
-  const icuProducts = PRODUCTS.filter(p => p.category === 'icu-critical-care').slice(0, 6);
-  const otProducts = PRODUCTS.filter(p => p.category === 'surgical-ot').slice(0, 6);
-  const radiologyProducts = PRODUCTS.filter(p => p.category === 'radiology-imaging').slice(0, 6);
-  const labAndInfraProducts = PRODUCTS.filter(p =>
-    ['diagnostic-lab', 'hospital-furniture', 'sterilization-dental'].includes(p.category)
-  ).slice(0, 6);
+  const [liveProducts, setLiveProducts] = useState(PRODUCTS);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadData() {
+      try {
+        const data = await fetchLiveProductsFromAdmin();
+        if (isMounted && data && Array.isArray(data) && data.length > 0) {
+          setLiveProducts(data);
+        }
+      } catch (e) {
+        // Fallback to cache PRODUCTS
+      }
+    }
+    loadData();
+    return () => { isMounted = false; };
+  }, []);
+
+  // Dynamically extract top categories with at least 3 products
+  const dynamicCategories = extractCategoriesFromProducts(liveProducts).slice(0, 4);
 
   return (
     <div>
-      {/* 1. ICU & Critical Care: Info on LEFT, Products on RIGHT (6 Products + Category Slide) */}
-      <DepartmentSection
-        title="ICU & Critical Care"
-        description="Life-saving equipment and monitoring solutions for intensive care units."
-        link="/category/icu-critical-care"
-        products={icuProducts}
-        imagePosition="right"
-        bgClass="bg-white"
-      />
+      {/* 1. First Top Category Showcase */}
+      {dynamicCategories[0] && (
+        <DepartmentSection
+          title={dynamicCategories[0].name}
+          description={`Comprehensive range of certified ${dynamicCategories[0].name} for clinical laboratories and diagnostic centres.`}
+          link={`/category/${dynamicCategories[0].slug}`}
+          products={dynamicCategories[0].products}
+          imagePosition="right"
+          bgClass="bg-white"
+        />
+      )}
 
-      {/* 2. Surgical & OT Suite: Products on LEFT, Info on RIGHT (Alternated!) */}
-      <DepartmentSection
-        title="Surgical & OT Suite"
-        description="Advanced surgical equipment and operation theatre solutions."
-        link="/category/surgical-ot"
-        products={otProducts}
-        imagePosition="left"
-        bgClass="bg-slate-50/70"
-      />
+      {/* 2. Second Top Category Showcase */}
+      {dynamicCategories[1] && (
+        <DepartmentSection
+          title={dynamicCategories[1].name}
+          description={`High-accuracy ${dynamicCategories[1].name} with certified shelf-life and proven sensitivity.`}
+          link={`/category/${dynamicCategories[1].slug}`}
+          products={dynamicCategories[1].products}
+          imagePosition="left"
+          bgClass="bg-slate-50/70"
+        />
+      )}
 
       {/* 3. Authorized OEM Brands Showcase */}
       <BrandCarouselSection />
 
-      {/* 4. Radiology & Diagnostic Imaging: Info on LEFT, Products on RIGHT (Alternated!) */}
-      <DepartmentSection
-        title="Radiology & Diagnostic Imaging"
-        description="High-precision digital radiography, Doppler ultrasound, and diagnostic imaging systems."
-        link="/category/radiology-imaging"
-        products={radiologyProducts}
-        imagePosition="right"
-        bgClass="bg-white"
-      />
+      {/* 4. Third Top Category Showcase */}
+      {dynamicCategories[2] && (
+        <DepartmentSection
+          title={dynamicCategories[2].name}
+          description={`Standard hospital and laboratory ${dynamicCategories[2].name} ready for immediate dispatch.`}
+          link={`/category/${dynamicCategories[2].slug}`}
+          products={dynamicCategories[2].products}
+          imagePosition="right"
+          bgClass="bg-white"
+        />
+      )}
 
-      {/* 5. Laboratory & Ward Infrastructure: Products on LEFT, Info on RIGHT (Alternated!) */}
-      <DepartmentSection
-        title="Laboratory & Ward Infrastructure"
-        description="Reliable pathology automation, clinical diagnostics, and hospital ward infrastructure."
-        link="/category/diagnostic-lab"
-        products={labAndInfraProducts}
-        imagePosition="left"
-        bgClass="bg-slate-50/70"
-      />
+      {/* 5. Fourth Top Category Showcase */}
+      {dynamicCategories[3] && (
+        <DepartmentSection
+          title={dynamicCategories[3].name}
+          description={`Specialized medical supplies and ${dynamicCategories[3].name} manufactured to rigorous standards.`}
+          link={`/category/${dynamicCategories[3].slug}`}
+          products={dynamicCategories[3].products}
+          imagePosition="left"
+          bgClass="bg-slate-50/70"
+        />
+      )}
 
       {/* Bottom Action Bar: Full Catalogue Direct Link */}
       <section className="py-12 bg-white text-center border-b border-slate-200/80">
@@ -222,7 +241,7 @@ export default function FeaturedProducts() {
             href="/products"
             className="btn-outline-neutral py-3.5 px-8 text-xs sm:text-sm font-bold inline-flex items-center gap-2 group hover:bg-slate-900 hover:text-white transition-all shadow-xs"
           >
-            <span>Browse Complete Equipment Catalogue ({PRODUCTS.length} Devices)</span>
+            <span>Browse Complete Equipment &amp; Reagents Catalogue ({liveProducts.length} Products)</span>
             <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>

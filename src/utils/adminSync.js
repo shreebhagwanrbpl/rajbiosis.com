@@ -3,36 +3,21 @@ export const ADMIN_API_URL = process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://lo
 export const SITE_DOMAIN = process.env.NEXT_PUBLIC_SITE_DOMAIN || 'rajbiosis.com';
 
 /**
- * Fetch live products assigned to this website domain from MultiTaskingAdmin Hub or local MongoDB
+ * Fetch live products assigned to this website domain via local safe endpoint
  */
 export async function fetchLiveProductsFromAdmin() {
   if (typeof window === 'undefined') return null;
-  if (!ADMIN_API_URL) return null;
 
   try {
-    const fetchPromise = fetch(`${ADMIN_API_URL}/api/products?website=${SITE_DOMAIN}`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json'
-      }
-    });
-
-    const timeoutPromise = new Promise((resolve) => {
-      setTimeout(() => resolve(null), 1500);
-    });
-
-    const res = await Promise.race([
-      fetchPromise.catch(() => null),
-      timeoutPromise
-    ]);
-
+    const res = await fetch('/api/products').catch(() => null);
     if (!res || !res.ok) return null;
+
     const data = await res.json().catch(() => null);
     if (data && data.success && Array.isArray(data.products)) {
       return data.products;
     }
   } catch (err) {
-    // Fail-safe fallback when Admin hub is offline
+    // Fail-safe fallback
   }
   return null;
 }
@@ -143,8 +128,8 @@ export async function syncLeadToAdmin(lead) {
       keepalive: true
     }).catch(() => {});
 
-    // 2. ALSO send directly to MultiTaskingAdmin on port 3002 in real-time so Admin queue updates instantly
-    if (typeof window !== 'undefined' && ADMIN_API_URL && !ADMIN_API_URL.includes(window.location.host)) {
+    // 2. ALSO send directly to MultiTaskingAdmin in real-time if reachable
+    if (typeof window !== 'undefined' && ADMIN_API_URL && !ADMIN_API_URL.includes('localhost:3002') && !ADMIN_API_URL.includes(window.location.host)) {
       fetch(`${ADMIN_API_URL}/api/leads`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -190,7 +175,7 @@ export async function syncProfileToAdmin(profile) {
       body: JSON.stringify(payload),
       keepalive: true
     }).catch(() => {
-      if (typeof window !== 'undefined' && ADMIN_API_URL && !ADMIN_API_URL.includes(window.location.host)) {
+      if (typeof window !== 'undefined' && ADMIN_API_URL && !ADMIN_API_URL.includes('localhost:3002') && !ADMIN_API_URL.includes(window.location.host)) {
         fetch(`${ADMIN_API_URL}/api/customers`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

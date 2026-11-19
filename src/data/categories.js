@@ -1,54 +1,47 @@
-export const CATEGORIES = [
-  {
-    id: "all",
-    name: "All Biomedical Equipment",
-    icon: "LayoutGrid",
-    itemCount: 19,
-    description: "Complete institutional healthcare & medical engineering inventory"
-  },
-  {
-    id: "icu-critical-care",
-    name: "ICU & Critical Care",
-    icon: "HeartPulse",
-    itemCount: 4,
-    description: "Turbine Ventilators, Multi-para Monitors, Defibrillators, Syringe Pumps"
-  },
-  {
-    id: "radiology-imaging",
-    name: "Radiology & Imaging",
-    icon: "Radio",
-    itemCount: 4,
-    description: "Digital X-Ray DR Panels, Color Doppler Ultrasound, C-Arm Systems"
-  },
-  {
-    id: "surgical-ot",
-    name: "Surgical & OT Equipment",
-    icon: "Scissors",
-    itemCount: 4,
-    description: "Electrosurgical Cautery, LED OT Lights, Hydraulic OT Tables, 4K Laparoscopy"
-  },
-  {
-    id: "diagnostic-lab",
-    name: "Diagnostic & Lab Equipment",
-    icon: "Activity",
-    itemCount: 3,
-    description: "Automated Hematology, Clinical Biochemistry, 12-Channel ECG Machines"
-  },
-  {
-    id: "hospital-furniture",
-    name: "Hospital Infrastructure & Furniture",
-    icon: "Bed",
-    itemCount: 2,
-    description: "Motorized ICU Electric Beds, Crash Carts, Examination Couches"
-  },
-  {
-    id: "sterilization-dental",
-    name: "Sterilization & Autoclave",
-    icon: "ShieldAlert",
-    itemCount: 2,
-    description: "Class-B Autoclaves, Bio-safety Laminar Air Flow Cabinets, Ultrasonic Washers"
-  }
-];
+import productsCache from './productsCache.json';
+import { slugifyCategory } from '../utils/categoryHelper';
 
-export const CERTIFICATIONS = ["US-FDA", "CE Certified", "ISO 13485", "CDSCO Registered", "AERB Approved"];
-export const BRANDS = ["Raj Biosis OEM", "Mindray", "Philips Healthcare", "GE Healthcare", "B. Braun", "Erbe Medical", "Siemens Healthineers"];
+function buildCategories() {
+  const catMap = new Map();
+
+  for (const p of productsCache) {
+    const rawCat = (p.categoryName || p.category || 'General Equipment').trim();
+    if (!rawCat) continue;
+
+    const slug = slugifyCategory(p.category || rawCat);
+    if (!catMap.has(slug)) {
+      catMap.set(slug, {
+        id: slug,
+        slug: slug,
+        name: rawCat,
+        itemCount: 0,
+        description: `High-quality ${rawCat} certified for clinical laboratories and hospitals.`,
+        image: p.image || ''
+      });
+    }
+
+    const item = catMap.get(slug);
+    item.itemCount += 1;
+    if (p.image && (!item.image || item.image.includes('placeholder'))) {
+      item.image = p.image;
+    }
+  }
+
+  const list = Array.from(catMap.values()).sort((a, b) => b.itemCount - a.itemCount);
+
+  return [
+    {
+      id: "all",
+      slug: "all",
+      name: "All Equipment & Reagents",
+      itemCount: productsCache.length,
+      description: "Complete Raj Biosis healthcare, laboratory reagents and medical engineering catalogue."
+    },
+    ...list
+  ];
+}
+
+export const CATEGORIES = buildCategories();
+
+export const CERTIFICATIONS = ["US-FDA", "CE Certified", "ISO 13485", "CDSCO Registered", "GMP Certified"];
+export const BRANDS = ["Raj Biosis", "Truechemie", "Transasia", "Erba", "Roche", "Abbott", "Merck"];

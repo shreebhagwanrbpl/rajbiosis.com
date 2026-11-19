@@ -107,7 +107,7 @@ export default function CompareDrawer({
                           <img src={prod.image} alt={prod.name} className="prod-col-img" />
                           <span className="prod-col-brand">{prod.brand}</span>
                           <h4 className="prod-col-title">{prod.name}</h4>
-                          <div className="prod-col-price">{formatINR(prod.price)}</div>
+                          <div className="prod-col-price">Price on Request</div>
                           <button 
                             onClick={() => {
                               onOpenRfq(prod);

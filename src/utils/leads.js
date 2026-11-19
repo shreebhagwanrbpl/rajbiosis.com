@@ -173,7 +173,7 @@ export function recordCustomerLead(leadData) {
       adminNote: leadData.adminNote || null,
       isMultiItem: Boolean(leadData.isMultiItem),
       cartProducts: leadData.cartProducts || null,
-      gstRate: leadData.gstRate || (leadData.productCategory === 'radiology-imaging' ? '18%' : '12%'),
+      gstRate: leadData.gstRate || '18%',
       gstAmount: Number(leadData.gstAmount || 0),
       grandTotal: Number(leadData.grandTotal || leadData.totalAmount || (unitPriceNum * (leadData.qty || 1))),
       status: leadData.status || (offerPrice ? 'Pending Price Approval' : 'New Lead'),

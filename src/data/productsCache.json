@@ -1,0 +1,2252 @@
+[
+  {
+    "id": "mindray-sv300-icu-ventilator",
+    "sku": "GB-ICU-VN-001",
+    "name": "Mindray SV300 High-Acuity ICU Turbine Ventilator",
+    "model": "SV300 Pro Turbine",
+    "brand": "Mindray Healthcare",
+    "category": "icu-critical-care",
+    "categoryName": "ICU & Critical Care",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹5,20,000 - ₹7,80,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "2-4 Business Days",
+    "regulatory": [
+      "CDSCO Class C Approved",
+      "ISO 13485:2016",
+      "CE 0123",
+      "US FDA 510(k)"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty + NABL Calibration",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Turbine-driven critical care ventilator suitable for pediatric to adult patients with comprehensive invasive and non-invasive ventilation modes.",
+    "fullDescription": "The Mindray SV300 is a state-of-the-art ventilator that is simple to configure, easy to operate, and versatile in use. Equipped with a high-performance internal turbine requiring no central gas pipeline, it offers seamless weaning tools, volumetric capnography, and high-flow oxygen therapy (HFNC).",
+    "features": [
+      "High-performance turbine with >20,000 hours lifespan",
+      "Comprehensive modes: V-A/C, P-A/C, V-SIMV, P-SIMV, CPAP/PSV, PRVC, DuoLevel, APRV",
+      "Integrated High-Flow Nasal Cannula (HFNC) up to 60 L/min",
+      "Detachable 12.1-inch color touchscreen display",
+      "Autoclavable inspiratory and expiratory valve unit",
+      "Smart weaning indices including RSBI and P0.1 calculation"
+    ],
+    "specs": {
+      "Tidal Volume": "20 mL - 2000 mL (Adult / Pediatric)",
+      "Ventilation Frequency": "1 to 100 bpm",
+      "Inspiratory Pressure": "5 to 105 cmH2O",
+      "PEEP": "0 to 50 cmH2O",
+      "Internal Battery Backup": "Up to 4 Hours Dual Hot-Swappable Li-Ion",
+      "Gas Supply": "Turbine driven (High & Low pressure O2)",
+      "Display": "12.1\" Color TFT Touch with Tilt mechanism"
+    },
+    "packageContents": [
+      "1x Mindray SV300 Main Engine Unit",
+      "1x Mobile Trolley with locking anti-static castors",
+      "1x Autoclavable Expiratory Valve Assembly",
+      "2x Reusable Adult/Pediatric Silicone Breathing Circuits",
+      "1x Support Arm for Breathing Circuit",
+      "1x High Pressure Medical Grade Oxygen Hose (5m)",
+      "1x NABL Calibration Certificate & Operational Manual"
+    ],
+    "faqs": [
+      {
+        "question": "Does this ventilator require a centralized compressed air line?",
+        "answer": "No, the Mindray SV300 utilizes an integrated internal turbine drive, eliminating the need for hospital compressor lines while operating silently."
+      },
+      {
+        "question": "What is the warranty coverage provided by Global Biomedicals?",
+        "answer": "We offer a 2-Year Comprehensive On-site Warranty, 4 quarterly preventive maintenance visits, NABL calibration, and a 10-year spares availability SLA."
+      }
+    ]
+  },
+  {
+    "id": "philips-intellivue-mx450-monitor",
+    "sku": "GB-ICU-PM-002",
+    "name": "Philips IntelliVue MX450 Multiparameter Patient Monitor",
+    "model": "IntelliVue MX450",
+    "brand": "Philips Healthcare",
+    "category": "icu-critical-care",
+    "categoryName": "ICU & Critical Care",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹2,80,000 - ₹4,40,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "3-5 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485",
+      "CE Mark",
+      "FDA Cleared"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty + NABL Calibration",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Compact and powerful multi-parameter bedhead monitor engineered for acute care, ICU, CCU, and emergency resuscitation departments.",
+    "fullDescription": "Philips IntelliVue MX450 delivers comprehensive monitoring capabilities in a compact, rugged frame. Features advanced clinical decision support algorithms, multi-lead arrhythmia analysis, continuous ST-segment monitoring, and wireless HL7 EMR connectivity.",
+    "features": [
+      "12-inch high-resolution touchscreen with ambient light sensing",
+      "Advanced arrhythmia and ST elevation myocardial infarction alerts",
+      "Continuous cardiac output and invasive arterial blood pressure monitoring",
+      "Seamless integration with hospital Central Nursing Stations (CNS)",
+      "Rugged handle design for in-hospital patient transport"
+    ],
+    "specs": {
+      "Display": "12\" WXGA Color Capacitive Touch Screen",
+      "Parameters Standard": "ECG (3/5 lead), SpO2 (FAST), NIBP, Respiration, Dual Temp",
+      "Parameters Optional": "Dual IBP, EtCO2 (Microstream), Cardiac Output, BIS",
+      "Trend Memory": "120 Hours Graphic & Tabular trends",
+      "Battery Life": "Up to 5 Hours continuous monitoring"
+    },
+    "packageContents": [
+      "1x IntelliVue MX450 Monitor Base Unit",
+      "1x 5-Lead ECG Cable with Leadwire set",
+      "1x Adult NIBP Reusable Cuff & Air Hose",
+      "1x Reusable Adult SpO2 Finger Sensor",
+      "1x Skin Temperature Probe",
+      "1x Heavy Duty Articulated Wall Mount Bracket",
+      "1x Power Cord & Earth Cable"
+    ],
+    "faqs": [
+      {
+        "question": "Can this monitor connect to our hospital LAN / EMR system?",
+        "answer": "Yes, the MX450 features standard Ethernet LAN and optional Wi-Fi supporting HL7 protocols for bi-directional EMR data flow."
+      }
+    ]
+  },
+  {
+    "id": "draeger-evita-v800-ventilator",
+    "sku": "GB-ICU-VN-003",
+    "name": "Dräger Evita V800 High-End Intensive Care Ventilator",
+    "model": "Evita V800",
+    "brand": "Dräger Medical",
+    "category": "icu-critical-care",
+    "categoryName": "ICU & Critical Care",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹12,50,000 - ₹18,00,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "5-7 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485:2016",
+      "CE 0482"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty + NABL Calibration",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Premium ICU ventilator with lung protective ventilation tools, electrical impedance tomography integration, and smart patient weaning.",
+    "fullDescription": "The Dräger Evita V800 combines cutting-edge respiratory therapy with intuitive operation. It provides lung protective tools such as Low Flow PV loops, SmartCare/PS automated clinical weaning, and comprehensive neonatal to adult support.",
+    "features": [
+      "SmartCare/PS automated weaning protocol",
+      "High-Frequency Ventilation (HFV) & APRV AutoRelease",
+      "18.5\" widescreen anti-glare glass touch user interface",
+      "Integrated nebulization and lung recruitment maneuver scoring",
+      "RFID-assisted accessory management with Infinity ID"
+    ],
+    "specs": {
+      "Tidal Volume": "2 mL to 3000 mL (Neonatal to Adult)",
+      "Peak Flow": "Up to 180 L/min",
+      "Inspiratory Pressure": "1 to 99 mbar",
+      "PEEP": "0 to 50 mbar",
+      "Display": "18.5\" Full HD Glass Touchscreen with 360° Alarm Light"
+    },
+    "packageContents": [
+      "1x Evita V800 Main Respiratory Unit",
+      "1x Medical Trolley with Gas Cylinder Carrier",
+      "1x Reusable Heated Humidifier Unit",
+      "1x Set of Neonatal & Adult Flow Sensors",
+      "1x NABL Calibration Documentation"
+    ],
+    "faqs": [
+      {
+        "question": "Is this ventilator suitable for extremely low birth weight neonates?",
+        "answer": "Yes, with the neonatal option enabled, it delivers precise tidal volumes down to 2 mL with high-frequency oscillation."
+      }
+    ]
+  },
+  {
+    "id": "bpl-altraso-syringe-infusion-pump",
+    "sku": "GB-ICU-SP-004",
+    "name": "BPL Altraflo Dual-Channel Smart Syringe Pump",
+    "model": "Altraflo SP-02",
+    "brand": "BPL Medical Technologies",
+    "category": "icu-critical-care",
+    "categoryName": "ICU & Critical Care",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹42,000 - ₹65,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "1-2 Business Days",
+    "regulatory": [
+      "CDSCO Registered",
+      "ISO 13485:2016",
+      "BIS Certified"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1583912267670-6575ad4736e8?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "High-precision micro-infusion syringe pump with automatic syringe size recognition, drug library, and anti-bolus protection.",
+    "fullDescription": "Designed for intensive care, anesthesia, and oncology departments, the BPL Altraflo syringe pump features high accuracy (±2%), rapid occlusion detection, and compatibility with all major standard syringe brands from 5mL to 60mL.",
+    "features": [
+      "Universal syringe calibration (5, 10, 20, 30, 50/60 mL)",
+      "Built-in Drug Library with customizable institutional profiles",
+      "Anti-bolus system reducing accidental drug surge after occlusion clearance",
+      "Stackable modular design with central AC power dock support",
+      "Dual CPU safety architecture"
+    ],
+    "specs": {
+      "Flow Rate": "0.1 to 1500 mL/h with 0.01 mL/h micro increments",
+      "Accuracy": "±2% Mechanical & Volumetric",
+      "Bolus Rate": "Up to 1500 mL/h",
+      "KVO Rate": "0.1 to 5.0 mL/h adjustable",
+      "Battery Backup": "Up to 8 hours continuous operation"
+    },
+    "packageContents": [
+      "1x BPL Altraflo Syringe Pump Unit",
+      "1x Universal IV Pole Clamp with swivel mount",
+      "1x AC Power Adapter & Power Cord",
+      "1x Calibration Certificate & User Guide"
+    ],
+    "faqs": [
+      {
+        "question": "Does the pump accept generic BD and Dispovan syringes?",
+        "answer": "Yes, it is pre-calibrated for all standard Indian and international syringe manufacturers including BD, Dispovan, Nipro, and Terumo."
+      }
+    ]
+  },
+  {
+    "id": "mindray-beneheart-d6-defibrillator",
+    "sku": "GB-ICU-DF-005",
+    "name": "Mindray BeneHeart D6 Biphasic Defibrillator & Monitor",
+    "model": "BeneHeart D6",
+    "brand": "Mindray Healthcare",
+    "category": "icu-critical-care",
+    "categoryName": "ICU & Critical Care",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹3,40,000 - ₹5,10,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "2-3 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485",
+      "CE Mark",
+      "AHA Compliant"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty + NABL Calibration",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "4-in-1 integrated resuscitation system featuring Manual Defibrillation, AED, Non-invasive Pacing, and Diagnostics Multi-parameter Monitoring.",
+    "fullDescription": "BeneHeart D6 is a dependable emergency life-support device with 360J biphasic technology. Designed with fast charging in under 5 seconds to 200J, it supports 12-lead ECG analysis, SpO2, NIBP, and EtCO2 for in-hospital crash carts and emergency rooms.",
+    "features": [
+      "360 Joules Biphasic Truncated Exponential (BTE) technology",
+      "Rapid charge: 200J in less than 3 seconds",
+      "Integrated Adult / Pediatric interchangeable paddles",
+      "Transcutaneous external pacing with demand and fixed modes",
+      "High-resolution 8.4-inch color TFT display with 4-waveform display"
+    ],
+    "specs": {
+      "Energy Range": "1 to 360 Joules",
+      "Waveform": "Biphasic Truncated Exponential with impedance compensation",
+      "Shock Capacity": "Over 100 shocks at 360J on full battery",
+      "Printer": "Integrated 80mm High-Speed Thermal Recorder",
+      "Weight": "Under 5.6 kg with battery and paddles"
+    },
+    "packageContents": [
+      "1x BeneHeart D6 Defibrillator Unit",
+      "1x External Hard Paddles with slide-out Pediatric caps",
+      "1x 3/5 Lead ECG Cable",
+      "1x Reusable SpO2 Sensor & Cable",
+      "1x Defibrillator Thermal Paper Rolls (Pack of 5)",
+      "1x NABL Energy Output Verification Certificate"
+    ],
+    "faqs": [
+      {
+        "question": "Is this certified for pediatric defibrillation?",
+        "answer": "Yes, it has dedicated pediatric switch settings and slide-off external paddles converting instantly into pediatric paddles."
+      }
+    ]
+  },
+  {
+    "id": "nihon-kohden-vismo-pvm-2701",
+    "sku": "GB-ICU-PM-006",
+    "name": "Nihon Kohden Vismo PVM-2701 Bedside Monitor",
+    "model": "Vismo PVM-2701",
+    "brand": "Nihon Kohden",
+    "category": "icu-critical-care",
+    "categoryName": "ICU & Critical Care",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹1,90,000 - ₹3,10,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "2-3 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485:2016",
+      "PMDA Japan"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Japanese engineered ultra-reliable patient monitor with Smart Cable technology and high-precision PWTT pulse wave transit time measurement.",
+    "fullDescription": "Nihon Kohden Vismo PVM-2701 features a brilliant 10.4-inch color touchscreen display and revolutionary PWTT technology that can trigger non-invasive blood pressure measurement upon sudden vascular changes.",
+    "features": [
+      "Patented PWTT technology for non-invasive cardiac event triggers",
+      "Touchscreen operation with on-screen operation guide",
+      "120 hours of extensive data review trends",
+      "Japanese precision ECG filtering with ec1 arrhythmia algorithm"
+    ],
+    "specs": {
+      "Display": "10.4-inch Color TFT LCD Touch Screen",
+      "Parameters": "ECG, SpO2, NIBP, Respiration, Temp",
+      "Battery Duration": "3 Hours continuous with lithium pack"
+    },
+    "packageContents": [
+      "1x Vismo PVM-2701 Main Unit",
+      "1x ECG Patient Trunk Cable & Leadwires",
+      "1x Nihon Kohden BluPRO SpO2 Sensor",
+      "1x Blood Pressure Cuff with Quick Connector"
+    ],
+    "faqs": [
+      {
+        "question": "Does it come with an on-screen tutorial?",
+        "answer": "Yes, it contains illustrated step-by-step guides for sensor placement and alarm troubleshooting right on the screen."
+      }
+    ]
+  },
+  {
+    "id": "fresenius-volumat-mc-infusion-pump",
+    "sku": "GB-ICU-VP-007",
+    "name": "Fresenius Kabi Volumat MC Agilia Volumetric Infusion Pump",
+    "model": "Volumat MC Agilia",
+    "brand": "Fresenius Kabi",
+    "category": "icu-critical-care",
+    "categoryName": "ICU & Critical Care",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹55,000 - ₹82,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "2-4 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485",
+      "CE 0459"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Advanced volumetric infusion pump with Vigilant Drug'Lib dose error reduction system for critical chemotherapy and IV infusions.",
+    "fullDescription": "The Volumat MC Agilia is engineered for maximum patient safety, providing intuitive single-handed set loading, flow rate accuracy down to 0.1 mL/h, and active pressure monitoring with dynamic pressure test (DPS).",
+    "features": [
+      "Vigilant Drug'Lib institutional safe dose management software",
+      "Flow rate range from 0.1 to 1500 mL/h",
+      "Dynamic Pressure System (DPS) warns of line pressure variations",
+      "Anti-free-flow clamp automatically engages upon door opening"
+    ],
+    "specs": {
+      "Accuracy": "±5% with dedicated administration sets",
+      "Infusion Modes": "Rate/Volume, Volume/Time, Ramp, Primary/Secondary",
+      "Occlusion Levels": "Adjustable from 100 to 750 mmHg"
+    },
+    "packageContents": [
+      "1x Volumat MC Agilia Pump",
+      "1x Integrated Pole Clamp",
+      "1x AC Power Cable & Technical Manual"
+    ],
+    "faqs": [
+      {
+        "question": "Can this be used for enteral feeding?",
+        "answer": "Yes, with the appropriate administration sets and enteral configuration profile."
+      }
+    ]
+  },
+  {
+    "id": "fisher-paykel-airvo-2-hfnc",
+    "sku": "GB-ICU-HF-008",
+    "name": "Fisher & Paykel AIRVO 2 Humidified High Flow Nasal Cannula System",
+    "model": "AIRVO 2",
+    "brand": "Fisher & Paykel Healthcare",
+    "category": "icu-critical-care",
+    "categoryName": "ICU & Critical Care",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹2,10,000 - ₹3,30,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "1-3 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485:2016",
+      "US FDA"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Integrated high-flow respiratory support delivering comfortably warmed and humidified respiratory gases up to 60 L/min.",
+    "fullDescription": "AIRVO 2 is the benchmark system for Optiflow nasal high-flow therapy. With an integrated flow generator and active heating humidification, it treats respiratory distress syndrome without the claustrophobia of tight-fitting masks.",
+    "features": [
+      "Flow range: 2 to 60 L/min adjustable in precise steps",
+      "FiO2 range: 21% to 100% with integrated ultrasonic O2 analyzer",
+      "Target dew point temperature settings: 37°C, 34°C, 31°C",
+      "Built-in quiet turbine eliminates need for compressed air"
+    ],
+    "specs": {
+      "Flow Settings": "Pediatric mode: 2-25 L/min; Adult mode: 10-60 L/min",
+      "Oxygen Percentage": "21% to 100% with standard O2 inlet",
+      "Dimensions": "295mm x 170mm x 175mm, Weight: 2.2 kg"
+    },
+    "packageContents": [
+      "1x AIRVO 2 High Flow Generator Unit",
+      "1x Mobile IV Pole Mount Stand",
+      "1x Heated Breathing Tube Assembly",
+      "1x Auto-Fill Humidification Chamber",
+      "3x Optiflow Nasal Cannula Assorted Sizes"
+    ],
+    "faqs": [
+      {
+        "question": "Does it need external medical air cylinders?",
+        "answer": "No, the AIRVO 2 contains an internal motor turbine that generates ambient air flow and only requires an oxygen connection if FiO2 > 21% is needed."
+      }
+    ]
+  },
+  {
+    "id": "ge-oec-one-cfd-c-arm",
+    "sku": "GB-RAD-CA-001",
+    "name": "GE OEC One CFD All-in-One Compact Digital C-Arm System",
+    "model": "OEC One CFD 31cm",
+    "brand": "GE Healthcare",
+    "category": "radiology-imaging",
+    "categoryName": "Radiology & Imaging Systems",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹38,00,000 - ₹58,00,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "7-14 Business Days",
+    "regulatory": [
+      "AERB Approved",
+      "CDSCO Registered",
+      "ISO 13485",
+      "US FDA Cleared"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty + AERB Assistance",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL & AERB Compliance QA"
+    },
+    "image": "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Premium surgical C-Arm with CMOS Flat Panel Detector (CFD) offering high-clarity 1:1 clinical imaging in an ultra-compact single footprint.",
+    "fullDescription": "GE OEC One CFD brings the image quality of large multi-console C-Arms into a streamlined all-in-one footprint. Ideal for orthopedic trauma, vascular access, spine, pain management, and general surgery operating suites.",
+    "features": [
+      "High-resolution CMOS Flat Panel Detector with 1.5k x 1.5k resolution",
+      "Articulated 27\" 4K UHD medical grade display mounted directly on the C-Arm",
+      "Split-screen live and reference comparison view",
+      "Laser aimer for precision targeting with minimum radiation dose",
+      "Seamless DICOM 3.0 PACS connectivity with USB export"
+    ],
+    "specs": {
+      "Generator Power": "High Frequency 2.5 kW / 15 kW pulsed fluoroscopy",
+      "Detector Size": "31 cm x 31 cm Flat Panel (CMOS)",
+      "Orbital Rotation": "135° (90° under-scan to 45° over-scan)",
+      "Free Space": "78 cm generous surgeon working clearance",
+      "Radiation Dose Management": "Low Dose Mode, Pulsed Fluoro (1-30 fps), Laser Aimer"
+    },
+    "packageContents": [
+      "1x GE OEC One CFD Main C-Arm System",
+      "1x 27-inch 4K Articulated Monitor",
+      "1x Dual-pedal Wireless Footswitch",
+      "1x Hand-held Remote Exposure Control",
+      "1x Set of Sterile Surgical Drapes",
+      "1x AERB Type Approval Dossier & QA Verification Report"
+    ],
+    "faqs": [
+      {
+        "question": "Does Global Biomedicals provide AERB registration assistance in Rajasthan?",
+        "answer": "Yes, our certified biomedical radiation safety team provides end-to-end eLORA AERB site layout approval, commissioning, and periodic QA certification."
+      }
+    ]
+  },
+  {
+    "id": "siemens-multix-impact-digital-x-ray",
+    "sku": "GB-RAD-XR-002",
+    "name": "Siemens Multix Impact High-Frequency Digital Radiography (DR) System",
+    "model": "Multix Impact Floor",
+    "brand": "Siemens Healthineers",
+    "category": "radiology-imaging",
+    "categoryName": "Radiology & Imaging Systems",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹24,00,000 - ₹36,00,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "10-15 Business Days",
+    "regulatory": [
+      "AERB Approved",
+      "CDSCO Registered",
+      "ISO 13485:2016",
+      "CE Mark"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL & AERB Compliance QA"
+    },
+    "image": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Floor-mounted digital radiography system equipped with CsI wireless flat panel detector, patient positioning cameras, and auto-tracking.",
+    "fullDescription": "Multix Impact makes high-end digital radiography accessible and effortless. Features an intuitive touch interface on the tube head, positioning camera for patient safety, and cesium iodide (CsI) wireless flat detectors delivering low dose with razor-sharp radiographic detail.",
+    "features": [
+      "Floor-mounted tube stand with integrated 10\" tube touchscreen",
+      "14\"x17\" & 17\"x17\" Wireless Cesium Iodide (CsI) Flat Panel Detectors",
+      "Intelligent tube-to-bucky motorized auto-tracking",
+      "Integrated patient positioning camera on the collimator",
+      "Syngo.via imaging workflow integration with PACS"
+    ],
+    "specs": {
+      "Generator": "55 kW / 65 kW High Frequency Generator",
+      "X-Ray Tube": "Rotating Anode with dual focal spots 0.6 / 1.2 mm",
+      "Floating Top Table": "4-way heavy duty table supporting up to 300 kg patients",
+      "Wall Stand": "Vertical Bucky with auto-grid and patient support handles"
+    },
+    "packageContents": [
+      "1x Multix Impact Floor Tube Stand with Touch Console",
+      "1x High Frequency 55 kW Generator Cabinet",
+      "1x 4-Way Floating Bucky Radiographic Table",
+      "1x Vertical Bucky Wall Stand",
+      "1x CsI Wireless Flat Panel Detector (14x17)",
+      "1x Acquisition Workstation with 24\" High-Bright Diagnostic Monitor"
+    ],
+    "faqs": [
+      {
+        "question": "Can the detector be used for bed-bound ICU patients?",
+        "answer": "Yes, the wireless CsI detector is lightweight (approx. 2.9 kg) and can be carried to ward beds for direct exposure."
+      }
+    ]
+  },
+  {
+    "id": "mindray-resona-i9-ultrasound",
+    "sku": "GB-RAD-US-003",
+    "name": "Mindray Resona i9 Premium Doppler Ultrasound System",
+    "model": "Resona i9",
+    "brand": "Mindray Healthcare",
+    "category": "radiology-imaging",
+    "categoryName": "Radiology & Imaging Systems",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹22,00,000 - ₹34,00,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "4-7 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "PNDT Compliant",
+      "ISO 13485",
+      "CE 0123"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty + 2 Transducer Probes",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Revolutionary ZST+ zone sonography platform with intelligent iConsole, Sound Touch Elastography (STE), and high frame rate contrast imaging.",
+    "fullDescription": "The Resona i9 represents a paradigm shift in ultrasound technology. Powered by Mindray's proprietary ZST+ platform, it delivers acoustic data acquisition up to 10 times faster than conventional beamformers, yielding exceptional spatial and temporal resolution.",
+    "features": [
+      "Breakthrough ZST+ Zone Sonography Technology",
+      "Groundbreaking iConsole with E-Ink touch customizable layout",
+      "Sound Touch Elastography (STE) with real-time stiffness quantification",
+      "iFlow micro-vascular flow enhancement with no blooming artifact",
+      "Foldable chassis with 1-meter folding height for effortless mobility"
+    ],
+    "specs": {
+      "Display": "23.8\" Full HD Frameless Monitor on Articulated Arm",
+      "Touch Screen": "15.6\" Ultra-thin Full HD Gesture Touch Screen",
+      "Probe Ports": "5 Active Transducer Ports with LED illumination",
+      "Battery Life": "Up to 2 Hours full scanning on dual Li-Ion batteries"
+    },
+    "packageContents": [
+      "1x Mindray Resona i9 Ultrasound Main Console",
+      "1x Single Crystal Convex Probe (SC5-1U)",
+      "1x High Frequency Linear Probe (L15-3U)",
+      "1x Medical Grade Sony B/W Thermal Printer",
+      "1x PNDT Registration Paperwork Dossier"
+    ],
+    "faqs": [
+      {
+        "question": "Does Global Biomedicals assist with PCPNDT registration in Rajasthan?",
+        "answer": "Yes, we provide the mandatory Form A, OEM machine technical specifications, and engineer affidavits required by the District CMO PCPNDT cell."
+      }
+    ]
+  },
+  {
+    "id": "philips-zenition-50-c-arm",
+    "sku": "GB-RAD-CA-004",
+    "name": "Philips Zenition 50 Mobile Surgical C-Arm System",
+    "model": "Zenition 50 Flat Detector",
+    "brand": "Philips Healthcare",
+    "category": "radiology-imaging",
+    "categoryName": "Radiology & Imaging Systems",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹42,00,000 - ₹62,00,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "10-20 Business Days",
+    "regulatory": [
+      "AERB Approved",
+      "CDSCO Registered",
+      "ISO 13485",
+      "CE Mark"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL & AERB Compliance QA"
+    },
+    "image": "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "High-throughput mobile C-Arm engineered for demanding orthopedic trauma, spinal surgery, vascular interventions, and neurosurgery.",
+    "fullDescription": "Philips Zenition 50 combines ease of handling with clinical excellence. Powered by Flat Detector (FD) technology and ClarityIQ low-dose technology, it offers superior image resolution at a fraction of standard radiation doses.",
+    "features": [
+      "Advanced 26cm x 26cm Flat Detector with high dynamic range",
+      "ClarityIQ low dose technology with multi-frequency processing",
+      "Point and Shoot ease of use with Position Memory",
+      "Separate ViewStation with dual medical grade anti-glare monitors"
+    ],
+    "specs": {
+      "Generator": "15 kW Pulsed High Frequency Generator",
+      "Detector Type": "Amorphous Silicon (a-Si) Flat Detector",
+      "C-Arm Free Space": "73 cm with 140° orbital rotation"
+    },
+    "packageContents": [
+      "1x Philips Zenition 50 C-Arm Stand",
+      "1x Mobile ViewStation with Dual 19\" Displays",
+      "1x Triple Footswitch & Handswitch",
+      "1x AERB Certificate File"
+    ],
+    "faqs": [
+      {
+        "question": "Can this system perform vascular roadmapping?",
+        "answer": "Yes, the Zenition 50 supports digital subtraction angiography (DSA) and live roadmapping with CO2 and iodinated contrast."
+      }
+    ]
+  },
+  {
+    "id": "bpl-c-ray-prime-c-arm",
+    "sku": "GB-RAD-CA-005",
+    "name": "BPL C-RAY Prime High Frequency Mobile C-Arm",
+    "model": "C-RAY Prime 6kW",
+    "brand": "BPL Medical Technologies",
+    "category": "radiology-imaging",
+    "categoryName": "Radiology & Imaging Systems",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹14,50,000 - ₹21,00,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "3-5 Business Days",
+    "regulatory": [
+      "AERB Approved",
+      "CDSCO Registered",
+      "BIS Certified",
+      "ISO 13485:2016"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL & AERB Compliance QA"
+    },
+    "image": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Indigenous high-frequency surgical C-Arm with 9-inch triple field image intensifier and dual high-definition monitor workstation.",
+    "fullDescription": "A trusted workhorse for Indian orthopedic, urology, and trauma hospitals. Features a 6 kW generator, 40 kHz inverter frequency, pulsed fluoroscopy, and a memory station capable of holding over 100,000 radiographic frames.",
+    "features": [
+      "6 kW High-Frequency Monoblock Generator (40 kHz)",
+      "9-inch High DQE Triple Field Image Intensifier (Thales / Canon)",
+      "Dual 19-inch high-bright LED monitors on swivel workstation",
+      "100,000+ frame digital image memory with cine loop playback",
+      "Emergency exposure override circuit"
+    ],
+    "specs": {
+      "Tube Voltage": "40 to 110 kV in 1 kV steps",
+      "Fluoroscopy mA": "0.2 to 5 mA (Normal), up to 10 mA (Boost)",
+      "Radiography mAs": "Up to 200 mAs",
+      "Mechanical Clearance": "780 mm depth for wide patient coverage"
+    },
+    "packageContents": [
+      "1x BPL C-RAY Prime C-Arm Main Gantry",
+      "1x Dual-Monitor Sleek Viewing Trolley",
+      "1x Heavy Duty Shielded Footswitch",
+      "1x Operational Manual & AERB Approval Pack"
+    ],
+    "faqs": [
+      {
+        "question": "Is this model approved for Government and Ayushman Bharat empanelled OT?",
+        "answer": "Yes, the BPL C-RAY Prime is 100% compliant with GeM and state Ayushman Bharat institutional procurement norms."
+      }
+    ]
+  },
+  {
+    "id": "mindray-dp-50-expert-ultrasound",
+    "sku": "GB-RAD-US-006",
+    "name": "Mindray DP-50 Expert Portable Diagnostic Ultrasound",
+    "model": "DP-50 Expert",
+    "brand": "Mindray Healthcare",
+    "category": "radiology-imaging",
+    "categoryName": "Radiology & Imaging Systems",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹4,20,000 - ₹6,50,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "1-3 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485",
+      "PNDT Compliant"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Legendary portable black & white / PW Doppler ultrasound system for point-of-care, obstetrics, abdominal, and urology diagnostics.",
+    "fullDescription": "Mindray DP-50 Expert combines superior image quality with ergonomic mobility. Equipped with PW Doppler, iBeam spatial compounding, and iClear speckle suppression for crystal-clear diagnostic certainty.",
+    "features": [
+      "15-inch high-resolution tiltable LCD monitor",
+      "Dual transducer connectors with electronic switching",
+      "PW Doppler and Auto Trace calculation",
+      "Lightweight sleek design under 7.5 kg with built-in battery"
+    ],
+    "specs": {
+      "Display": "15\" LCD with 60° angle adjustment",
+      "Scanning Modes": "B, 2B, 4B, B/M, M, PW Doppler",
+      "Battery Operation": "Up to 1.5 Hours continuous scanning"
+    },
+    "packageContents": [
+      "1x Mindray DP-50 Expert Console",
+      "1x Convex Transducer (35C50EB)",
+      "1x Sony Thermal Video Printer Cable",
+      "1x Power Adapter & PNDT Papers"
+    ],
+    "faqs": [
+      {
+        "question": "Can an additional transvaginal or linear probe be connected?",
+        "answer": "Yes, it has dual active probe connectors supporting transvaginal (65EC10EB) and linear (75L38EB) probes simultaneously."
+      }
+    ]
+  },
+  {
+    "id": "allengers-roll-dr-mobile-xray",
+    "sku": "GB-RAD-MX-007",
+    "name": "Allengers Roll-DR Motorized Mobile Digital X-Ray",
+    "model": "Roll-DR 100mA",
+    "brand": "Allengers Medical Systems",
+    "category": "radiology-imaging",
+    "categoryName": "Radiology & Imaging Systems",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹9,80,000 - ₹15,50,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "3-5 Business Days",
+    "regulatory": [
+      "AERB Approved",
+      "CDSCO Registered",
+      "ISO 13485:2016"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL & AERB Compliance QA"
+    },
+    "image": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Battery-powered mobile DR unit designed for bedside chest and orthopedic imaging across intensive care and isolation wards.",
+    "fullDescription": "Allows rapid bedside imaging with immediate image preview on the integrated touch console. Features collision-avoidance motorized drive and high-frequency generator output.",
+    "features": [
+      "Integrated 14x17 wireless digital flat panel detector",
+      "Instant image preview within 3 seconds of exposure",
+      "Spring-balanced telescopic arm with 360° column rotation"
+    ],
+    "specs": {
+      "Power Rating": "3.5 kW / 100 mA High Frequency",
+      "Detector": "CsI Wireless FPD with auto exposure detection",
+      "Battery Range": "Up to 200 exposures per charge"
+    },
+    "packageContents": [
+      "1x Allengers Roll-DR Mobile X-Ray Machine",
+      "1x Wireless FPD 14x17 with Protective Cover",
+      "1x Integrated Workstation Console",
+      "1x Lead Apron (0.5mm Pb eq.) & Regulatory Pack"
+    ],
+    "faqs": [
+      {
+        "question": "Does it fit through standard hospital elevator doors?",
+        "answer": "Yes, its ultra-slim profile (width under 65 cm) easily passes through narrow hospital corridors and standard bed lifts."
+      }
+    ]
+  },
+  {
+    "id": "mindray-wato-ex-65-anesthesia",
+    "sku": "GB-SUR-AW-001",
+    "name": "Mindray Wato EX-65 Pro Anesthesia Workstation",
+    "model": "WATO EX-65 Pro",
+    "brand": "Mindray Healthcare",
+    "category": "surgical-ot-systems",
+    "categoryName": "Surgical & OT Systems",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹8,50,000 - ₹13,20,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "4-6 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485:2016",
+      "CE 0123"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty + NABL Calibration",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Advanced anesthesia delivery workstation with electronic gas mixer, integrated breathing circuit, and 15-inch high-resolution touchscreen.",
+    "fullDescription": "The WATO EX-65 Pro provides precise gas delivery from neonates to adults. Features fresh gas decoupling, digital electronic flowmeters, automatic compliance compensation, and support for dual agent vaporizers with Selectatec interlock.",
+    "features": [
+      "Precise electronic gas mixer with Virtual Flow Tube display",
+      "Comprehensive ventilator modes: VCV, PCV, PCV-VG, SIMV, PSV with apnea backup",
+      "Bypass CO2 absorber mechanism allowing canister exchange during surgery",
+      "Integrated active Anesthesia Gas Scavenging System (AGSS)",
+      "High-acuity 15-inch color capacitive touchscreen display"
+    ],
+    "specs": {
+      "Tidal Volume": "20 to 1500 mL (Adult / Pediatric)",
+      "Drive Mechanism": "Electronically controlled, pneumatically driven ventilator",
+      "Vaporizer Mount": "Dual position Selectatec interlock bar",
+      "Battery Backup": "Minimum 150 minutes backup"
+    },
+    "packageContents": [
+      "1x WATO EX-65 Pro Anesthesia Machine Main Frame",
+      "1x Isoflurane / Sevoflurane Selectatec Vaporizer",
+      "1x Autoclavable Compact Breathing System (COMTAC)",
+      "1x Active AGSS Module with Exhaust Hose",
+      "1x Set of Reusable Adult & Pediatric Silicone Circuits"
+    ],
+    "faqs": [
+      {
+        "question": "Can it run with low-flow anesthesia?",
+        "answer": "Yes, the digital gas mixer and minimal breathing circuit volume (under 2.5 L) allow safe, cost-saving low-flow and minimal-flow anesthesia."
+      }
+    ]
+  },
+  {
+    "id": "karl-storz-image1-s-rubina-4k-laparoscopy",
+    "sku": "GB-SUR-LS-002",
+    "name": "Karl Storz IMAGE1 S RUBINA 4K NIR/ICG Laparoscopy Tower",
+    "model": "IMAGE1 S RUBINA 4K",
+    "brand": "Karl Storz Endoskope",
+    "category": "surgical-ot-systems",
+    "categoryName": "Surgical & OT Systems",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹45,00,000 - ₹75,00,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "10-15 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485",
+      "CE Mark",
+      "FDA 510(k)"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Gold standard 4K Ultra-HD endoscopic imaging platform with near-infrared (NIR/ICG) fluorescence for perfusion assessment and lymph node mapping.",
+    "fullDescription": "Karl Storz IMAGE1 S RUBINA combines 4K UHD video processing with OPAL1 NIR/ICG fluorescence technology. Enables real-time assessment of bile duct anatomy, mesenteric vascular perfusion, and oncological sentinel lymph nodes without switching cameras.",
+    "features": [
+      "Native 4K Ultra HD resolution (3840 x 2160 pixels) at 60 fps",
+      "OPAL1 technology for near-infrared fluorescence (ICG) visualization",
+      "Laser-free LED light source with automated light intensity control",
+      "High-flow 50L electronic insufflator with gas heating",
+      "32-inch 4K medical display with optical bonding"
+    ],
+    "specs": {
+      "Resolution": "3840 x 2160 4K UHD",
+      "Light Engine": "Multi-LED with NIR emission spectrum",
+      "Insufflation": "Up to 50 Litres/min high flow with heated gas tube",
+      "Trolley": "Heavy-duty modular medical rack with isolation transformer"
+    },
+    "packageContents": [
+      "1x IMAGE1 S 4K Camera Control Unit",
+      "1x POWER LED RUBINA Light Source Unit",
+      "1x 50L Heated CO2 Insufflator",
+      "1x 32-inch 4K UHD Medical Monitor",
+      "1x 10mm 30° Autoclavable HOPKINS NIR/ICG Telescope",
+      "1x Set of Fiber Optic High-Temperature Light Cables"
+    ],
+    "faqs": [
+      {
+        "question": "Does the system include standard laparoscopy hand instruments?",
+        "answer": "Our procurement packages can be tailored with complete Karl Storz Clickline trocars, dissectors, and bipolar graspers."
+      }
+    ]
+  },
+  {
+    "id": "valley-lab-ft10-electrosurgical-generator",
+    "sku": "GB-SUR-ES-003",
+    "name": "Medtronic Covidien Valleylab FT10 Energy Platform",
+    "model": "Valleylab FT10",
+    "brand": "Medtronic / Covidien",
+    "category": "surgical-ot-systems",
+    "categoryName": "Surgical & OT Systems",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹11,00,000 - ₹17,50,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "3-5 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485:2016",
+      "CE Mark",
+      "US FDA"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Next-generation intelligent electrosurgical generator powering LigaSure vessel sealing and monopolar/bipolar cutting and coagulation.",
+    "fullDescription": "Valleylab FT10 utilizes TissueFect sensing technology reading tissue impedance 434,000 times per second, delivering instant energy adjustments for minimal thermal spread and rapid 1 to 4 second vessel sealing up to 7mm diameter.",
+    "features": [
+      "TissueFect smart tissue-sensing algorithm",
+      "Full LigaSure vessel sealing compatibility (seals vessels up to 7 mm)",
+      "Monopolar cut, coag, and bipolar macro/micro modes",
+      "Touchscreen user interface with automatic instrument recognition"
+    ],
+    "specs": {
+      "Output Frequency": "472 kHz monopolar / bipolar",
+      "Max Power Cut": "300 Watts pure cut",
+      "Max Power Coag": "120 Watts fulgurate",
+      "Weight": "10.1 kg compact chassis"
+    },
+    "packageContents": [
+      "1x Valleylab FT10 Energy Generator",
+      "1x Monopolar & Bipolar Footswitch Pedal set",
+      "1x REM Patient Return Electrode Interface Cable",
+      "1x Power Cable & Calibration Cert"
+    ],
+    "faqs": [
+      {
+        "question": "Can it seal large renal and mesenteric vessels safely?",
+        "answer": "Yes, LigaSure instruments powered by FT10 seal vessels, lymphatics, and pulmonary vasculature up to and including 7 mm."
+      }
+    ]
+  },
+  {
+    "id": "stryker-truvitals-electric-ot-table",
+    "sku": "GB-SUR-OT-004",
+    "name": "Stryker Berchtold Operon D850 Electro-Hydraulic Surgical Table",
+    "model": "Operon D850",
+    "brand": "Stryker Surgical",
+    "category": "surgical-ot-systems",
+    "categoryName": "Surgical & OT Systems",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹18,00,000 - ₹28,00,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "7-12 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485",
+      "CE Mark"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Heavy-duty multi-specialty surgical table with 450 kg weight capacity, generous longitudinal slide, and integrated kidney bridge.",
+    "fullDescription": "Engineered for complex orthopedic, bariatric, cardiovascular, and robotic surgical procedures. Features 430 mm longitudinal slide for unobstructed full-body C-Arm access without patient repositioning.",
+    "features": [
+      "450 kg (1000 lbs) extreme patient weight capacity",
+      "430 mm motorized longitudinal sliding top for C-Arm fluoroscopy",
+      "Backlit hand pendant controller with emergency secondary override console",
+      "Anti-shear viscoelastic memory foam mattress with anti-microbial coating"
+    ],
+    "specs": {
+      "Height Adjustment": "575 mm to 1050 mm",
+      "Trendelenburg / Reverse": "±30° motorized tilt",
+      "Lateral Tilt": "±20° motorized",
+      "Battery Reserve": "Up to 100 surgical operations on full charge"
+    },
+    "packageContents": [
+      "1x Operon D850 Surgical Table Base & Top",
+      "1x Corded Hand Controller + Auxiliary Column Control",
+      "1x Set of Viscoelastic Anti-Static Mattresses",
+      "1x Pair Armboards with Straps & Clamps",
+      "1x Anesthetic Screen Frame"
+    ],
+    "faqs": [
+      {
+        "question": "Is this table suitable for bariatric operations?",
+        "answer": "Yes, it is rated for up to 450 kg (1000 lbs) patient load in full surgical articulation."
+      }
+    ]
+  },
+  {
+    "id": "mindray-hyled-x9-shadowless-ot-light",
+    "sku": "GB-SUR-LT-005",
+    "name": "Mindray HyLED X9 Dual-Dome LED Surgical Shadowless Light",
+    "model": "HyLED X9 / X9",
+    "brand": "Mindray Healthcare",
+    "category": "surgical-ot-systems",
+    "categoryName": "Surgical & OT Systems",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹6,80,000 - ₹10,50,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "3-6 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485:2016",
+      "CE 0123"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Ultra-thin surgical light with Multi-Patch optical technology, dynamic shadow elimination, and customizable color temperature.",
+    "fullDescription": "HyLED X9 offers cutting-edge eye protection and shadow management. Multi-Patch illumination ensures a consistent light column even when surgeons lean into the surgical field.",
+    "features": [
+      "Central illuminance: 160,000 Lux per dome",
+      "Adjustable color temperature: 3500K to 5100K in 5 steps",
+      "High color rendering index: Ra = 98, R9 = 98",
+      "Ultra-long LED lifespan: >60,000 hours",
+      "Integrated Endo mode for minimally invasive laparoscopic procedures"
+    ],
+    "specs": {
+      "Illuminance": "160,000 Lux / 160,000 Lux (Dual Dome)",
+      "Light Field Diameter": "160 mm to 300 mm",
+      "Suspension": "360° endless rotation spring arm mechanism"
+    },
+    "packageContents": [
+      "2x HyLED X9 Light Heads with Sterilizable Handles",
+      "1x Heavy Duty Central Ceiling Mounting Column",
+      "1x Dual Spring Arm Suspension System",
+      "1x Wall Control Console & Transformer Box"
+    ],
+    "faqs": [
+      {
+        "question": "Does it emit heat towards the surgical team's head?",
+        "answer": "No, the high-efficiency cold LED source emits virtually zero infrared radiation, keeping the temperature increase under 1°C at surgeon level."
+      }
+    ]
+  },
+  {
+    "id": "draeger-primus-anesthesia-workstation",
+    "sku": "GB-SUR-AW-006",
+    "name": "Dräger Primus High-Performance Anesthesia Workstation",
+    "model": "Primus E-Vent",
+    "brand": "Dräger Medical",
+    "category": "surgical-ot-systems",
+    "categoryName": "Surgical & OT Systems",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹14,00,000 - ₹22,00,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "5-8 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485",
+      "CE Mark"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "The global benchmark in modern anesthesia. Features piston-driven E-Vent plus ventilator that requires no driving gas consumption.",
+    "fullDescription": "Dräger Primus is an intuitive anesthesia solution combining piston ventilation accuracy with comprehensive multi-gas monitoring. Perfect for high-risk cardio-thoracic and pediatric surgeries.",
+    "features": [
+      "Electrically driven E-Vent plus piston ventilator",
+      "Zero drive-gas consumption saving expensive hospital medical oxygen",
+      "Open platform compatible with Dräger Infinity patient monitors",
+      "Integrated heated breathing system prevents water condensation"
+    ],
+    "specs": {
+      "Tidal Volume Range": "10 to 1400 mL",
+      "Ventilation Modes": "Manual, Spontaneous, Volume Mode, Pressure Mode, Pressure Support (PS)",
+      "Inspiratory Pressure": "3 to 99 hPa"
+    },
+    "packageContents": [
+      "1x Dräger Primus Main Unit",
+      "1x Dräger Vapor 2000 Isoflurane Vaporizer",
+      "1x Heated Breathing System Assembly",
+      "1x Central Gas Supply Connecting Hoses"
+    ],
+    "faqs": [
+      {
+        "question": "Can this workstation ventilate without cylinder pressure?",
+        "answer": "Yes, the electric piston ventilator can ventilate room air even in complete loss of gas pipeline pressure."
+      }
+    ]
+  },
+  {
+    "id": "stryker-1688-4k-aim-camera-system",
+    "sku": "GB-SUR-CM-007",
+    "name": "Stryker 1688 Advanced Imaging Modalities (AIM) 4K Platform",
+    "model": "1688 AIM 4K",
+    "brand": "Stryker Surgical",
+    "category": "surgical-ot-systems",
+    "categoryName": "Surgical & OT Systems",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹48,00,000 - ₹72,00,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "10-14 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "FDA Cleared",
+      "ISO 13485:2016"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Brilliant 4K surgical visualization with SPY fluorescence imaging, IRIS ureteral illumination, and PneumoClear smoke evacuation.",
+    "fullDescription": "Stryker 1688 AIM elevates surgical visualization with vibrant color fidelity and contrast. Integrated SPY fluorescence provides real-time visualization of perfusion in colorectal, plastic, and general surgery.",
+    "features": [
+      "4K Ultra-High Definition resolution with L11 LED light source",
+      "SPY fluorescence visualization of blood perfusion",
+      "Infrared Illumination System (IRIS) for protecting ureters during pelvic dissection",
+      "Cross-specialty versatility across arthroscopy, laparoscopy, and ENT"
+    ],
+    "specs": {
+      "Video Output": "Native 3840 x 2160 DisplayPort and 12G-SDI",
+      "Sensors": "3-Chip CMOS with advanced prism optics",
+      "Display": "32-inch 4K High-Dynamic-Range (HDR) Medical Monitor"
+    },
+    "packageContents": [
+      "1x Stryker 1688 AIM Camera Console",
+      "1x 1688 AIM Camera Head with integrated coupler",
+      "1x L11 AIM High-Intensity LED Light Source",
+      "1x 32-inch 4K HDR Medical Monitor"
+    ],
+    "faqs": [
+      {
+        "question": "Can this system be used for Arthroscopy as well as Laparoscopy?",
+        "answer": "Yes, it supports pre-programmed specialties including Arthroscopy, Laparoscopy, Cystoscopy, and Hysteroscopy."
+      }
+    ]
+  },
+  {
+    "id": "erbe-vio-300-d-electrosurgery",
+    "sku": "GB-SUR-ES-008",
+    "name": "ERBE VIO 300 D Advanced Electrosurgical & APC Unit",
+    "model": "VIO 300 D + APC 2",
+    "brand": "ERBE Elektromedizin",
+    "category": "surgical-ot-systems",
+    "categoryName": "Surgical & OT Systems",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹9,50,000 - ₹15,00,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "3-5 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485:2016",
+      "CE 0124"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Modular master electrosurgery workstation with Argon Plasma Coagulation (APC) support for gastroenterology, pulmonology, and surgery.",
+    "fullDescription": "ERBE VIO 300 D offers automatic power adjustment for all voltage regulation techniques. It guarantees reproducible cutting effects regardless of tissue resistance variations.",
+    "features": [
+      "Automatic voltage, arc, and output control",
+      "Modular upgrades for APC 2 argon plasma coagulation",
+      "EndoCUT mode for endoscopic mucosal resections and polypectomies",
+      "ReMode function allowing surgeon to switch modes from the sterile handle"
+    ],
+    "specs": {
+      "Max Cut Output": "300 Watts into 500 Ohms",
+      "Max Coag Output": "Up to 200 Watts",
+      "Frequency": "350 kHz generator"
+    },
+    "packageContents": [
+      "1x ERBE VIO 300 D Main Console",
+      "1x Dual Pedal Footswitch with ReMode button",
+      "1x Patient Neutral Plate Interface Cable",
+      "1x Operational Manual & NABL Certificate"
+    ],
+    "faqs": [
+      {
+        "question": "Is this suitable for GI endoscopy procedures like ESD/EMR?",
+        "answer": "Yes, it is widely recognized by gastroenterologists worldwide for EndoCUT Q and EndoCUT I precision cutting."
+      }
+    ]
+  },
+  {
+    "id": "ge-mac-2000-12-lead-ecg",
+    "sku": "GB-CAR-ECG-001",
+    "name": "GE Healthcare MAC 2000 Diagnostic 12-Lead ECG Machine",
+    "model": "MAC 2000 with Marquette 12SL",
+    "brand": "GE Healthcare",
+    "category": "cardiology-ecg",
+    "categoryName": "Cardiology & Resuscitation",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹1,45,000 - ₹2,30,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "1-3 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485:2016",
+      "US FDA Cleared"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Industry-standard diagnostic electrocardiograph equipped with the clinically validated Marquette 12SL interpretation algorithm.",
+    "fullDescription": "MAC 2000 delivers clinical accuracy from the first trace. Features the world-renowned Marquette 12SL analysis algorithm for adult and pediatric ECGs, acute coronary syndrome detection, and seamless PDF export via USB/LAN.",
+    "features": [
+      "Marquette 12SL clinical interpretation algorithm",
+      "7-inch full color display with live 12-lead preview",
+      "Full-sized A4 thermal printer with multiple print layouts",
+      "Automatic arrhythmia detection and warning banner",
+      "Internal memory storing up to 200 diagnostic ECG records"
+    ],
+    "specs": {
+      "Display": "7\" Color TFT 800 x 480 resolution",
+      "Printer": "A4 width thermal array (216 mm)",
+      "Frequency Response": "0.01 to 150 Hz diagnostic bandwidth",
+      "Battery Life": "Up to 3 hours or 250 printed reports"
+    },
+    "packageContents": [
+      "1x GE MAC 2000 12-Lead ECG Machine",
+      "1x 10-Lead Patient Cable with Banana pins",
+      "1x Set of 6 Precordial Chest Bulbs (Adult)",
+      "1x Set of 4 Limb Clamps",
+      "2x Rolls of A4 Thermal ECG Paper",
+      "1x NABL Calibration Certificate"
+    ],
+    "faqs": [
+      {
+        "question": "Can we transfer ECG recordings to hospital PACS/HIS?",
+        "answer": "Yes, the MAC 2000 exports reports as DICOM, PDF, and XML via standard LAN or SD card."
+      }
+    ]
+  },
+  {
+    "id": "philips-pagewriter-tc30-ecg",
+    "sku": "GB-CAR-ECG-002",
+    "name": "Philips PageWriter TC30 Advanced Cardiograph",
+    "model": "PageWriter TC30",
+    "brand": "Philips Healthcare",
+    "category": "cardiology-ecg",
+    "categoryName": "Cardiology & Resuscitation",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹1,85,000 - ₹2,75,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "2-4 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485",
+      "CE Mark",
+      "FDA Cleared"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Touchscreen cardiograph with Philips DXL 16-lead interpretation algorithm and STEMI diagnostic decision support.",
+    "fullDescription": "PageWriter TC30 simplifies ECG workflows with 1-2-3 touchscreen operation. Powered by Philips DXL algorithm which detects culprit coronary artery occlusions and provides critical pediatric criteria.",
+    "features": [
+      "Philips DXL ECG Algorithm with STEMI culprit artery locator",
+      "6.5-inch color touchscreen interface",
+      "High-speed high-contrast thermal recorder",
+      "Automated lead placement check with anatomical mapping"
+    ],
+    "specs": {
+      "Display": "6.5\" Touchscreen with visual lead alert",
+      "Sampling Rate": "8,000 samples/second per channel",
+      "Connectivity": "USB, Ethernet LAN, Wireless 802.11 b/g"
+    },
+    "packageContents": [
+      "1x PageWriter TC30 Cardiograph",
+      "1x Patient Interface Module (PIM) with leadwires",
+      "1x Set of Limb Clamps and Chest Suction Electrodes",
+      "1x Pack of Z-fold Thermal Paper"
+    ],
+    "faqs": [
+      {
+        "question": "Does it alert if leads are misplaced or reversed?",
+        "answer": "Yes, Philips Lead Reverse detection immediately highlights lead mismatches before taking an exposure."
+      }
+    ]
+  },
+  {
+    "id": "bpl-cardiart-9108-12-channel-ecg",
+    "sku": "GB-CAR-ECG-003",
+    "name": "BPL Cardiart 9108 12-Channel Diagnostic Electrocardiograph",
+    "model": "Cardiart 9108",
+    "brand": "BPL Medical Technologies",
+    "category": "cardiology-ecg",
+    "categoryName": "Cardiology & Resuscitation",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹85,000 - ₹1,35,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "1-2 Business Days",
+    "regulatory": [
+      "CDSCO Registered",
+      "ISO 13485:2016",
+      "BIS Certified"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "India's highest-selling 12-channel ECG with 7-inch color display, alphanumeric silicone keypad, and Glasgow interpretation.",
+    "fullDescription": "A durable workhorse across private clinics, diagnostic centres, and government medical colleges. Combines Glasgow interpretation algorithm with USB direct printing on external laser printers.",
+    "features": [
+      "12-Channel ECG acquisition with Glasgow interpretation",
+      "7-inch high-resolution color LCD screen",
+      "Built-in thermal printer supporting 210mm roll / Z-fold paper",
+      "USB port for direct printing to external HP laser printers"
+    ],
+    "specs": {
+      "Display": "7\" TFT Color LCD Display",
+      "Print Formats": "12x1, 6x2, 6x2+1, 3x4, 3x4+1 rhythm lead",
+      "Internal Storage": "Over 800 patient records"
+    },
+    "packageContents": [
+      "1x BPL Cardiart 9108 ECG Machine",
+      "1x 10-Lead Patient Cable Assembly",
+      "1x Set of Adult Clamps & Chest Electrodes",
+      "1x Roll of 210mm High-Sensitivity Paper"
+    ],
+    "faqs": [
+      {
+        "question": "Can it print on plain A4 Xerox paper via external laser printer?",
+        "answer": "Yes, via standard USB connection to supported HP Deskjet/LaserJet printers."
+      }
+    ]
+  },
+  {
+    "id": "ge-case-cardiac-stress-tmt-system",
+    "sku": "GB-CAR-TMT-004",
+    "name": "GE Healthcare CASE Premium Exercise Stress Testing (TMT) System",
+    "model": "CASE V6.73 with T2100-ST2 Treadmill",
+    "brand": "GE Healthcare",
+    "category": "cardiology-ecg",
+    "categoryName": "Cardiology & Resuscitation",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹8,50,000 - ₹14,00,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "5-8 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485:2016",
+      "US FDA"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Premier diagnostic exercise treadmill test (TMT) platform featuring Marquette 12SL, CHADS score, and heavy-duty medical treadmill.",
+    "fullDescription": "GE CASE (Cardiac Assessment System for Exercise Testing) is renowned for low-noise recording and motion artifact elimination. Powered by the T2100 treadmill supporting patients up to 227 kg.",
+    "features": [
+      "Marquette 12SL and Finite Residual Filter (FRF) motion suppression",
+      "Heavy-duty medical treadmill T2100 with 0-22 km/h speed and 0-25% elevation",
+      "Comprehensive protocols: Bruce, Modified Bruce, Naughton, Balke, Ramp",
+      "Full disclosure recording retaining every single beat of the exercise trial"
+    ],
+    "specs": {
+      "Treadmill Capacity": "227 kg patient load",
+      "Speed Range": "0 to 22.0 km/h with 0.1 km/h increments",
+      "Display": "24\" High-Definition Medical Widescreen Display"
+    },
+    "packageContents": [
+      "1x GE CASE Acquisition Console Workstation",
+      "1x GE T2100-ST2 Heavy Duty Medical Treadmill",
+      "1x CAM-14 Acquisition Module with Belt & Cables",
+      "1x High-Resolution Laser Printer",
+      "1x Emergency Stop Lanyard & Grab Rails"
+    ],
+    "faqs": [
+      {
+        "question": "Does it come with an emergency stop lanyard?",
+        "answer": "Yes, dual safety systems: magnetic breakaway patient lanyard and emergency push-button stop bar on the front rail."
+      }
+    ]
+  },
+  {
+    "id": "zoll-r-series-als-defibrillator",
+    "sku": "GB-CAR-DF-005",
+    "name": "ZOLL R Series ALS Hospital Defibrillator",
+    "model": "R Series ALS Plus",
+    "brand": "ZOLL Medical",
+    "category": "cardiology-ecg",
+    "categoryName": "Cardiology & Resuscitation",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹4,80,000 - ₹7,20,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "3-6 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485",
+      "FDA Cleared"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty + NABL Calibration",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Smart defibrillator with Real CPR Help, See-Thru CPR artifact filtering, and automated daily wireless readiness self-tests.",
+    "fullDescription": "ZOLL R Series offers Real CPR Help that coaches rescuers in real time on depth and rate of chest compressions. Its patented See-Thru CPR technology filters compression artifacts from the ECG so clinicians can see organized rhythms without stopping compressions.",
+    "features": [
+      "Real CPR Help with real-time compression depth and rate feedback",
+      "See-Thru CPR algorithm minimizing pauses during resuscitation",
+      "Automated Readiness check at 3:00 AM daily testing 40+ internal parameters",
+      "Rectilinear Biphasic Waveform (RBW) optimized for high-impedance patients"
+    ],
+    "specs": {
+      "Waveform": "ZOLL Rectilinear Biphasic Waveform (RBW)",
+      "Pacing": "External transcutaneous constant current 40 ms pulse",
+      "Display": "Color VGA LCD with 3 multi-channel traces"
+    },
+    "packageContents": [
+      "1x ZOLL R Series ALS Defibrillator Base",
+      "1x OneStep CPR Adult Electrodes Cable",
+      "1x 3-Lead ECG Patient Cable",
+      "1x Rechargeable SurePower Lithium-Ion Battery",
+      "1x NABL Calibration Documentation"
+    ],
+    "faqs": [
+      {
+        "question": "How does See-Thru CPR help during cardiac arrest?",
+        "answer": "It filters out compression noise from the ECG display, allowing the team to identify shockable VF/VT rhythms without breaking chest compressions."
+      }
+    ]
+  },
+  {
+    "id": "philips-heartstart-frx-aed",
+    "sku": "GB-CAR-AED-006",
+    "name": "Philips HeartStart FRx Automated External Defibrillator",
+    "model": "HeartStart FRx",
+    "brand": "Philips Healthcare",
+    "category": "cardiology-ecg",
+    "categoryName": "Cardiology & Resuscitation",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹1,15,000 - ₹1,70,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "1-2 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485:2016",
+      "US FDA Cleared"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Rugged, weatherproof AED engineered for emergency clinics, ambulances, airports, sports facilities, and hospital corridors.",
+    "fullDescription": "Built to withstand rough handling, dust, and water jets (IP55). Features SMART Biphasic therapy and an Infant/Child key that allows the same pre-connected pads to be used on pediatric patients without swapping pads.",
+    "features": [
+      "IP55 rated rugged water and dust resistance",
+      "Optional Infant/Child key allows pediatric use with same adult pads",
+      "SMART Biphasic waveform with Life Guidance voice instructions",
+      "Daily self-test checks battery, circuitry, and pad integrity"
+    ],
+    "specs": {
+      "Energy Output": "Nominal 150 Joules biphasic into 50 Ohms",
+      "Battery Life": "4-year installed standby life (minimum 200 shocks)",
+      "Weight": "1.5 kg (3.5 lbs) ultra-portable"
+    },
+    "packageContents": [
+      "1x HeartStart FRx Defibrillator",
+      "1x SMART Pads II Pre-connected Pair",
+      "1x Long-Life Lithium Manganese Dioxide Battery",
+      "1x Quick Reference Illustrated Guide"
+    ],
+    "faqs": [
+      {
+        "question": "Can non-medical staff operate this device in an emergency?",
+        "answer": "Yes, the clear voice prompts guide any layperson step-by-step through pad placement and chest compressions."
+      }
+    ]
+  },
+  {
+    "id": "mindray-bc-5150-hematology-analyzer",
+    "sku": "GB-LAB-HA-001",
+    "name": "Mindray BC-5150 5-Part Auto Hematology Analyzer",
+    "model": "BC-5150",
+    "brand": "Mindray Healthcare",
+    "category": "laboratory-diagnostics",
+    "categoryName": "Laboratory & In-Vitro Diagnostics",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹4,20,000 - ₹6,80,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "2-4 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485:2016",
+      "CE Mark",
+      "NABL Ready"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty + NABL Calibration",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1583912267670-6575ad4736e8?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Compact 5-part differential hematology analyzer with laser scatter, flow cytometry, and only 3 routine reagents.",
+    "fullDescription": "BC-5150 is the most space-saving 5-part hematology analyzer in its class. Requiring only 15 µL of whole blood, it processes 60 samples per hour with 25 diagnostic parameters and 4 scattergrams.",
+    "features": [
+      "Tri-angle semiconductor laser scatter + chemical dye method",
+      "Throughput of 60 samples per hour",
+      "Only 3 routine reagents (Diluent, Lyse, Cleanser) reducing operating costs",
+      "10.4-inch high-resolution color touchscreen",
+      "Requires only 15 µL whole blood or 20 µL pre-diluted blood"
+    ],
+    "specs": {
+      "Parameters": "25 reportable parameters + 4 scattergrams + 3 histograms",
+      "Throughput": "60 samples/hour",
+      "Memory": "Up to 40,000 patient results with scattergrams and histograms",
+      "Reagents": "M-52D Diluent, M-52DIFF Lyse, M-52LH Lyse"
+    },
+    "packageContents": [
+      "1x Mindray BC-5150 Hematology Analyzer",
+      "1x Start-up Reagent Pack & Waste Container",
+      "1x Barcode Scanner & Thermal Paper Pack",
+      "1x Calibration & QC Pack Documentation"
+    ],
+    "faqs": [
+      {
+        "question": "Does it flag abnormal cells like immature granulocytes and blasts?",
+        "answer": "Yes, advanced flagging algorithms signal suspected atypical lymphocytes, immature granulocytes, and blast populations."
+      }
+    ]
+  },
+  {
+    "id": "erba-em-200-biochemistry-analyzer",
+    "sku": "GB-LAB-BC-002",
+    "name": "Erba Mannheim EM 200 Fully Automated Clinical Chemistry Analyzer",
+    "model": "EM 200 Discrete",
+    "brand": "Erba Mannheim",
+    "category": "laboratory-diagnostics",
+    "categoryName": "Laboratory & In-Vitro Diagnostics",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹6,50,000 - ₹9,80,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "3-5 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485",
+      "CE Mark"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Discrete random access clinical chemistry analyzer with 200 tests/hour throughput and reusable quartz cuvettes.",
+    "fullDescription": "A reliable automated clinical chemistry solution for medium-to-large pathology centres. Equipped with refrigerated reagent tray, onboard laundry system, liquid level sensing, and clot detection.",
+    "features": [
+      "Constant throughput of 200 photometric tests/hour",
+      "Refrigerated reagent rotor with 40 positions (2°C - 8°C)",
+      "High-precision quartz cuvettes with onboard 8-stage laundry station",
+      "Liquid level sensing and vertical collision protection"
+    ],
+    "specs": {
+      "Throughput": "200 tests/hour (Photometric)",
+      "Wavelength Range": "8 wavelengths: 340, 405, 505, 546, 578, 600, 660, 700 nm",
+      "Reaction Volume": "Minimal 180 µL saving reagent consumption"
+    },
+    "packageContents": [
+      "1x Erba EM 200 Analyzer Base Unit",
+      "1x Dedicated PC Workstation & Laser Printer",
+      "1x Set of Reusable Quartz Reaction Cuvettes",
+      "1x Water Purification System Interface Kit"
+    ],
+    "faqs": [
+      {
+        "question": "Does it support STAT emergency sample processing?",
+        "answer": "Yes, emergency samples can be loaded at any priority position during routine operation."
+      }
+    ]
+  },
+  {
+    "id": "siemens-clinitek-status-urine-analyzer",
+    "sku": "GB-LAB-UA-003",
+    "name": "Siemens Clinitek Status+ Point-of-Care Urine Analyzer",
+    "model": "Clinitek Status+",
+    "brand": "Siemens Healthineers",
+    "category": "laboratory-diagnostics",
+    "categoryName": "Laboratory & In-Vitro Diagnostics",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹85,000 - ₹1,35,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "1-3 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485:2016",
+      "CE Mark"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1583912267670-6575ad4736e8?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Automated urinalysis reader eliminating visual subjectivity with automated quality checks and microalbumin-to-creatinine ratio reporting.",
+    "fullDescription": "Siemens Clinitek Status+ automates urinalysis testing using Multistix strips. Proprietary Auto-Checks technology automatically tests every strip for humidity exposure and identifies the strip type to prevent operational errors.",
+    "features": [
+      "Proprietary Auto-Checks technology verifies strip integrity",
+      "Tests for Leukocytes, Nitrite, Protein, Blood, Glucose, Ketones, pH, and Microalbumin",
+      "Fast results in under 60 seconds",
+      "Internal thermal printer with automated result archiving"
+    ],
+    "specs": {
+      "Throughput": "1 test per minute",
+      "Memory": "Up to 950 patient records",
+      "Display": "Touchscreen LCD display"
+    },
+    "packageContents": [
+      "1x Clinitek Status+ Analyzer",
+      "1x Test Table & Calibration Insert",
+      "1x AC Power Adapter",
+      "1x Starter Strip Pack & Thermal Paper"
+    ],
+    "faqs": [
+      {
+        "question": "Can it calculate urine albumin-to-creatinine ratio (ACR)?",
+        "answer": "Yes, using Clinitek Microalbumin 2 strips, it calculates ACR to detect early kidney disease in diabetics."
+      }
+    ]
+  },
+  {
+    "id": "roche-cobas-c111-biochemistry",
+    "sku": "GB-LAB-BC-004",
+    "name": "Roche Cobas c 111 Compact Clinical Chemistry Analyzer",
+    "model": "Cobas c 111 with ISE",
+    "brand": "Roche Diagnostics",
+    "category": "laboratory-diagnostics",
+    "categoryName": "Laboratory & In-Vitro Diagnostics",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹8,90,000 - ₹13,50,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "4-7 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485",
+      "CE Mark",
+      "FDA Cleared"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Swiss-precision benchtop clinical chemistry and electrolyte analyzer with disposable cuvette segments.",
+    "fullDescription": "Cobas c 111 is designed for small laboratories and private clinics processing 10 to 50 samples per day. Delivers identical high-standard Roche test results as large central hospital Cobas systems.",
+    "features": [
+      "Continuous random-access sample loading (up to 8 sample tubes simultaneously)",
+      "Optional Ion-Selective Electrode (ISE) for Na+, K+, Cl-",
+      "Pre-calibrated barcodes on ready-to-use reagent bottles",
+      "Disposable cuvette segments preventing cross-contamination"
+    ],
+    "specs": {
+      "Throughput": "65 to 100 photometric tests/hour (up to 180 with ISE)",
+      "Reagents Onboard": "14 reagent bottles refrigerated",
+      "Sample Volume": "2 to 20 µL per test"
+    },
+    "packageContents": [
+      "1x Cobas c 111 Main Engine with ISE",
+      "1x Cuvette Segment Dispenser Pack",
+      "1x Roche QC and Calibrator Set",
+      "1x Technical Manual & Power Supply"
+    ],
+    "faqs": [
+      {
+        "question": "Does it require deionized external water plants?",
+        "answer": "No, Cobas c 111 utilizes internal on-board water and waste containers, making installation plug-and-play."
+      }
+    ]
+  },
+  {
+    "id": "mindray-bs-240-chemistry-analyzer",
+    "sku": "GB-LAB-BC-005",
+    "name": "Mindray BS-240 Automatic Clinical Chemistry Analyzer",
+    "model": "BS-240",
+    "brand": "Mindray Healthcare",
+    "category": "laboratory-diagnostics",
+    "categoryName": "Laboratory & In-Vitro Diagnostics",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹7,20,000 - ₹10,80,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "3-5 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485:2016",
+      "CE Mark"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1583912267670-6575ad4736e8?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Benchtop chemistry analyzer with constant 200 tests/hour, 80 reagent positions, and smart step-by-step guidance.",
+    "fullDescription": "BS-240 is a versatile benchtop analyzer equipped with a large 80-position multifunctional carousel, bidirectional LIS connectivity, and high-precision ceramic sample syringes.",
+    "features": [
+      "Constant 200 photometric tests per hour (up to 400 with ISE)",
+      "Up to 80 sample and 80 reagent positions",
+      "Minimum reaction volume of only 100 µL",
+      "Bi-directional LIS interface with host query support"
+    ],
+    "specs": {
+      "Photometric Range": "0 to 4.0 Abs",
+      "Cuvettes": "Reusable 80-segment reaction carousel",
+      "Water Consumption": "Under 3.5 Litres per hour"
+    },
+    "packageContents": [
+      "1x Mindray BS-240 Benchtop Analyzer",
+      "1x Dedicated PC & Software Package",
+      "1x Reagent Starter Kit & Wash Solution",
+      "1x NABL Calibration Pack"
+    ],
+    "faqs": [
+      {
+        "question": "What is the water consumption rate?",
+        "answer": "It consumes less than 3.5 L/h of purified water, significantly lower than traditional floor analyzers."
+      }
+    ]
+  },
+  {
+    "id": "remis-pr-24-centrifuge",
+    "sku": "GB-LAB-CF-006",
+    "name": "REMI PR-24 High-Speed Refrigerated Laboratory Centrifuge",
+    "model": "PR-24 Multi-Rotor",
+    "brand": "REMI Instruments",
+    "category": "laboratory-diagnostics",
+    "categoryName": "Laboratory & In-Vitro Diagnostics",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹1,60,000 - ₹2,40,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "2-3 Business Days",
+    "regulatory": [
+      "ISO 13485:2016",
+      "BIS Certified",
+      "CE Mark"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Microprocessor-controlled refrigerated centrifuge for blood banking, PRP isolation, clinical chemistry, and molecular biology.",
+    "fullDescription": "REMI PR-24 offers precise temperature control down to -8°C with CFC-free refrigeration. Features brushless induction motor, electronic safety lid interlock, and imbalance sensor.",
+    "features": [
+      "Speed up to 20,000 RPM (RCF up to 37,570 x g)",
+      "Temperature range from -8°C to +40°C",
+      "Brushless drive with inverter frequency control",
+      "Automatic rotor recognition and imbalance detection"
+    ],
+    "specs": {
+      "Max Speed": "20,000 RPM",
+      "Max Capacity": "4 x 100 mL swing out or 24 x 1.5 mL angle rotor",
+      "Display": "Digital LCD display for speed, RCF, temp, and time"
+    },
+    "packageContents": [
+      "1x REMI PR-24 Refrigerated Centrifuge Unit",
+      "1x Swing-Out or Angle Rotor of customer choice",
+      "1x Calibration Certificate & Power Lead"
+    ],
+    "faqs": [
+      {
+        "question": "Can it be used for PRP (Platelet-Rich Plasma) preparation?",
+        "answer": "Yes, its programmable deceleration profiles (soft brake) prevent platelet pellet re-suspension."
+      }
+    ]
+  },
+  {
+    "id": "paramount-5-function-electric-icu-bed",
+    "sku": "GB-FURN-BED-001",
+    "name": "Paramount Bed A5 Series 5-Function Motorized ICU Bed",
+    "model": "A5 Series ICU Motorized",
+    "brand": "Paramount Bed",
+    "category": "hospital-ward-furniture",
+    "categoryName": "Hospital Ward & Critical Furniture",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹2,60,000 - ₹3,90,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "3-5 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "ISO 13485:2016",
+      "JIS T 9254",
+      "IEC 60601-2-52"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Flagship 5-function ICU electric bed with integrated scale, cardiac chair position, dual-sided CPR lever, and low-height fall prevention.",
+    "fullDescription": "Paramount Bed A5 Series is engineered for zero-compromise patient recovery and ergonomic nursing. Features 5 electric actuators, split side rails with integrated angle indicators, continuous bed scale, and emergency CPR release.",
+    "features": [
+      "5 motorized functions: Backrest, Knee rest, Height adjustment, Trendelenburg & Reverse Trendelenburg",
+      "One-touch Electric Cardiac Chair position",
+      "Dual mechanical quick-release CPR levers on both bed sides",
+      "Split drop-down ABS side rails with built-in nurse and patient control keypads",
+      "Central braking system with 150mm anti-static dual castors"
+    ],
+    "specs": {
+      "Safe Working Load": "250 kg (550 lbs)",
+      "Height Range": "Low 350 mm to High 750 mm",
+      "Trendelenburg Angle": "0 to 14° / Reverse 0 to 14°",
+      "Backrest Angle": "0 to 70° with pelvic decompression slide"
+    },
+    "packageContents": [
+      "1x Paramount A5 5-Function ICU Bed Frame",
+      "1x 4-Section Visco-Elastic Pressure Relief Medical Mattress",
+      "1x Telescopic Stainless Steel IV Pole with 4 Hooks",
+      "1x Battery Backup Pack for emergency power"
+    ],
+    "faqs": [
+      {
+        "question": "Does the bed protect against patient entrapment and falls?",
+        "answer": "Yes, designed strictly compliant with IEC 60601-2-52 anti-entrapment standards with safe side rail spacing."
+      }
+    ]
+  },
+  {
+    "id": "stryker-sv2-hospital-bed",
+    "sku": "GB-FURN-BED-002",
+    "name": "Stryker SV2 Electric Hospital Patient Bed",
+    "model": "SV2 Ward Master",
+    "brand": "Stryker Surgical",
+    "category": "hospital-ward-furniture",
+    "categoryName": "Hospital Ward & Critical Furniture",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹1,80,000 - ₹2,70,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "4-6 Business Days",
+    "regulatory": [
+      "ISO 13485:2016",
+      "CE Mark",
+      "IEC 60601-2-52"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Versatile electric bed for ward and semi-intensive care environments, offering dual-column lift and simple maintenance.",
+    "fullDescription": "Stryker SV2 brings world-class durability to general hospital wards. Features an open architecture for deep cleaning, simple one-touch nurse controls, and smooth electric mobility.",
+    "features": [
+      "Motorized height, backrest, and knee break adjustments",
+      "Dual column telescopic lift system with smooth wipedown surfaces",
+      "Integrated underbed night lighting for patient safety",
+      "Removable head and foot boards with blow-molded bumper protection"
+    ],
+    "specs": {
+      "Safe Working Load": "230 kg",
+      "Height Range": "380 mm to 780 mm",
+      "Castor Size": "125 mm Central Locking Castors"
+    },
+    "packageContents": [
+      "1x Stryker SV2 Bed Frame",
+      "1x High-Density Anti-Bacterial Mattress",
+      "1x Handheld Patient Pendant Control",
+      "1x Stainless Steel IV Pole"
+    ],
+    "faqs": [
+      {
+        "question": "Is it easy to clean and disinfect between patients?",
+        "answer": "Yes, the open architecture and sealed smooth columns permit rapid terminal disinfection with hospital wipes."
+      }
+    ]
+  },
+  {
+    "id": "janak-deluxe-hydraulic-patient-stretcher",
+    "sku": "GB-FURN-ST-003",
+    "name": "Janak Prime Hydraulic Emergency Patient Transport Stretcher",
+    "model": "Janak Trans-Care 900",
+    "brand": "Janak Healthcare",
+    "category": "hospital-ward-furniture",
+    "categoryName": "Hospital Ward & Critical Furniture",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹95,000 - ₹1,45,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "1-3 Business Days",
+    "regulatory": [
+      "ISO 9001",
+      "ISO 13485:2016",
+      "CE Certified"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Heavy-duty hydraulic emergency transfer trolley with X-Ray translucent backrest, 5th wheel steering, and dual hydraulic pedals.",
+    "fullDescription": "Engineered for trauma emergency departments and operating room transfers. The 5th steering wheel guarantees effortless navigation around sharp hospital corners and crowded corridors.",
+    "features": [
+      "Dual hydraulic foot pedals on both sides for height and Trendelenburg control",
+      "Retractable 5th directional guide wheel for straight-line steering",
+      "Full-length radio-translucent deck for C-Arm and mobile X-Ray imaging",
+      "Collapsible stainless steel full-protection side rails"
+    ],
+    "specs": {
+      "Safe Working Load": "220 kg",
+      "Height Elevation": "560 mm to 880 mm hydraulic lift",
+      "Castors": "200 mm diameter heavy-duty castors with central brake pedal"
+    },
+    "packageContents": [
+      "1x Hydraulic Stretcher Trolley",
+      "1x 75mm Waterproof Transfer Mattress with Straps",
+      "1x Retractable Oxygen Cylinder Cage",
+      "1x Two-Stage Folding IV Pole"
+    ],
+    "faqs": [
+      {
+        "question": "Can an X-Ray cassette be inserted under the patient?",
+        "answer": "Yes, the backrest and pelvic sections have an integrated X-Ray cassette slide tunnel."
+      }
+    ]
+  },
+  {
+    "id": "paramount-overbed-eating-table",
+    "sku": "GB-FURN-TB-004",
+    "name": "Paramount Bed Gas-Spring Assisted Overbed Dining Table",
+    "model": "Paramount KF-830",
+    "brand": "Paramount Bed",
+    "category": "hospital-ward-furniture",
+    "categoryName": "Hospital Ward & Critical Furniture",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹24,000 - ₹38,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "1-2 Business Days",
+    "regulatory": [
+      "ISO 13485:2016",
+      "JIS Certified"
+    ],
+    "warranty": "2 Years Comprehensive Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Effortless gas-cylinder assisted height adjustable overbed table with spill-proof raised edges and concealed smooth castors.",
+    "fullDescription": "Designed for patient comfort and longevity. A gentle upward touch on the lever lifts the table silently, while pressing down with lever allows quick height positioning.",
+    "features": [
+      "Gas-spring assisted height mechanism with safety upward release",
+      "Molded phenolic resin tabletop with liquid retention rims",
+      "Low profile base fits under beds with low clearance (under 95 mm)",
+      "Concealed low-friction twin castors"
+    ],
+    "specs": {
+      "Height Range": "650 mm to 1000 mm smooth adjustment",
+      "Tabletop Dimensions": "900 mm x 400 mm",
+      "Max Tabletop Load": "30 kg distributed load"
+    },
+    "packageContents": [
+      "1x Paramount Overbed Table",
+      "1x Assembly Hardware & User Guide"
+    ],
+    "faqs": [
+      {
+        "question": "Does it fit under low ICU beds?",
+        "answer": "Yes, the base profile height is only 88 mm, fitting under almost all modern motorized ICU beds."
+      }
+    ]
+  },
+  {
+    "id": "draeger-movita-ceiling-medical-pendant",
+    "sku": "GB-FURN-PD-005",
+    "name": "Dräger Movita Ceiling Medical Gas & Power Supply Pendant",
+    "model": "Movita Lift OT/ICU",
+    "brand": "Dräger Medical",
+    "category": "hospital-ward-furniture",
+    "categoryName": "Hospital Ward & Critical Furniture",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹6,80,000 - ₹11,50,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "7-14 Business Days",
+    "regulatory": [
+      "CDSCO Approved",
+      "HTM 02-01 Compliant",
+      "ISO 13485:2016",
+      "CE Mark"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "Heavy-duty articulated ceiling pendant for ICU and Operating Theatres, consolidating medical gases, high-voltage power, and data lines.",
+    "fullDescription": "Movita lifts monitors and ventilators off the floor to create an uncluttered, sterile workspace. Features motorized vertical lift, pneumatic brakes, and modular gas terminal units (O2, N2O, Air4, Air7, Vacuum, AGSS).",
+    "features": [
+      "Motorized height adjustment with 600 mm vertical stroke",
+      "330° dual arm rotation with color-coded pneumatic brake indicators",
+      "Integrated cable management carrying up to 24 electrical sockets and 12 gas outlets",
+      "Payload capacity up to 300 kg for multiple monitors and infusion racks"
+    ],
+    "specs": {
+      "Arm Reach": "800 mm + 1000 mm dual articulated arms",
+      "Payload": "Up to 300 kg equipment loading",
+      "Gas Standards": "British Standard (BS 5682) / DIN / NIST available"
+    },
+    "packageContents": [
+      "1x Dräger Movita Articulated Arm Assembly",
+      "1x Media Head Column with Pre-Installed Outlets",
+      "2x Adjustable Equipment Shelves with Drawers",
+      "1x Structural Ceiling Flange & Fastening Set"
+    ],
+    "faqs": [
+      {
+        "question": "Can our hospital specify custom gas terminal types?",
+        "answer": "Yes, we pre-configure British Standard (BS), DIN, or American Ohmeda gas outlets based on hospital pipeline specifications."
+      }
+    ]
+  },
+  {
+    "id": "janak-4-fold-crash-cart-emergency",
+    "sku": "GB-FURN-CC-006",
+    "name": "Janak Resusci-Care Stainless Steel Emergency Crash Cart",
+    "model": "Resusci-Care Deluxe",
+    "brand": "Janak Healthcare",
+    "category": "hospital-ward-furniture",
+    "categoryName": "Hospital Ward & Critical Furniture",
+    "priceStatus": "Price on Request",
+    "referenceRange": "₹48,000 - ₹75,000",
+    "oemDirect": true,
+    "tenderCompliant": true,
+    "leadTime": "1-3 Business Days",
+    "regulatory": [
+      "ISO 9001",
+      "ISO 13485",
+      "NABH Compliant"
+    ],
+    "warranty": "2 Years Comprehensive On-site Warranty",
+    "warrantySla": {
+      "comprehensiveYears": 2,
+      "sparePartsAvailability": "10 Years Guaranteed",
+      "onSiteResponseTime": "Under 4 Hours",
+      "freePreventiveVisits": 4,
+      "calibrationCert": "NABL Traceable Certificate"
+    },
+    "image": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80",
+    "shortDescription": "NABH compliant 5-drawer resuscitation trolley with central break-away lock, defibrillator swivel tray, and CPR cardiac board.",
+    "fullDescription": "Engineered for instant rapid response during Code Blue emergencies. Features color-coded modular drawer dividers, swivel defibrillator shelf, cardiac CPR backboard, oxygen cylinder holder, and IV pole.",
+    "features": [
+      "5 ball-bearing slide drawers with plastic internal medicine dividers",
+      "Centralized break-away disposable plastic seal locking system",
+      "360° swivel top tray for defibrillator/monitor placement",
+      "Concealed acrylic CPR compression board on the back"
+    ],
+    "specs": {
+      "Construction": "High-grade SS 304 with ABS molded top work surface",
+      "Drawers": "2 Small, 2 Medium, 1 Large deep storage drawer",
+      "Castors": "125 mm diagonal locking noiseless PU wheels"
+    },
+    "packageContents": [
+      "1x Resusci-Care Emergency Crash Cart",
+      "1x CPR Backboard Acrylic Plate",
+      "1x Oxygen Cylinder Cradle Assembly",
+      "1x Stainless Steel IV Infusion Pole",
+      "100x Numbered Breakaway Plastic Tamper Seals"
+    ],
+    "faqs": [
+      {
+        "question": "Is this cart compliant with NABH emergency code protocols?",
+        "answer": "Yes, it fulfills all NABH and JCI accreditation guidelines for Code Blue resuscitation equipment."
+      }
+    ]
+  }
+]

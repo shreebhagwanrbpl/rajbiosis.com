@@ -142,8 +142,8 @@ function DealsContent() {
             {/* Quick Summary Pill */}
             <div className="flex items-center gap-4 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs shrink-0">
               <div className="text-center px-2">
-                <div className="text-xl sm:text-2xl font-black text-red-600">Up to 35%</div>
-                <div className="text-[11px] font-semibold text-slate-500">Factory Discount</div>
+                <div className="text-xl sm:text-2xl font-black text-red-600">Direct OEM</div>
+                <div className="text-[11px] font-semibold text-slate-500">Tender Pricing</div>
               </div>
               <div className="w-px h-8 bg-slate-200"></div>
               <div className="text-center px-2">
@@ -166,7 +166,7 @@ function DealsContent() {
               <Flame size={16} className={activeTab === 'best-deals' ? 'fill-red-600 text-red-600 animate-pulse' : 'text-slate-400'} />
               <span>Best Deals</span>
               <span className={`text-[11px] px-2 py-0.5 rounded-full font-mono ${activeTab === 'best-deals' ? 'bg-red-100 text-red-800' : 'bg-slate-200 text-slate-700'}`}>
-                Save Up to ₹4.3L
+                Clearance Range
               </span>
             </button>
 
@@ -339,35 +339,33 @@ function DealsContent() {
                         {product.shortDesc}
                       </p>
 
-                      {/* Price & Savings Box */}
+                      {/* Price & Quotation Box (Strictly Price on Request) */}
                       <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-200/80">
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="text-xs text-slate-400 line-through font-medium">
-                              MRP {formatINR(product.mrp)}
-                            </div>
-                            <div className="text-xl font-black text-slate-900 mt-0.5">
-                              {formatINR(product.price)}
+                            <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">
+                              Institutional Pricing
+                            </span>
+                            <div className="text-sm sm:text-base font-bold text-slate-900 mt-0.5">
+                              Price on Request
                             </div>
                           </div>
 
-                          {saveAmount > 0 && (
-                            <div className="text-right">
-                              <span className="inline-block bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-2 py-0.5 rounded">
-                                Save {formatINR(saveAmount)}
-                              </span>
-                              <div className="text-[10px] text-slate-400 mt-1 font-medium">
-                                Direct Factory Price
-                              </div>
+                          <div className="text-right">
+                            <span className="inline-block bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded">
+                              Official Quotation
+                            </span>
+                            <div className="text-[10px] text-slate-400 mt-0.5 font-medium">
+                              Direct OEM Supply
                             </div>
-                          )}
+                          </div>
                         </div>
 
                         {/* Bulk Volume Perk if available */}
                         {product.bulkPricing && product.bulkPricing.length > 1 && (
                           <div className="mt-2.5 pt-2 border-t border-slate-200 text-[11px] text-slate-600 flex items-center gap-1 font-medium">
                             <Tag size={12} className="text-red-500 shrink-0" />
-                            <span>Bulk Rate: From {formatINR(product.bulkPricing[product.bulkPricing.length - 1].pricePerUnit)}/unit on hospital orders</span>
+                            <span>Bulk Institutional Tiers Available on Request</span>
                           </div>
                         )}
                       </div>

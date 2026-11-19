@@ -2,7 +2,7 @@ export const BRAND_LOGOS = [
   { name: 'Abbott', src: '/brands/abbott.png', specialty: 'Diagnostics & Point of Care', tier: 'Global OEM' },
   { name: 'Siemens Healthineers', src: '/brands/siemens.png', specialty: 'Medical Imaging & Laboratory', tier: 'Global OEM' },
   { name: 'Mindray', src: '/brands/mindray.png', specialty: 'Patient Monitoring & Ultrasound', tier: 'Global OEM' },
-  { name: 'Oscar', src: '/brands/oscar.jpg', specialty: 'Rapid Immuno Diagnostic Kits', tier: 'Direct Partner' },
+  { name: 'Oscar', src: '/brands/oscar.png', specialty: 'Rapid Immuno Diagnostic Kits', tier: 'Direct Partner' },
   { name: 'HemoCue', src: '/brands/hemocue.png', specialty: 'Microcuvette POC Hemoglobin', tier: 'Direct Partner' },
   { name: 'Erba Diagnostics', src: '/brands/erba.png', specialty: 'Clinical Chemistry & Reagents', tier: 'Direct Partner' },
   { name: 'Autobio', src: '/brands/autobio.png', specialty: 'Microbiology & CLIA Analyzers', tier: 'Direct Partner' },

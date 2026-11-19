@@ -7,6 +7,7 @@ import ProductEnquiryModal from '../components/ProductEnquiryModal';
 import GlobalTooltip from '../components/GlobalTooltip';
 import CartDrawer from '../components/CartDrawer';
 import LocationPromptModal from '../components/LocationPromptModal';
+import ToastProvider from '../components/ToastProvider';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -87,6 +88,7 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className={`${plusJakartaSans.className} bg-neutral-50 text-neutral-900 font-sans selection:bg-brand-600 selection:text-white pb-14 lg:pb-0`} suppressHydrationWarning>
+        <ToastProvider />
         {children}
         <ProductEnquiryModal />
         <CartDrawer />

@@ -30,7 +30,7 @@ export default function HospitalVirtualExplorer({ onOpenRfq }) {
         { product: PRODUCTS[2], role: "Emergency Biphasic Defibrillator", qty: "2 Units" },
         { product: PRODUCTS[13], role: "Motorized 5-Function ICU Bed", qty: "10 Units" }
       ],
-      turnkeyEstimate: "₹42,50,000"
+      turnkeyEstimate: "Official Quote on Request"
     },
     {
       id: "unit-ot",
@@ -44,7 +44,7 @@ export default function HospitalVirtualExplorer({ onOpenRfq }) {
         { product: PRODUCTS[8], role: "Dual-Dome LED Shadowless OT Light", qty: "1 Set" },
         { product: PRODUCTS[9], role: "Hydraulic Universal Surgical Table", qty: "1 Table" }
       ],
-      turnkeyEstimate: "₹28,80,000"
+      turnkeyEstimate: "Official Quote on Request"
     },
     {
       id: "unit-radiology",
@@ -57,7 +57,7 @@ export default function HospitalVirtualExplorer({ onOpenRfq }) {
         { product: PRODUCTS[5], role: "4D Color Doppler Ultrasound Scanner", qty: "1 System" },
         { product: PRODUCTS[6], role: "9-Inch High Frequency C-Arm Unit", qty: "1 Unit" }
       ],
-      turnkeyEstimate: "₹36,80,000"
+      turnkeyEstimate: "Official Quote on Request"
     },
     {
       id: "unit-pathology",
@@ -70,7 +70,7 @@ export default function HospitalVirtualExplorer({ onOpenRfq }) {
         { product: PRODUCTS[12], role: "12-Channel Resting ECG Machine", qty: "2 Units" },
         { product: PRODUCTS[15], role: "50L Class-B Autoclave Sterilizer", qty: "1 Unit" }
       ],
-      turnkeyEstimate: "₹18,50,000"
+      turnkeyEstimate: "Official Quote on Request"
     }
   ];
 
@@ -189,8 +189,8 @@ export default function HospitalVirtualExplorer({ onOpenRfq }) {
                 </div>
 
                 <div className="mt-3 pt-2.5 border-t border-slate-200/80 flex items-center justify-between">
-                  <span className="text-xs font-black text-slate-900">
-                    {formatINR(dev.product.price)}
+                  <span className="text-xs font-bold text-slate-700">
+                    Price on Request
                   </span>
                   <Link
                     href={`/product/${dev.product.id}`}

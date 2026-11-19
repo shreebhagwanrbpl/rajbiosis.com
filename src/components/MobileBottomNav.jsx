@@ -70,15 +70,6 @@ export default function MobileBottomNav() {
     };
   }, []);
 
-  const categoryIcons = {
-    'icu-critical-care': <HeartPulse size={20} className="text-red-500" />,
-    'radiology-imaging': <Radio size={20} className="text-blue-500" />,
-    'surgical-ot': <Scissors size={20} className="text-emerald-500" />,
-    'diagnostic-lab': <Activity size={20} className="text-amber-500" />,
-    'hospital-furniture': <Bed size={20} className="text-indigo-500" />,
-    'sterilization-dental': <ShieldAlert size={20} className="text-cyan-500" />,
-  };
-
   const navItems = [
     {
       label: 'Home',
@@ -196,6 +187,7 @@ export default function MobileBottomNav() {
               <Link
                 key={item.label}
                 href={item.href}
+                prefetch={true}
                 className="flex flex-col items-center justify-center p-1 rounded-xl transition active:scale-95 focus:outline-none"
                 aria-label={item.label}
               >
@@ -244,14 +236,19 @@ export default function MobileBottomNav() {
             <div className="p-4 space-y-2 overflow-y-auto overscroll-contain">
               {CATEGORIES.filter(c => c.id !== 'all').map((cat) => (
                 <Link
-                  key={cat.id}
-                  href={`/category/${cat.id}`}
+                  key={cat.id || cat.slug}
+                  href={`/category/${cat.slug || cat.id}`}
+                  prefetch={true}
                   onClick={() => setCategoriesDrawerOpen(false)}
                   className="flex items-center justify-between p-3 rounded-2xl bg-neutral-50 hover:bg-neutral-100 border border-neutral-200/70 transition group active:scale-[0.99]"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-xs border border-neutral-200/60 group-hover:scale-105 transition-transform">
-                      {categoryIcons[cat.id] || <Activity size={20} className="text-brand-600" />}
+                    <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-xs border border-neutral-200/60 overflow-hidden group-hover:scale-105 transition-transform p-1">
+                      {cat.image ? (
+                        <img src={cat.image} alt={cat.name} className="w-full h-full object-contain" />
+                      ) : (
+                        <Activity size={20} className="text-brand-600" />
+                      )}
                     </div>
                     <div>
                       <div className="text-xs font-bold text-neutral-900 group-hover:text-brand-600 transition-colors">
@@ -271,15 +268,25 @@ export default function MobileBottomNav() {
                 </Link>
               ))}
 
-              {/* View Complete Catalogue Link */}
-              <div className="pt-2">
+              {/* View Complete Catalogue & All Categories Links */}
+              <div className="pt-2 space-y-2">
+                <Link
+                  href="/categories"
+                  prefetch={true}
+                  onClick={() => setCategoriesDrawerOpen(false)}
+                  className="w-full py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.98]"
+                >
+                  <span>Explore All 79 Categories Page</span>
+                  <ChevronRight size={14} />
+                </Link>
                 <Link
                   href="/products"
+                  prefetch={true}
                   onClick={() => setCategoriesDrawerOpen(false)}
-                  className="w-full py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.98]"
+                  className="w-full py-2 px-4 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-xs font-semibold flex items-center justify-center gap-1.5 transition active:scale-[0.98]"
                 >
-                  <span>Browse All Biomedical Catalogue</span>
-                  <ChevronRight size={14} />
+                  <span>Browse All Products Catalogue</span>
+                  <ChevronRight size={13} />
                 </Link>
               </div>
             </div>

@@ -98,8 +98,8 @@ export default function RfqModal({
       ? Math.round(baseTotal * 0.18) 
       : 0;
 
-  // Medical Equipment GST rate (12% standard or 18% for high-tech imaging)
-  const gstRate = activeProduct?.category === 'radiology-imaging' ? 0.18 : 0.12;
+  // Medical Reagents & Equipment GST rate
+  const gstRate = activeProduct?.gstRate ? (Number(activeProduct.gstRate) / 100) : 0.18;
   const gstAmount = Math.round((baseTotal + amcCost) * gstRate);
   const grandTotal = baseTotal + amcCost + gstAmount;
 

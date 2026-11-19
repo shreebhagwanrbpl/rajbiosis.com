@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { motion, useScroll, useSpring } from 'framer-motion';
 import {
   FileText,
   PhoneCall,
@@ -36,35 +37,33 @@ export default function QuoteSection() {
     };
   }, []);
 
-  // Track scroll progress with smooth, slow pacing for page transitions
+  // Framer Motion useScroll tied to section container
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start start', 'end end']
+  });
+
+  // Silky smooth, gentle spring physics for slow and deliberate scroll response
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 50, // very gentle pull for slow, graceful scroll response
+    damping: 24,   // smooth deceleration
+    mass: 1.2,     // realistic smooth inertia
+    restDelta: 0.0005
+  });
+
+  // Track smoothed progress to drive page peeling
   useEffect(() => {
-    const handleScroll = () => {
-      if (!containerRef.current) return;
-      const el = containerRef.current;
-      const rect = el.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-      const totalDist = el.offsetHeight - windowHeight;
-
-      if (totalDist <= 0) return;
-
-      const current = -rect.top;
-      const rawProgress = Math.max(0, Math.min(1, current / totalDist));
-      setScrollProgress(rawProgress);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
+    const unsubscribe = smoothProgress.on('change', (latest) => {
+      setScrollProgress(latest);
+    });
+    return () => unsubscribe();
+  }, [smoothProgress]);
 
   return (
     <section
       ref={containerRef}
       className="relative bg-white border-b border-neutral-200/80"
-      style={{ height: '220vh' }} // Generous pinning track so the page fly-off feels slow, graceful, and smooth
+      style={{ height: '360vh' }} // Generous pinning track so the page fly-off feels slow, graceful, and smooth
     >
       {/* Pinned Sticky Stage (Clean, Compact, Minimal) */}
       <div className="sticky top-14 sm:top-16 min-h-[calc(100vh-4rem)] flex items-center py-6 sm:py-8 overflow-hidden">

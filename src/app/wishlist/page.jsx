@@ -144,7 +144,9 @@ export default function WishlistPage() {
   const handleOpenQuote = (product) => {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
-        new CustomEvent('open-product-enquiry', { detail: product })
+        new CustomEvent('open-product-enquiry', {
+          detail: { ...product, quantity: product.quantity || 1 }
+        })
       );
     }
   };
@@ -266,7 +268,7 @@ export default function WishlistPage() {
                       {activeOffer.title || 'Management Special Offer'}
                     </span>
                     <p className="text-xs text-emerald-800">
-                      {activeOffer.type === 'percentage' ? `${activeOffer.value}% OFF` : activeOffer.type === 'flat' ? `₹${Number(activeOffer.value).toLocaleString('en-IN')} OFF` : 'COMPLIMENTARY PRIVILEGE'} applied to eligible wishlist products!
+                      Special institutional privilege applied to eligible wishlist products!
                     </p>
                   </div>
                 </div>
@@ -355,38 +357,20 @@ export default function WishlistPage() {
                           </span>
                         </div>
 
-                        {/* Price Details with Live Offer Support */}
-                        {isOfferEligible(product, activeOffer) && activeOffer.type === 'percentage' && activeOffer.value > 0 ? (
-                          <div className="pt-2 border-t border-slate-100 flex items-baseline justify-between">
-                            <div>
-                              <span className="text-[9px] font-semibold text-slate-400 line-through font-mono block">
-                                MRP: {formatINR(product.price)}
-                              </span>
-                              <div className="text-sm font-black text-emerald-800 font-mono">
-                                {formatINR(Math.round((product.price || 0) * (1 - Number(activeOffer.value || 0) / 100)))}
-                              </div>
-                            </div>
-                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded font-mono">
-                              {activeOffer.value}% Special Off
+                        {/* Price Details - Strictly Price on Request */}
+                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                          <div>
+                            <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block">
+                              Pricing
                             </span>
-                          </div>
-                        ) : (
-                          <div className="pt-2 border-t border-slate-100 flex items-baseline justify-between">
-                            <div>
-                              <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider block">
-                                Authorized Price
-                              </span>
-                              <div className="text-sm font-black text-slate-900 font-mono">
-                                {product.price ? formatINR(product.price) : 'Price on Request'}
-                              </div>
+                            <div className="text-xs font-bold text-slate-900 mt-0.5">
+                              Price on Request
                             </div>
-                            {product.mrp && product.price && product.mrp > product.price && (
-                              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-mono">
-                                Save {formatINR(product.mrp - product.price)}
-                              </span>
-                            )}
                           </div>
-                        )}
+                          <span className="text-[9px] font-bold text-brand-700 bg-red-50 border border-red-200/60 px-2 py-0.5 rounded-full">
+                            Official Quote
+                          </span>
+                        </div>
                       </div>
                     </div>
 

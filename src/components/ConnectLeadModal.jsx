@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, User, Phone, ArrowRight, ShieldCheck } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function ConnectLeadModal() {
   const router = useRouter();
@@ -47,11 +48,15 @@ export default function ConnectLeadModal() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) {
-      setError('कृपया अपना नाम दर्ज करें (Please enter your name)');
+      const msg = 'कृपया अपना नाम दर्ज करें (Please enter your name)';
+      setError(msg);
+      toast.error(msg, { id: 'lead-name-error' });
       return;
     }
     if (!mobile.trim() || mobile.trim().length < 10) {
-      setError('कृपया 10 अंकों का मोबाइल नंबर दर्ज करें (Please enter a valid 10-digit mobile number)');
+      const msg = 'कृपया 10 अंकों का मोबाइल नंबर दर्ज करें (Please enter a valid 10-digit mobile number)';
+      setError(msg);
+      toast.error(msg, { id: 'lead-mobile-error' });
       return;
     }
 
@@ -71,6 +76,11 @@ export default function ConnectLeadModal() {
     } catch (err) {
       console.error(err);
     }
+
+    toast.success('धन्यवाद! आपके विवरण सुरक्षित सहेज लिए गए हैं।', {
+      id: 'lead-success-toast',
+      duration: 4000
+    });
 
     sessionStorage.setItem('rb_connect_lead_shown', 'true');
     setIsOpen(false);

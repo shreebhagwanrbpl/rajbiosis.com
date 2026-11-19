@@ -55,7 +55,7 @@ export default function BiomedicalHardwareScanner({ onOpenRfq }) {
           x: '64%',
           y: '32%',
           status: '100% Calibrated',
-          desc: 'Solid-state ultrasonic oxygen sensor with lifetime warranty. Never depletes like conventional chemical galvanic cells, saving ₹45,000/year in consumable replacements.',
+          desc: 'Solid-state ultrasonic oxygen sensor with lifetime warranty. Never depletes like conventional chemical galvanic cells, eliminating recurring consumable replacement costs.',
           telemetry: 'Accuracy: ±1.2% • Response: 98ms • Zero Chemical Drift'
         },
         {

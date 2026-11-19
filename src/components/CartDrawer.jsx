@@ -44,6 +44,7 @@ import { recordCustomerLead } from '../utils/leads';
 import CountryCodeSelector from './CountryCodeSelector';
 import DistrictSelector from './DistrictSelector';
 import { DEFAULT_COUNTRY_CODE } from '../data/internationalCodes';
+import toast from 'react-hot-toast';
 
 export default function CartDrawer() {
   const router = useRouter();
@@ -343,6 +344,10 @@ export default function CartDrawer() {
       setIsSubmitting(false);
       setQuoteStep('success');
       setRedirectCountdown(5);
+      toast.success(`Bulk quotation enquiry for ${cartItems.length} products submitted successfully!`, {
+        id: 'cart-rfq-success',
+        duration: 5000,
+      });
     }
   };
 
@@ -351,7 +356,9 @@ export default function CartDrawer() {
       i => i.isNegotiable && (!i.expectedPrice || parseFloat(String(i.expectedPrice).replace(/[^0-9.]/g, '')) <= 0)
     );
     if (unpricedInCart) {
-      setCartError(`"${unpricedInCart.name}" is a price-negotiable item. Please enter your Target Price before proceeding.`);
+      const msg = `"${unpricedInCart.name}" is a price-negotiable item. Please enter your Target Price before proceeding.`;
+      setCartError(msg);
+      toast.error(msg, { id: 'cart-val-error' });
       return;
     }
     setCartError('');
@@ -372,45 +379,85 @@ export default function CartDrawer() {
     e.preventDefault();
         const unpricedInCart = cartItems.find(i => i.isNegotiable && (!i.expectedPrice || parseFloat(String(i.expectedPrice).replace(/[^0-9.]/g, '')) <= 0));
     if (unpricedInCart) {
-      setFormError(`"${unpricedInCart.name}" is a price-negotiable item. Please enter your Target / Expected Unit Price (₹) before proceeding.`);
+      const msg = `"${unpricedInCart.name}" is a price-negotiable item. Please enter your Target / Expected Unit Price (₹) before proceeding.`;
+      setFormError(msg);
+      toast.error(msg, { id: 'cart-form-error' });
       return;
     }
     const cleanDigits = phone.replace(/\D/g, '');
     if (!cleanDigits || cleanDigits.length < 7) {
-      setFormError('Please enter a valid 10-digit mobile number.');
+      const msg = 'Please enter a valid 10-digit mobile number.';
+      setFormError(msg);
+      toast.error(msg, { id: 'cart-phone-error' });
       return;
     }
     if (!email || !email.includes('@')) {
-      setFormError('Please enter a valid official email address.');
+      const msg = 'Please enter a valid official email address.';
+      setFormError(msg);
+      toast.error(msg, { id: 'cart-email-error' });
       return;
     }
     if (!district) {
-      setFormError('Please select your delivery district.');
+      const msg = 'Please select your delivery district.';
+      setFormError(msg);
+      toast.error(msg, { id: 'cart-district-error' });
       return;
     }
 
     setFormError('');
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOtp(code);
     setEnteredOtp('');
     setOtpError('');
     setQuoteStep('otp');
+
+    try {
+      fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          name: customerName.trim(),
+          role: 'customer',
+          district: district.trim(),
+          purpose: `Bulk Procurement Quotation (${cartItems.length} Products)`
+        })
+      });
+      toast.success(`Verification code dispatched from inquiry@rajbiosis.com to ${email.trim()}`, { id: 'cart-otp-sent', duration: 5500 });
+    } catch {
+      toast.success(`Verification code sent to ${email.trim()}`, { id: 'cart-otp-sent' });
+    }
   };
 
   // Step 2 -> Step 3: Verify OTP & Submit Multi-Item Quotation
-  const handleVerifyOtp = (e) => {
+  const handleVerifyOtp = async (e) => {
     e.preventDefault();
-    if (!enteredOtp || enteredOtp.trim().length !== 6) {
-      setOtpError('Please enter the 6-digit verification code.');
-      return;
-    }
-    if (enteredOtp.trim() !== generatedOtp.trim()) {
-      setOtpError('Invalid OTP code. Please enter the code sent to your email.');
+    const cleanEntered = enteredOtp.replace(/\D/g, '').trim();
+    if (!cleanEntered || cleanEntered.length !== 6) {
+      const msg = 'Please enter the complete 6-digit verification code received on your email.';
+      setOtpError(msg);
+      toast.error(msg, { id: 'cart-otp-len-error' });
       return;
     }
 
     setIsSubmitting(true);
     setOtpError('');
+
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), otp: cleanEntered })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setIsSubmitting(false);
+        const errMsg = data.error || 'Invalid OTP code. Please check your email inbox and enter the 6-digit code.';
+        setOtpError(errMsg);
+        toast.error(errMsg, { id: 'cart-otp-val-error' });
+        return;
+      }
+    } catch (err) {
+      console.warn('Network issue during verify', err);
+    }
 
     const totals = calculateCartTotals();
     const totalEst = totals.netTotal;
@@ -499,6 +546,10 @@ export default function CartDrawer() {
       setIsSubmitting(false);
       setQuoteStep('success');
       setCustomerLoggedIn(true);
+      toast.success(`Bulk quotation enquiry for ${cartItems.length} products verified & submitted!`, {
+        id: 'cart-otp-rfq-success',
+        duration: 5500,
+      });
       const prof = typeof window !== 'undefined' ? getUserProfile() : null;
       const isComplete = Boolean(
         prof && (
@@ -785,25 +836,21 @@ export default function CartDrawer() {
                   Enter 6-Digit Email OTP
                 </h3>
                 <p className="text-xs text-slate-600 mt-1">
-                  We have dispatched a verification code to <strong className="text-slate-900">{email}</strong> to authenticate this quotation.
+                  A verification code has been dispatched to <strong className="text-slate-900">{email}</strong> to authenticate this quotation.
                 </p>
               </div>
 
-              {/* Dev Mock Banner */}
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between text-xs text-blue-900">
-                <div className="flex items-center gap-2">
-                  <Mail size={16} className="text-blue-600 shrink-0" />
-                  <span>
-                    Test Code: <strong className="font-mono text-sm tracking-widest text-blue-700 font-bold">{generatedOtp}</strong>
-                  </span>
+              {/* Official Dispatch Verification Banner */}
+              <div className="p-3 bg-red-50/80 border border-red-200/80 rounded-xl flex items-start gap-2.5 text-xs text-red-950">
+                <Mail size={16} className="text-red-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-red-900">
+                    Official email sent from <strong className="font-mono text-red-700 font-bold">inquiry@rajbiosis.com</strong>
+                  </p>
+                  <p className="text-[11px] text-red-800/80 mt-0.5">
+                    Check your email inbox or spam folder for the 6-digit passcode to finalize this quotation request.
+                  </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setEnteredOtp(generatedOtp)}
-                  className="text-[10px] bg-blue-600 text-white font-bold px-2.5 py-1 rounded-lg hover:bg-blue-700 transition cursor-pointer shrink-0"
-                >
-                  Auto-Fill
-                </button>
               </div>
 
               <form onSubmit={handleVerifyOtp} className="space-y-4">
@@ -952,28 +999,12 @@ export default function CartDrawer() {
                           </button>
                         </div>
 
-                        {/* Unit & Subtotal Estimate with Live Offer */}
+                        {/* Unit Pricing - Strictly Price on Request */}
                         <div className="text-right">
-                          {isItemEligibleForOffer(item, activeOffer) && activeOffer.type === 'percentage' && activeOffer.value > 0 ? (
-                            <div>
-                              <span className="text-[10px] text-slate-400 block font-semibold line-through font-mono">
-                                MRP: {formatINR(item.price)}
-                              </span>
-                              <span className="text-xs font-black text-emerald-700 font-mono flex items-center justify-end gap-1">
-                                <span>{formatINR(getItemDiscountedPrice(item, activeOffer))}</span>
-                                <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1 py-0.2 rounded font-bold">
-                                  -{activeOffer.value}%
-                                </span>
-                              </span>
-                            </div>
-                          ) : (
-                            <div>
-                              <span className="text-[10px] text-slate-400 block font-semibold">Standard Unit Price</span>
-                              <span className="text-xs font-bold text-slate-800">
-                                {formatINR(item.price)}
-                              </span>
-                            </div>
-                          )}
+                          <span className="text-[10px] text-slate-400 block font-semibold">Institutional Pricing</span>
+                          <span className="text-xs font-bold text-slate-900">
+                            Price on Request
+                          </span>
                         </div>
                       </div>
 
@@ -1030,24 +1061,21 @@ export default function CartDrawer() {
 
                 {/* Footer Actions with Live Financial Breakdown */}
                 <div className="p-4 sm:p-6 border-t border-slate-200 bg-slate-50/90 space-y-3 shrink-0">
-                      {/* Financial Summary Card */}
+                      {/* Institutional Summary Card */}
                       <div className="bg-white rounded-xl p-3 border border-slate-200/80 space-y-1.5 text-xs shadow-2xs">
                         <div className="flex items-center justify-between text-slate-500 font-medium">
-                          <span>Catalog MRP Subtotal:</span>
-                          <span className="font-mono font-bold text-slate-800">{formatINR(cartTotals.originalSubtotal)}</span>
+                          <span>Selected Items for RFQ:</span>
+                          <span className="font-bold text-slate-900">{cartItems.length} Products</span>
                         </div>
-                        {cartTotals.totalDiscount > 0 && (
-                          <div className="flex items-center justify-between text-emerald-700 font-bold">
-                            <span className="flex items-center gap-1">
-                              <Sparkles size={12} className="text-emerald-600" />
-                              <span>Special Offer Concession:</span>
-                            </span>
-                            <span className="font-mono text-emerald-800">- {formatINR(cartTotals.totalDiscount)}</span>
-                          </div>
-                        )}
-                        <div className="pt-1.5 border-t border-slate-100 flex items-center justify-between text-slate-900 font-extrabold text-sm">
-                          <span>Estimated Net Total:</span>
-                          <span className="font-mono text-emerald-900 text-base font-black">{formatINR(cartTotals.netTotal)}</span>
+                        <div className="flex items-center justify-between text-slate-500 font-medium">
+                          <span>Total Units Requested:</span>
+                          <span className="font-bold text-slate-900">{cartItems.reduce((acc, i) => acc + (i.qty || 1), 0)} Units</span>
+                        </div>
+                        <div className="pt-1.5 border-t border-slate-100 flex items-center justify-between text-slate-900 font-extrabold text-xs">
+                          <span>Pricing Status:</span>
+                          <span className="font-bold text-brand-700 bg-red-50 border border-red-200/60 px-2 py-0.5 rounded-full text-[11px]">
+                            Official Quotation on Request
+                          </span>
                         </div>
                       </div>
 

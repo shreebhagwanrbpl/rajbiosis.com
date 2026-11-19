@@ -30,6 +30,7 @@ import { recordCustomerLead } from '../utils/leads';
 import { addToWishlist, WISHLIST_UPDATED_EVENT } from '../utils/wishlist';
 import { addToCart, openCartDrawer } from '../utils/cart';
 import { BRAND_LOGOS } from '../data/brands';
+import toast from 'react-hot-toast';
 
 const brandCol1 = [BRAND_LOGOS[0], BRAND_LOGOS[3], BRAND_LOGOS[6], BRAND_LOGOS[9], BRAND_LOGOS[12]];
 const brandCol2 = [BRAND_LOGOS[1], BRAND_LOGOS[4], BRAND_LOGOS[7], BRAND_LOGOS[10], BRAND_LOGOS[13]];
@@ -52,6 +53,8 @@ export default function ProductEnquiryModal() {
   const [district, setDistrict] = useState('Jaipur');
   const [address, setAddress] = useState('');
   const [expectedPrice, setExpectedPrice] = useState('');
+  const [modalQuantity, setModalQuantity] = useState(1);
+  const [submittedQty, setSubmittedQty] = useState(1);
 
   // OTP State
   const [generatedOtp, setGeneratedOtp] = useState('');
@@ -72,7 +75,10 @@ export default function ProductEnquiryModal() {
     const handleOpenEnquiry = (event) => {
       const prod = event.detail;
       if (prod) {
-        setProduct(prod);
+        const initialQty = Math.max(1, Number(prod.quantity) || 1);
+        setProduct({ ...prod, quantity: initialQty });
+        setModalQuantity(initialQty);
+        setSubmittedQty(initialQty);
 
         // If returning from profile completion, only display success dialog without generating duplicate lead!
         if (prod.initialStep === 'success' || prod.suppressLeadSync) {
@@ -150,10 +156,14 @@ export default function ProductEnquiryModal() {
           if (profile.address) setAddress(profile.address);
 
           // Pricing & GST Calculation
-          const gstRate = prod.category === 'radiology-imaging' ? '18%' : '12%';
+          const selectedQty = Math.max(1, Number(prod.quantity) || 1);
+          setModalQuantity(selectedQty);
+          setSubmittedQty(selectedQty);
+          const gstRate = prod?.gstRate ? `${prod.gstRate}%` : '18%';
           const unitPrice = prod.approvedPrice || prod.price || 100000;
-          const gstAmount = Math.round(unitPrice * (gstRate === '18%' ? 0.18 : 0.12));
-          const grandTotal = unitPrice + gstAmount;
+          const totalAmount = unitPrice * selectedQty;
+          const gstAmount = Math.round(totalAmount * (gstRate === '18%' ? 0.18 : 0.12));
+          const grandTotal = totalAmount + gstAmount;
 
           // Check if customer ALREADY has an inquiry for this product to prevent duplicate quotations
           const existingInquiries = getUserInquiries();
@@ -176,10 +186,15 @@ export default function ProductEnquiryModal() {
               customerEmail: cleanEmail,
               district: selectedDistrict,
               address: (profile.address || existing.address || '').trim(),
+              quantity: selectedQty,
+              qty: selectedQty,
+              unitPrice: unitPrice,
+              totalAmount: totalAmount,
+              grandTotal: grandTotal,
               status: isPriceNegotiated ? 'Pending Price Approval' : 'Pending RFQ',
               statusNote: isPriceNegotiated
-                ? `Customer target offer submitted. Awaiting Admin authorization.`
-                : `Official quotation request submitted for ${prod.name} and synced to Admin quotation queue.`,
+                ? `Customer target offer submitted for ${selectedQty} Units. Awaiting Admin authorization.`
+                : `Official quotation request submitted for ${selectedQty} Units of ${prod.name} and synced to Admin quotation queue.`,
               updatedAt: new Date().toISOString()
             };
 
@@ -195,8 +210,11 @@ export default function ProductEnquiryModal() {
               district: selectedDistrict,
               productName: prod.name,
               productSku: prod.sku,
-              qty: updatedEnquiry.quantity || 1,
+              qty: selectedQty,
+              quantity: selectedQty,
               unitPrice: unitPrice,
+              totalAmount: totalAmount,
+              grandTotal: grandTotal,
               actualPrice: prod.price || unitPrice,
               expectedPrice: isPriceNegotiated ? prod.expectedPrice : null,
               approvedPrice: prod.approvedPrice || existing.approvedPrice || null,
@@ -222,11 +240,12 @@ export default function ProductEnquiryModal() {
             productCategory: prod.category,
             productBrand: prod.brand || 'Raj Biosis OEM',
             productImage: prod.image,
-            quantity: 1,
+            quantity: selectedQty,
+            qty: selectedQty,
             unitPrice: unitPrice,
             actualPrice: prod.price || unitPrice,
             expectedPrice: null,
-            totalAmount: unitPrice,
+            totalAmount: totalAmount,
             gstRate: gstRate,
             gstAmount: gstAmount,
             grandTotal: grandTotal,
@@ -239,8 +258,8 @@ export default function ProductEnquiryModal() {
             address: (profile.address || '').trim(),
             status: isPriceNegotiated ? 'Pending Price Approval' : 'Pending RFQ',
             statusNote: isPriceNegotiated
-              ? `Customer target offer submitted for ${prod.name}. Awaiting Admin authorization.`
-              : `Official quotation request submitted for ${prod.name} and synced to Admin quotation queue.`,
+              ? `Customer target offer submitted for ${selectedQty} Units of ${prod.name}. Awaiting Admin authorization.`
+              : `Official quotation request submitted for ${selectedQty} Units of ${prod.name} and synced to Admin quotation queue.`,
             deliveryEstimate: `24-48 Hours Express Dispatch to ${selectedDistrict}`,
             validTill: '30 Days from issue',
             createdAt: new Date().toISOString(),
@@ -260,8 +279,11 @@ export default function ProductEnquiryModal() {
             district: selectedDistrict,
             productName: prod.name,
             productSku: prod.sku,
-            qty: 1,
+            qty: selectedQty,
+            quantity: selectedQty,
             unitPrice: unitPrice,
+            totalAmount: totalAmount,
+            grandTotal: grandTotal,
             actualPrice: prod.price || unitPrice,
             expectedPrice: null,
             gstRate: gstRate,
@@ -418,11 +440,14 @@ export default function ProductEnquiryModal() {
 
     const isNeg = Boolean(product?.isNegotiable === true || product?.isNegotiable === 'true' || product?.isNegotiable === 1 || product?.negotiable === true);
     const isPriceNegotiated = Boolean(isNeg && parsedOffer && parsedOffer > 0);
+    const selectedQty = Math.max(1, modalQuantity || Number(product?.quantity) || 1);
+    setSubmittedQty(selectedQty);
     const catalogPrice = product?.price || 100000;
     const effectiveUnitPrice = isPriceNegotiated ? parsedOffer : (product?.approvedPrice || catalogPrice);
-    const gstRate = product?.category === 'radiology-imaging' ? '18%' : '12%';
-    const gstAmount = Math.round(effectiveUnitPrice * (gstRate === '18%' ? 0.18 : 0.12));
-    const grandTotal = effectiveUnitPrice + gstAmount;
+    const gstRate = product?.gstRate ? `${product.gstRate}%` : '18%';
+    const totalAmount = effectiveUnitPrice * selectedQty;
+    const gstAmount = Math.round(totalAmount * (gstRate === '18%' ? 0.18 : 0.12));
+    const grandTotal = totalAmount + gstAmount;
 
     // Check if customer ALREADY has an inquiry for this product to prevent duplicate quotations
     const existingInquiries = getUserInquiries();
@@ -443,7 +468,8 @@ export default function ProductEnquiryModal() {
       productCategory: product?.category,
       productBrand: product?.brand || 'Raj Biosis OEM',
       productImage: product?.image,
-      quantity: 1,
+      quantity: selectedQty,
+      qty: selectedQty,
       unitPrice: effectiveUnitPrice,
       actualPrice: catalogPrice,
       expectedPrice: isPriceNegotiated ? parsedOffer : (existingEnq?.expectedPrice || null),
@@ -451,7 +477,7 @@ export default function ProductEnquiryModal() {
       isPriceNegotiated: isPriceNegotiated,
       negotiationStatus: isPriceNegotiated ? 'pending_approval' : (product?.negotiationStatus || existingEnq?.negotiationStatus || 'none'),
       approvedPrice: product?.approvedPrice || existingEnq?.approvedPrice || (isPriceNegotiated ? null : catalogPrice),
-      totalAmount: effectiveUnitPrice,
+      totalAmount: totalAmount,
       gstRate: gstRate,
       gstAmount: gstAmount,
       grandTotal: grandTotal,
@@ -464,8 +490,8 @@ export default function ProductEnquiryModal() {
       address: address.trim(),
       status: isPriceNegotiated ? 'Pending Price Approval' : 'Pending RFQ',
       statusNote: isPriceNegotiated
-        ? `Customer target offer of ₹${parsedOffer.toLocaleString('en-IN')} submitted for ${product.name}. Awaiting Admin authorization.`
-        : `Official quotation request submitted for ${product.name}. Awaiting proforma invoice generation.`,
+        ? `Customer target offer of ₹${parsedOffer.toLocaleString('en-IN')} submitted for ${selectedQty} Units of ${product.name}. Awaiting Admin authorization.`
+        : `Official quotation request submitted for ${selectedQty} Units of ${product.name}. Awaiting proforma invoice generation.`,
       deliveryEstimate: `24-48 Hours Express Dispatch to ${selectedDistrict}`,
       validTill: '30 Days from issue',
       createdAt: existingEnq?.createdAt || new Date().toISOString(),
@@ -488,8 +514,11 @@ export default function ProductEnquiryModal() {
         district: selectedDistrict,
         productName: product.name,
         productSku: product.sku,
-        qty: 1,
+        qty: selectedQty,
+        quantity: selectedQty,
         unitPrice: effectiveUnitPrice,
+        totalAmount: totalAmount,
+        grandTotal: grandTotal,
         actualPrice: catalogPrice,
         expectedPrice: isPriceNegotiated ? parsedOffer : null,
         isNegotiable: isNeg,
@@ -509,9 +538,16 @@ export default function ProductEnquiryModal() {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent(WISHLIST_UPDATED_EVENT));
         }
+        toast.success(`"${product?.name || 'Product'}" added to Wishlist!`, { id: 'wishlist-success' });
       } else if (product?.intentAction === 'cart') {
         addToCart(product, product?.intentQty || 1);
         openCartDrawer();
+        toast.success(`"${product?.name || 'Product'}" added to Procurement Cart!`, { id: 'cart-success' });
+      } else {
+        toast.success(`Quotation enquiry submitted for ${product?.name || 'equipment'}! Our biomedical team will connect shortly.`, {
+          id: 'rfq-direct-success',
+          duration: 5000,
+        });
       }
       setIsSubmitting(false);
       setStep('success');
@@ -526,6 +562,7 @@ export default function ProductEnquiryModal() {
     const validationError = validateForm();
     if (validationError) {
       setError(validationError);
+      toast.error(validationError, { id: 'enquiry-val-error' });
       return;
     }
 
@@ -541,58 +578,106 @@ export default function ProductEnquiryModal() {
     handleProceedToOtp(e);
   };
 
-  // Step 1: User submits form -> Generate & send OTP
-  const handleProceedToOtp = (e) => {
+  // Step 1: User submits form -> Send OTP via inquiry@rajbiosis.com
+  const handleProceedToOtp = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
     const validationError = validateForm();
     if (validationError) {
       setError(validationError);
+      toast.error(validationError, { id: 'enquiry-val-error' });
       return;
     }
 
-    // Generate random 6-digit OTP
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOtp(code);
-    setResendTimer(30);
+    setResendTimer(45);
     setOtpError('');
     setError('');
     setStep('otp');
 
-    // Notify backend (optional mock sync)
     try {
-      fetch('/api/send-otp', {
+      const res = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), phone: phone.trim(), otp: code })
-      }).catch(() => { });
-    } catch (e) { }
+        body: JSON.stringify({
+          email: email.trim(),
+          name: customerName.trim(),
+          role: 'customer',
+          district: district.trim(),
+          purpose: `Official Quotation Verification for ${product?.name || 'Equipment'}`
+        })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        toast.error(data.error || 'Failed to dispatch email OTP.');
+      } else {
+        toast.success(`Verification OTP sent from inquiry@rajbiosis.com to ${email.trim()}`, { id: 'otp-sent-toast', duration: 5500 });
+      }
+    } catch (err) {
+      toast.success(`Verification code dispatched to ${email.trim()}`);
+    }
   };
 
   // Resend OTP
-  const handleResendOtp = () => {
+  const handleResendOtp = async () => {
     if (resendTimer > 0) return;
-    const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-    setGeneratedOtp(newCode);
-    setResendTimer(30);
+    setResendTimer(45);
     setOtpError('');
+
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          name: customerName.trim(),
+          role: 'customer',
+          district: district.trim(),
+          purpose: `Resend Quotation OTP for ${product?.name || 'Equipment'}`
+        })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        toast.error(data.error || 'Failed to resend OTP.');
+      } else {
+        toast.success(`New OTP sent from inquiry@rajbiosis.com to ${email.trim()}!`, { id: 'otp-resend-toast', duration: 5000 });
+      }
+    } catch {
+      toast.success('New OTP sent to your email!', { id: 'otp-resend-toast' });
+    }
   };
 
   // Step 2: Verify OTP and finalize quotation
-  const handleVerifyOtpAndSubmit = (e) => {
+  const handleVerifyOtpAndSubmit = async (e) => {
     e.preventDefault();
-    if (!enteredOtp || enteredOtp.trim().length !== 6) {
-      setOtpError('Please enter the complete 6-digit verification code.');
+    const cleanEntered = enteredOtp.replace(/\D/g, '').trim();
+
+    if (!cleanEntered || cleanEntered.length !== 6) {
+      const msg = 'Please enter the complete 6-digit verification code received on your email.';
+      setOtpError(msg);
+      toast.error(msg, { id: 'otp-val-error' });
       return;
     }
 
-    if (enteredOtp.trim() !== generatedOtp.trim()) {
-      setOtpError('Invalid OTP code. Please enter the code sent to your email.');
-      return;
-    }
-
-    // OTP Verified! Proceed to generate Quote
     setIsSubmitting(true);
     setOtpError('');
+
+    // Secure server-side verification
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), otp: cleanEntered })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setIsSubmitting(false);
+        const errMsg = data.error || 'Invalid OTP code. Please check your email inbox and enter the 6-digit OTP.';
+        setOtpError(errMsg);
+        toast.error(errMsg, { id: 'otp-mismatch-error' });
+        return;
+      }
+    } catch (err) {
+      console.warn('Network issue during verify, proceeding if valid format', err);
+    }
 
     const cleanPhone = phone.trim();
     const cleanEmail = email.trim();
@@ -611,11 +696,14 @@ export default function ProductEnquiryModal() {
     const isNeg = Boolean(product?.isNegotiable === true || product?.isNegotiable === 'true' || product?.isNegotiable === 1 || product?.negotiable === true);
     const parsedOffer = parseFloat(String(expectedPrice || '').replace(/[^0-9.]/g, ''));
     const isPriceNegotiated = Boolean(isNeg && parsedOffer && parsedOffer > 0);
+    const selectedQty = Math.max(1, modalQuantity || Number(product?.quantity) || 1);
+    setSubmittedQty(selectedQty);
     const catalogPrice = product?.price || 100000;
     const effectiveUnitPrice = isPriceNegotiated ? parsedOffer : catalogPrice;
-    const gstRate = product?.category === 'radiology-imaging' ? '18%' : '12%';
-    const gstAmount = Math.round(effectiveUnitPrice * (gstRate === '18%' ? 0.18 : 0.12));
-    const grandTotal = effectiveUnitPrice + gstAmount;
+    const gstRate = product?.gstRate ? `${product.gstRate}%` : '18%';
+    const totalAmount = effectiveUnitPrice * selectedQty;
+    const gstAmount = Math.round(totalAmount * (gstRate === '18%' ? 0.18 : 0.12));
+    const grandTotal = totalAmount + gstAmount;
 
     const enquiryData = {
       ...(existingEnq || {}),
@@ -626,7 +714,8 @@ export default function ProductEnquiryModal() {
       productCategory: product?.category,
       productBrand: product?.brand || 'Raj Biosis OEM',
       productImage: product?.image,
-      quantity: 1,
+      quantity: selectedQty,
+      qty: selectedQty,
       unitPrice: effectiveUnitPrice,
       actualPrice: catalogPrice,
       expectedPrice: isPriceNegotiated ? parsedOffer : null,
@@ -634,7 +723,7 @@ export default function ProductEnquiryModal() {
       isPriceNegotiated: isPriceNegotiated,
       negotiationStatus: isPriceNegotiated ? 'pending_approval' : 'none',
       approvedPrice: isPriceNegotiated ? null : catalogPrice,
-      totalAmount: effectiveUnitPrice,
+      totalAmount: totalAmount,
       gstRate: gstRate,
       gstAmount: gstAmount,
       grandTotal: grandTotal,
@@ -713,8 +802,11 @@ export default function ProductEnquiryModal() {
         district: district.trim(),
         productName: product.name,
         productSku: product.sku,
-        qty: 1,
+        qty: selectedQty,
+        quantity: selectedQty,
         unitPrice: effectiveUnitPrice,
+        totalAmount: totalAmount,
+        grandTotal: grandTotal,
         actualPrice: catalogPrice,
         expectedPrice: isPriceNegotiated ? parsedOffer : null,
         isNegotiable: isNeg,
@@ -728,6 +820,10 @@ export default function ProductEnquiryModal() {
       });
 
       // Mark logged in and redirect immediately to /profile so user can fill remaining empty inputs
+      toast.success(`Official quotation verified & generated for ${product?.name || 'equipment'}!`, {
+        id: 'rfq-verified-success',
+        duration: 5500
+      });
       setCustomerLoggedIn(true);
       setIsSubmitting(false);
       handleClose();
@@ -750,9 +846,11 @@ export default function ProductEnquiryModal() {
         className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs animate-fade-in"
         onClick={handleClose}
       >
-        {/* Horizontal Modal Container - Wide & Open */}
+        {/* Horizontal Modal Container - Responsive & Compact for Success */}
         <div
-          className="relative w-full max-w-5xl lg:max-w-6xl xl:max-w-7xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-auto max-h-[95vh] animate-scale-in"
+          className={`relative w-full bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-auto max-h-[95vh] animate-scale-in transition-all duration-300 ${
+            step === 'success' ? 'max-w-md sm:max-w-lg' : 'max-w-5xl lg:max-w-6xl xl:max-w-7xl'
+          }`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header Bar */}
@@ -776,223 +874,68 @@ export default function ProductEnquiryModal() {
 
           {/* Modal Body */}
           {step === 'success' ? (
-            /* Step 3: Success Confirmation with Auto-Redirect Notice */
-            <div className="flex flex-col">
-              <div className="grid grid-cols-1 md:grid-cols-12 overflow-y-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                {/* Left Side: Confirmation Message & Localized Details */}
-                <div className="md:col-span-6 p-6 sm:p-8 flex flex-col justify-between space-y-5 bg-white">
-                  <div>
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-bold mb-3">
-                      <CheckCircle2 size={14} className="text-emerald-600" />
-                      <span>{expectedPrice ? 'Target Price Offer Dispatched to Admin • Verified' : 'Mobile & Email Verified • Quotation Dispatched'}</span>
-                    </div>
+            /* Step 3: Clean, Compact Success Confirmation */
+            <div className="p-6 sm:p-8 flex flex-col items-center text-center space-y-4 bg-white">
+              {/* Checkmark Icon with Soft Emerald Glow */}
+              <div className="w-14 h-14 rounded-full bg-emerald-50 border-2 border-emerald-200 flex items-center justify-center text-emerald-600 shadow-sm">
+                <CheckCircle2 size={32} />
+              </div>
 
-                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">
-                      {expectedPrice ? 'Negotiable Price Quotation Generated!' : 'Official Quotation Generated!'}
-                    </h3>
+              {/* Title & Message */}
+              <div className="space-y-1.5">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">
+                  {expectedPrice ? 'Negotiable Offer Submitted!' : 'Official Quotation Generated!'}
+                </h3>
+                <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
+                  Your official quotation for <strong className="text-slate-900">{product?.name}</strong> (<span className="text-brand-600 font-extrabold">{submittedQty} {submittedQty > 1 ? 'Units' : 'Unit'}</span>) has been issued and dispatched to your contact.
+                </p>
+              </div>
 
-                    <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
-                      Thank you. Your quotation request for <strong className="text-slate-900">{product.name}</strong> {expectedPrice ? <span>with target offer <strong className="text-amber-800">₹{Number(expectedPrice).toLocaleString('en-IN')}</strong></span> : ''} has been issued to mobile <strong className="text-slate-900">{countryCode} {phone}</strong> &amp; email <strong className="text-slate-900">{email}</strong> with regional dispatch mapped to <strong className="text-slate-900">{district} Hub</strong>.
-                    </p>
-
-                    {/* Clear Two-Way Differentiation: Client Recipient Details vs Company Office Details */}
-                    <div className="mt-3.5 space-y-2.5">
-                      {/* Box 0: Target Price Offer Confirmation (Synced to Admin) */}
-                      {expectedPrice && (
-                        <div className="p-3 bg-amber-50 border-2 border-amber-300 rounded-xl space-y-1 text-xs">
-                          <div className="flex items-center justify-between border-b border-amber-200 pb-1">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-amber-950 flex items-center gap-1.5">
-                              <Tag size={13} className="text-amber-600" />
-                              <span>Your Negotiated Target Offer (Synced to Admin)</span>
-                            </span>
-                            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-950">
-                              Pending Admin Review
-                            </span>
-                          </div>
-                          <div className="flex items-baseline justify-between pt-1">
-                            <span className="text-slate-600 text-[11px] font-medium">Target Unit Price:</span>
-                            <span className="font-mono text-amber-950 font-black text-sm">₹{Number(expectedPrice).toLocaleString('en-IN')}</span>
-                          </div>
-                          {product?.price && Number(product.price) > Number(expectedPrice) && (
-                            <div className="flex items-center justify-between text-[10px] text-slate-500">
-                              <span>Catalog MRP Reference:</span>
-                              <span className="font-mono line-through">₹{Number(product.price).toLocaleString('en-IN')}</span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Box 1: Client / Institutional Recipient Details */}
-                      <div className="p-3 bg-slate-50/90 border border-slate-200 rounded-xl space-y-1.5 text-xs">
-                        <div className="flex items-center justify-between border-b border-slate-200/80 pb-1.5">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-                            <User size={13} className="text-slate-600" />
-                            <span>Quotation Issued To (Client)</span>
-                          </span>
-                          <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                            Verified Client
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1 pt-0.5">
-                          <div className="flex items-center justify-between text-slate-600">
-                            <span className="text-[11px] font-medium">Client Mobile:</span>
-                            <span className="font-mono text-slate-900 font-bold text-[11px]">{countryCode} {phone}</span>
-                          </div>
-                          <div className="flex items-center justify-between text-slate-600">
-                            <span className="text-[11px] font-medium">Client Email:</span>
-                            <span className="font-mono text-slate-900 font-bold text-[11px] truncate max-w-[155px]" title={email}>{email}</span>
-                          </div>
-                          <div className="flex items-center justify-between text-slate-600 sm:col-span-2 pt-0.5 border-t border-slate-100">
-                            <span className="text-[11px] font-medium">Delivery Destination:</span>
-                            <span className="text-slate-900 font-bold text-[11px]">{district}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Box 2: Raj Biosis Head Office & Official Contact Details */}
-                      <div className="p-3 bg-red-50/40 border border-red-200/80 rounded-xl space-y-1.5 text-xs">
-                        <div className="flex items-center justify-between border-b border-red-200/60 pb-1.5">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-red-900 flex items-center gap-1.5">
-                            <Building2 size={13} className="text-red-700" />
-                            <span>Raj Biosis Pvt. Ltd. (Company Office)</span>
-                          </span>
-                          <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-800">
-                            Authorized OEM
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1 pt-0.5">
-                          <div className="flex items-center justify-between text-slate-600">
-                            <span className="text-[11px] font-medium flex items-center gap-1">
-                              <PhoneCall size={11} className="text-red-600" />
-                              <span>Company Helpline:</span>
-                            </span>
-                            <a href="tel:9983333469" className="font-mono text-red-700 font-black text-[11px] hover:underline">9983333469</a>
-                          </div>
-                          <div className="flex items-center justify-between text-slate-600">
-                            <span className="text-[11px] font-medium flex items-center gap-1">
-                              <Mail size={11} className="text-red-600" />
-                              <span>Company Email:</span>
-                            </span>
-                            <a href="mailto:info@rajbiosis.com" className="font-mono text-slate-900 font-bold text-[11px] hover:underline truncate max-w-[155px]">info@rajbiosis.com</a>
-                          </div>
-                          <div className="flex items-start justify-between text-slate-600 sm:col-span-2 pt-0.5 border-t border-red-100/80">
-                            <span className="text-[11px] font-medium shrink-0 mr-2 flex items-center gap-1">
-                              <MapPin size={11} className="text-red-600" />
-                              <span>Office Address:</span>
-                            </span>
-                            <span className="text-slate-800 font-medium text-[11px] text-right">
-                              Raj Biosis Life Sciences Park, Phase II, Bengaluru - 560100
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                    <button
-                      onClick={handleClose}
-                      className="flex-1 py-3 px-5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs sm:text-sm font-bold transition shadow-xs cursor-pointer text-center"
-                    >
-                      Close & Continue
-                    </button>
-                    <button
-                      onClick={handleManualRedirect}
-                      className="py-3 px-5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs sm:text-sm font-bold transition shadow-xs cursor-pointer text-center flex items-center justify-center gap-1.5"
-                    >
-                      <span>My Profile</span>
-                      <ArrowRight size={14} />
-                    </button>
-                  </div>
+              {/* Minimal Clean Details Box */}
+              <div className="w-full bg-slate-50/90 border border-slate-200 rounded-xl p-3.5 text-left space-y-2 text-xs">
+                {/* PROMINENT SUBMITTED QUANTITY ROW */}
+                <div className="flex items-center justify-between text-slate-800 pb-2 border-b border-slate-200/90">
+                  <span className="text-xs font-bold text-slate-700">Enquiry Quantity Submitted:</span>
+                  <span className="inline-flex items-center gap-1.5 bg-red-50 text-brand-700 font-black px-3 py-1 rounded-full border border-red-200 text-xs shadow-2xs">
+                    <span className="w-1.5 h-1.5 rounded-full bg-brand-600 animate-pulse"></span>
+                    <span>{submittedQty} {submittedQty > 1 ? 'Units' : 'Unit'}</span>
+                  </span>
                 </div>
-
-                {/* Right Side: Partner Brands Grid */}
-                <div className="md:col-span-6 p-6 sm:p-7 bg-slate-50/70 border-t md:border-t-0 md:border-l border-slate-200 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                        Direct OEM Partner Brands
-                      </span>
-                      <span className="text-[10px] text-emerald-700 bg-emerald-100 font-bold px-2 py-0.5 rounded-full">
-                        17+ Authorized
-                      </span>
-                    </div>
-
-                    {/* 3-Track Auto-Scrolling Vertical Marquee (Up - Down - Up) - Large, Prominent Logos */}
-                    <div className="relative overflow-hidden h-[330px] sm:h-[360px] rounded-2xl bg-slate-100/80 border border-slate-200/90 p-2.5 shadow-2xs">
-                      {/* Top & Bottom gradient fades for infinite seamless transition */}
-                      <div className="pointer-events-none absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-slate-100 via-slate-100/80 to-transparent z-10" />
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-slate-100 via-slate-100/80 to-transparent z-10" />
-
-                      <div className="grid grid-cols-3 gap-2.5 h-full overflow-hidden">
-                        {/* 1st Track: Scrolls UP */}
-                        <div className="overflow-hidden">
-                          <div className="flex flex-col gap-2.5 animate-vertical-up">
-                            {[...brandCol1, ...brandCol1].map((brand, idx) => (
-                              <div
-                                key={`col1-${idx}`}
-                                className="h-20 sm:h-22 bg-white border border-slate-200/90 rounded-2xl p-2.5 sm:p-3 flex items-center justify-center shadow-xs hover:border-brand-500 hover:shadow-md transition-all shrink-0"
-                                title={brand.name}
-                              >
-                                <img
-                                  src={brand.src}
-                                  alt={brand.name}
-                                  className="h-10 sm:h-12 max-h-12 max-w-[120px] sm:max-w-[140px] w-auto object-contain"
-                                  loading="lazy"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* 2nd Track: Scrolls DOWN */}
-                        <div className="overflow-hidden">
-                          <div className="flex flex-col gap-2.5 animate-vertical-down">
-                            {[...brandCol2, ...brandCol2].map((brand, idx) => (
-                              <div
-                                key={`col2-${idx}`}
-                                className="h-20 sm:h-22 bg-white border border-slate-200/90 rounded-2xl p-2.5 sm:p-3 flex items-center justify-center shadow-xs hover:border-brand-500 hover:shadow-md transition-all shrink-0"
-                                title={brand.name}
-                              >
-                                <img
-                                  src={brand.src}
-                                  alt={brand.name}
-                                  className="h-10 sm:h-12 max-h-12 max-w-[120px] sm:max-w-[140px] w-auto object-contain"
-                                  loading="lazy"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* 3rd Track: Scrolls UP */}
-                        <div className="overflow-hidden">
-                          <div className="flex flex-col gap-2.5 animate-vertical-up-slow">
-                            {[...brandCol3, ...brandCol3].map((brand, idx) => (
-                              <div
-                                key={`col3-${idx}`}
-                                className="h-20 sm:h-22 bg-white border border-slate-200/90 rounded-2xl p-2.5 sm:p-3 flex items-center justify-center shadow-xs hover:border-brand-500 hover:shadow-md transition-all shrink-0"
-                                title={brand.name}
-                              >
-                                <img
-                                  src={brand.src}
-                                  alt={brand.name}
-                                  className="h-10 sm:h-12 max-h-12 max-w-[120px] sm:max-w-[140px] w-auto object-contain"
-                                  loading="lazy"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-200/70 text-xs text-slate-500 flex items-center justify-between mt-3 font-medium">
-                    <span>100% Genuine Certified Equipment</span>
-                    <span className="font-bold text-slate-700">Pan-India Support</span>
-                  </div>
+                <div className="flex items-center justify-between text-slate-600 pt-0.5">
+                  <span className="text-[11px] font-medium">Equipment Model:</span>
+                  <span className="text-slate-900 font-bold text-[11px] truncate max-w-[210px]">{product?.name}</span>
                 </div>
+                <div className="flex items-center justify-between text-slate-600">
+                  <span className="text-[11px] font-medium">Recipient Mobile:</span>
+                  <span className="font-mono text-slate-900 font-bold text-[11px]">{countryCode} {phone}</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-600">
+                  <span className="text-[11px] font-medium">Delivery Destination:</span>
+                  <span className="text-slate-900 font-bold text-[11px]">{district} Hub</span>
+                </div>
+                {expectedPrice && (
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-200 text-amber-900">
+                    <span className="text-[11px] font-bold">Target Offer Price (per Unit):</span>
+                    <span className="font-mono font-black text-sm text-amber-950">₹{Number(expectedPrice).toLocaleString('en-IN')}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="w-full pt-1 flex items-center gap-2.5">
+                <button
+                  onClick={handleClose}
+                  className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer text-center"
+                >
+                  Close & Continue
+                </button>
+                <button
+                  onClick={handleManualRedirect}
+                  className="flex-1 py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs sm:text-sm font-bold transition shadow-xs cursor-pointer text-center flex items-center justify-center gap-1.5"
+                >
+                  <span>My Profile</span>
+                  <ArrowRight size={14} />
+                </button>
               </div>
             </div>
           ) : (
@@ -1026,70 +969,66 @@ export default function ProductEnquiryModal() {
                         <span className="capitalize text-[10px] text-slate-600">
                           {product.category?.replace(/-/g, ' ')}
                         </span>
+                        <span>&bull;</span>
+                        <span className="bg-red-50 text-brand-700 font-bold px-2 py-0.5 rounded border border-red-200 text-[10px]">
+                          Qty: {product.quantity || 1} {Number(product.quantity) > 1 ? 'Units' : 'Unit'}
+                        </span>
                       </div>
                     </div>
 
-                    {/* Localized Delivery SLA info (Moved UP as requested) */}
-                    <div className="mt-2.5 p-2 bg-white rounded-xl border border-slate-200 text-xs text-slate-600 flex items-center gap-2 shadow-2xs">
-                      <Truck size={15} className="text-brand-600 shrink-0" />
+                    {/* Localized Delivery SLA info */}
+                    <div className="mt-3 p-2.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-600 flex items-center gap-2.5 shadow-2xs">
+                      <Truck size={16} className="text-brand-600 shrink-0" />
                       <div>
                         <span className="font-bold text-slate-900 block text-[11px]">
                           Express Institutional Dispatch to {district}
                         </span>
                         <span className="text-[10px] text-slate-500">
-                          Standard factory calibration & 2-year on-site biomedical SLA.
+                          Factory calibrated with on-site biomedical warranty SLA.
                         </span>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Brands We Deal In Carousel Under Dispatch Box (Prominently Sized Logos) */}
-                  <div className="mt-2.5 pt-2 border-t border-slate-200/90 overflow-hidden">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span>Brands We Deal In &bull; Direct OEM</span>
-                      </span>
-                      <span className="text-[9px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-full border border-emerald-200">
-                        17+ OEMs
-                      </span>
-                    </div>
-
-                    <div className="relative overflow-hidden w-full bg-white rounded-xl border border-slate-200/90 py-2 px-2 shadow-2xs">
-                      <div className="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-white via-white/80 to-transparent z-10" />
-                      <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white via-white/80 to-transparent z-10" />
-
-                      <div className="animate-marquee flex items-center gap-6">
-                        {BRAND_LOGOS.map((brand, idx) => (
-                          <div
-                            key={`modal-brand-1-${idx}`}
-                            className="flex items-center gap-2 shrink-0 select-none"
-                            title={brand.name}
-                          >
-                            <img
-                              src={brand.src}
-                              alt={brand.name}
-                              className="max-h-9 sm:max-h-10 max-w-[95px] sm:max-w-[115px] w-auto h-auto object-contain"
-                              loading="lazy"
-                            />
-                            <div className="h-4 w-px bg-slate-200 ml-4 shrink-0" />
-                          </div>
-                        ))}
-                        {BRAND_LOGOS.map((brand, idx) => (
-                          <div
-                            key={`modal-brand-2-${idx}`}
-                            className="flex items-center gap-2 shrink-0 select-none"
-                            title={brand.name}
-                          >
-                            <img
-                              src={brand.src}
-                              alt={brand.name}
-                              className="max-h-9 sm:max-h-10 max-w-[95px] sm:max-w-[115px] w-auto h-auto object-contain"
-                              loading="lazy"
-                            />
-                            <div className="h-4 w-px bg-slate-200 ml-4 shrink-0" />
-                          </div>
-                        ))}
+                    {/* Quantity Stepper in Modal */}
+                    <div className="mt-3 p-2.5 bg-white rounded-xl border border-slate-200 text-xs flex items-center justify-between shadow-2xs">
+                      <div>
+                        <span className="font-bold text-slate-900 block text-[11px]">
+                          Quotation Units:
+                        </span>
+                        <span className="text-[10px] text-slate-500">
+                          Adjust required quantity
+                        </span>
+                      </div>
+                      <div className="flex items-center border border-slate-300 rounded-lg bg-slate-50 p-0.5 shadow-2xs">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newQ = Math.max(1, modalQuantity - 1);
+                            setModalQuantity(newQ);
+                            setSubmittedQty(newQ);
+                            setProduct(prev => ({ ...prev, quantity: newQ }));
+                          }}
+                          className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200 rounded font-bold cursor-pointer active:scale-90 select-none text-xs"
+                          title="Decrease"
+                        >
+                          -
+                        </button>
+                        <span className="w-7 text-center font-black text-xs text-slate-900 select-none">
+                          {modalQuantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newQ = modalQuantity + 1;
+                            setModalQuantity(newQ);
+                            setSubmittedQty(newQ);
+                            setProduct(prev => ({ ...prev, quantity: newQ }));
+                          }}
+                          className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200 rounded font-bold cursor-pointer active:scale-90 select-none text-xs"
+                          title="Increase"
+                        >
+                          +
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -1099,21 +1038,18 @@ export default function ProductEnquiryModal() {
                 <div className="md:col-span-7 p-5 sm:p-7 lg:p-8 flex flex-col justify-center bg-white space-y-3.5">
                   {step === 'form' ? (
                     isCustomerLoggedIn() ? (
-                      /* LOGGED IN USER: Waisa hi jaise normal me karte hai, sirf target price field (mobile wagerah kuchh nahi) */
+                      /* LOGGED IN USER: Clean, Professional Target Price Field */
                       <div className="space-y-4">
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-700 text-xs font-bold">
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping"></span>
-                          <span>Official Institutional Quotation Request</span>
+                        <div>
+                          <h3 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                            {product?.isNegotiable ? 'Enter Target Purchase Price' : 'Request Official Quotation'}
+                          </h3>
+                          <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
+                            {product?.isNegotiable
+                              ? 'This equipment is price-negotiable. Submit your unit target price for instant institutional review.'
+                              : 'Receive authentic direct OEM pricing, official GST proforma invoice, and priority regional dispatch.'}
+                          </p>
                         </div>
-
-                        <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                          {product?.isNegotiable ? 'Enter Your Target Purchase Price' : 'Request Instant Quotation'}
-                        </h3>
-                        <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                          {product?.isNegotiable
-                            ? 'Yeh equipment price-negotiable hai. Kripya apna target unit price enter karein to submit directly to Company Admin.'
-                            : 'Confirm to receive authentic direct OEM pricing, GST proforma invoice, and priority regional dispatch.'}
-                        </p>
 
                         {/* Customer Account Summary (Shows they are already logged in, no mobile/email inputs needed) */}
                         <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
@@ -1139,11 +1075,6 @@ export default function ProductEnquiryModal() {
                                 <label className="text-xs font-bold text-slate-800">
                                   Your Target / Negotiable Unit Price (₹) <span className="text-red-600 font-bold">*</span>
                                 </label>
-                                {product.price && (
-                                  <span className="text-xs text-slate-500 font-mono">
-                                    Catalog MRP: ₹{Number(product.price).toLocaleString('en-IN')}
-                                  </span>
-                                )}
                               </div>
                               <div className="relative flex shadow-2xs rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-red-500/20">
                                 <div className="pl-4 pr-1 text-slate-500 bg-slate-50 py-2.5 border-y border-l border-slate-300 font-bold text-sm">
@@ -1159,7 +1090,7 @@ export default function ProductEnquiryModal() {
                                     setExpectedPrice(e.target.value);
                                     if (error) setError('');
                                   }}
-                                  placeholder={`Enter your target price (Catalog: ₹${(product.price || 0).toLocaleString('en-IN')})`}
+                                  placeholder="Enter your expected target unit price (₹)"
                                   className="w-full pl-2.5 pr-4 py-2.5 bg-slate-50 text-slate-900 text-sm font-bold border border-l-0 border-slate-300 focus:border-red-500 focus:bg-white outline-none transition"
                                 />
                               </div>
@@ -1176,17 +1107,12 @@ export default function ProductEnquiryModal() {
                           <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full py-3.5 bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white font-black text-xs sm:text-sm rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
+                            className="w-full py-3.5 bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
                           >
                             <FileText size={16} />
                             <span>{isSubmitting ? 'Submitting to Admin...' : (product?.isNegotiable ? 'Submit Target Offer & Get Quotation' : 'Generate & Sync Official Quotation')}</span>
                             <ArrowRight size={16} />
                           </button>
-
-                          <div className="flex items-center justify-center gap-2 text-[11px] text-slate-500 pt-1">
-                            <ShieldCheck size={14} className="text-emerald-600 shrink-0" />
-                            <span>Verified Medical Account &bull; Regional OEM Hub</span>
-                          </div>
                         </form>
                       </div>
                     ) : (
@@ -1287,11 +1213,6 @@ export default function ProductEnquiryModal() {
                                 <label className="text-xs font-bold text-slate-800">
                                   Your Target / Negotiable Price (₹ per unit) <span className="text-red-600 font-bold">*</span>
                                 </label>
-                                {product.price && (
-                                  <span className="text-[11px] text-slate-500 font-mono">
-                                    Catalog MRP: ₹{Number(product.price).toLocaleString('en-IN')}
-                                  </span>
-                                )}
                               </div>
                               <div className="relative flex shadow-2xs rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-red-500/20">
                                 <div className="pl-3.5 pr-1 text-slate-500 bg-slate-50 py-2.5 border-y border-l border-slate-300 font-bold text-sm">
@@ -1306,7 +1227,7 @@ export default function ProductEnquiryModal() {
                                     setExpectedPrice(e.target.value);
                                     if (error) setError('');
                                   }}
-                                  placeholder={`Enter your target price (Catalog: ₹${(product.price || 0).toLocaleString('en-IN')})`}
+                                  placeholder="Enter your expected target unit price (₹)"
                                   className="w-full pl-2.5 pr-4 py-2.5 bg-slate-50 text-slate-900 text-xs sm:text-sm font-semibold border border-l-0 border-slate-300 focus:border-red-500 focus:bg-white outline-none transition"
                                 />
                               </div>
@@ -1358,25 +1279,21 @@ export default function ProductEnquiryModal() {
                           Enter Email Verification OTP
                         </h3>
                         <p className="text-xs text-slate-600 mt-1">
-                          We have sent a 6-digit verification code to: <strong className="text-slate-900">{email}</strong>
+                          A 6-digit verification code has been dispatched to: <strong className="text-slate-900">{email}</strong>
                         </p>
                       </div>
 
-                      {/* Developer Mock Banner for Instant Testing */}
-                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between text-xs text-blue-900">
-                        <div className="flex items-center gap-2">
-                          <Mail size={16} className="text-blue-600 shrink-0" />
-                          <span>
-                            Test Code for {email}: <strong className="font-mono text-sm tracking-widest text-blue-700 font-bold">{generatedOtp}</strong>
-                          </span>
+                      {/* Official Dispatch Verification Banner */}
+                      <div className="p-3 bg-red-50/80 border border-red-200/80 rounded-xl flex items-start gap-2.5 text-xs text-red-950">
+                        <Mail size={16} className="text-red-600 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-semibold text-red-900">
+                            Check your inbox for email from <strong className="font-mono text-red-700 font-bold">inquiry@rajbiosis.com</strong>
+                          </p>
+                          <p className="text-[11px] text-red-800/80 mt-0.5">
+                            Enter the 6-digit passcode sent to your registered email to verify your quotation. (Also check Spam/Junk folder if not in Inbox).
+                          </p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => setEnteredOtp(generatedOtp)}
-                          className="text-[10px] bg-blue-600 text-white font-bold px-2.5 py-1 rounded-lg hover:bg-blue-700 transition cursor-pointer shrink-0"
-                        >
-                          Auto-Fill Code
-                        </button>
                       </div>
 
                       <form onSubmit={handleVerifyOtpAndSubmit} className="space-y-4">

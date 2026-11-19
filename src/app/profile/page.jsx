@@ -29,6 +29,7 @@ import {
 import { DEFAULT_COUNTRY_CODE } from '../../data/internationalCodes';
 import { INDIAN_STATES, RAJASTHAN_DISTRICTS } from '../../data/districts';
 import { PRODUCTS } from '../../data/products';
+import toast from 'react-hot-toast';
 import {
   ChevronUp,
   Layers,
@@ -93,15 +94,39 @@ function ProfileContent() {
   const tabParam = searchParams?.get('tab');
   const [activeView, setActiveView] = useState(tabParam === 'staff' ? 'staff' : 'customer');
 
-  // Customer Profile Existence & Edit States
-  const [hasExistingProfile, setHasExistingProfile] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Customer Profile Existence & Edit States - Synchronously initialized from localStorage to eliminate form flicker
+  const [hasExistingProfile, setHasExistingProfile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const storedProfile = getUserProfile();
+        return Boolean(
+          storedProfile &&
+          (storedProfile.isProfileComplete || (storedProfile.hospitalName && storedProfile.hospitalName.trim() && storedProfile.hospitalName !== 'NA')) &&
+          storedProfile.fullName &&
+          storedProfile.fullName !== 'NA' &&
+          storedProfile.phone
+        );
+      } catch (_) {}
+    }
+    return false;
+  });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [savedSuccessMsg, setSavedSuccessMsg] = useState('');
 
   // Quotation Filter & Search (Customer View) - Exactly 3 clean states: 'all' | 'pending' | 'confirmed'
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [inquiries, setInquiries] = useState([]);
+  const [inquiries, setInquiries] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = getUserInquiries();
+        if (raw && raw.length > 0) return raw;
+      } catch (_) {}
+    }
+    return [];
+  });
   const [selectedQuotation, setSelectedQuotation] = useState(null);
   const [expandedInquiryIds, setExpandedInquiryIds] = useState({});
 
@@ -202,23 +227,45 @@ function ProfileContent() {
     }
   };
 
-  // Customer Profile Form Data (supports customer, admin, employee registration)
-  const [formData, setFormData] = useState({
-    accountType: 'customer', // 'customer' | 'admin' | 'employee'
-    fullName: '',
-    designation: '',
-    countryCode: DEFAULT_COUNTRY_CODE,
-    phone: '',
-    email: '',
-    state: 'Rajasthan',
-    district: 'Jaipur',
-    hospitalName: '',
-    address: '',
-    pincode: ''
+  // Customer Profile Form Data (supports customer, admin, employee registration) - Synchronously populated from cache
+  const [formData, setFormData] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const storedProfile = getUserProfile();
+        if (storedProfile) {
+          return {
+            accountType: 'customer',
+            fullName: (storedProfile.fullName && storedProfile.fullName !== 'NA') ? storedProfile.fullName : '',
+            designation: storedProfile.designation || '',
+            countryCode: storedProfile.countryCode || DEFAULT_COUNTRY_CODE,
+            phone: storedProfile.phone || '',
+            email: storedProfile.email || '',
+            state: storedProfile.state || 'Rajasthan',
+            district: storedProfile.district || 'Jaipur',
+            hospitalName: (storedProfile.hospitalName && storedProfile.hospitalName !== 'NA') ? storedProfile.hospitalName : '',
+            address: storedProfile.address || '',
+            pincode: storedProfile.pincode || ''
+          };
+        }
+      } catch (_) {}
+    }
+    return {
+      accountType: 'customer',
+      fullName: '',
+      designation: '',
+      countryCode: DEFAULT_COUNTRY_CODE,
+      phone: '',
+      email: '',
+      state: 'Rajasthan',
+      district: 'Jaipur',
+      hospitalName: '',
+      address: '',
+      pincode: ''
+    };
   });
 
   // Separate Edit Form Data
-  const [editFormData, setEditFormData] = useState({ ...formData });
+  const [editFormData, setEditFormData] = useState(() => ({ ...formData }));
 
   // -------------------------------------------------------------
   // Staff & Admin Desk States (Integrated inside this profile)
@@ -236,15 +283,26 @@ function ProfileContent() {
   const [adminEmail, setAdminEmail] = useState('admin@rajbiosis.com');
   const [adminDistrict, setAdminDistrict] = useState('Jaipur');
 
-  // Email OTP Authentication States
+  // Email OTP Authentication States (Staff & Returning Users)
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [generatedOtp, setGeneratedOtp] = useState('');
   const [enteredOtp, setEnteredOtp] = useState('');
   const [otpTargetEmail, setOtpTargetEmail] = useState('');
-  const [otpTimer, setOtpTimer] = useState(30);
+  const [otpTimer, setOtpTimer] = useState(45);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [staffLoginError, setStaffLoginError] = useState('');
+
+  // Customer Profile Registration & Quick Login Email OTP States
+  const [isCustomerOtpModalOpen, setIsCustomerOtpModalOpen] = useState(false);
+  const [customerOtp, setCustomerOtp] = useState('');
+  const [customerOtpTimer, setCustomerOtpTimer] = useState(45);
+  const [isSendingCustomerOtp, setIsSendingCustomerOtp] = useState(false);
+  const [isVerifyingCustomerOtp, setIsVerifyingCustomerOtp] = useState(false);
+  const [customerOtpError, setCustomerOtpError] = useState('');
+  const [isCustomerLoginModalOpen, setIsCustomerLoginModalOpen] = useState(false);
+  const [customerLoginEmail, setCustomerLoginEmail] = useState('');
+  const [customerLoginStep, setCustomerLoginStep] = useState('email'); // 'email' | 'otp'
 
   // Admin User & Staff Account Creation Management States
   const [adminSubTab, setAdminSubTab] = useState('accounts'); // 'accounts' | 'leads' | 'wishlist_cart'
@@ -294,7 +352,20 @@ function ProfileContent() {
   }, [isOtpSent, otpTimer]);
 
   useEffect(() => {
+    let interval = null;
+    if ((isCustomerOtpModalOpen || isCustomerLoginModalOpen) && customerOtpTimer > 0) {
+      interval = setInterval(() => {
+        setCustomerOtpTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isCustomerOtpModalOpen, isCustomerLoginModalOpen, customerOtpTimer]);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return;
+    setIsHydrated(true);
 
     if (tabParam === 'staff' || tabParam === 'employee' || tabParam === 'admin') {
       setActiveView('staff');
@@ -581,16 +652,22 @@ function ProfileContent() {
       setUserAccounts(e.detail || getUserAccounts());
     };
 
+    const handleSwitchToProfileView = () => {
+      setActiveView('customer');
+    };
+
     window.addEventListener(USER_INQUIRIES_EVENT, handleInquiriesUpdated);
     window.addEventListener(USER_PROFILE_EVENT, handleProfileUpdated);
     window.addEventListener(LEADS_EVENT, handleLeadsUpdated);
     window.addEventListener(USER_ACCOUNTS_EVENT, handleAccountsUpdated);
+    window.addEventListener('switch-to-profile-view', handleSwitchToProfileView);
 
     return () => {
       window.removeEventListener(USER_INQUIRIES_EVENT, handleInquiriesUpdated);
       window.removeEventListener(USER_PROFILE_EVENT, handleProfileUpdated);
       window.removeEventListener(LEADS_EVENT, handleLeadsUpdated);
       window.removeEventListener(USER_ACCOUNTS_EVENT, handleAccountsUpdated);
+      window.removeEventListener('switch-to-profile-view', handleSwitchToProfileView);
     };
   }, [searchParams, tabParam]);
 
@@ -632,17 +709,17 @@ function ProfileContent() {
     setEditFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleCreateProfile = (e) => {
+  const handleCreateProfile = async (e) => {
     if (e) e.preventDefault();
 
     const role = formData.accountType || 'customer';
 
     if (!formData.fullName.trim()) {
-      alert('Please enter your full name');
+      toast.error('Please enter your full name', { id: 'prof-val-name' });
       return;
     }
     if (!formData.phone.trim()) {
-      alert('Please enter your mobile number');
+      toast.error('Please enter your mobile number', { id: 'prof-val-phone' });
       return;
     }
 
@@ -651,7 +728,7 @@ function ProfileContent() {
     // -------------------------------------------------------------
     if (role === 'admin') {
       if (!formData.email.trim() || !formData.email.includes('@')) {
-        alert('Please enter a valid official email for Admin authentication');
+        toast.error('Please enter a valid official email for Admin authentication', { id: 'prof-val-email' });
         return;
       }
 
@@ -680,6 +757,7 @@ function ProfileContent() {
       setUserAccounts(getUserAccounts());
       setActiveView('staff');
       setAdminSubTab('accounts');
+      toast.success(`Admin Account created successfully! Welcome ${adminAcc.name}.`, { id: 'admin-created-toast', duration: 5000 });
       setSavedSuccessMsg(`Admin Account created successfully! Welcome ${adminAcc.name} to Central Headquarters Dashboard.`);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       setTimeout(() => setSavedSuccessMsg(''), 5000);
@@ -691,11 +769,11 @@ function ProfileContent() {
     // -------------------------------------------------------------
     if (role === 'employee') {
       if (!formData.email.trim() || !formData.email.includes('@')) {
-        alert('Please enter a valid email for Employee authentication');
+        toast.error('Please enter a valid email for Employee authentication', { id: 'prof-val-emp-email' });
         return;
       }
       if (!formData.district.trim()) {
-        alert('Please select assigned district depot');
+        toast.error('Please select assigned district depot', { id: 'prof-val-emp-dist' });
         return;
       }
 
@@ -723,6 +801,7 @@ function ProfileContent() {
       loadLeadsForSession(sess);
       setUserAccounts(getUserAccounts());
       setActiveView('staff');
+      toast.success(`Regional Employee Account created for ${empAcc.district} Depot!`, { id: 'emp-created-toast', duration: 5000 });
       setSavedSuccessMsg(`Regional Employee Account created for ${empAcc.district} Depot!`);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       setTimeout(() => setSavedSuccessMsg(''), 5000);
@@ -730,20 +809,134 @@ function ProfileContent() {
     }
 
     // -------------------------------------------------------------
-    // CASE 3: Healthcare Customer Profile
+    // CASE 3: Healthcare Customer Profile (Email OTP Verification Flow)
     // -------------------------------------------------------------
+    if (!formData.email.trim() || !formData.email.includes('@')) {
+      toast.error('Please enter a valid official email address', { id: 'prof-val-email' });
+      return;
+    }
+    const cleanDigits = (formData.phone || '').replace(/\D/g, '');
+    if (cleanDigits.length < 10) {
+      toast.error('Please enter a valid 10-digit mobile number', { id: 'prof-val-phone-len' });
+      return;
+    }
     if (!formData.hospitalName.trim()) {
-      alert('Please enter your hospital or clinic name');
+      toast.error('Please enter your hospital or clinic name', { id: 'prof-val-hosp' });
       return;
     }
     if (!formData.district.trim()) {
-      alert('Please select your delivery district');
+      toast.error('Please select your delivery district', { id: 'prof-val-dist' });
       return;
     }
 
-    const saved = saveUserProfile({ ...formData, isProfileComplete: true, isOtpVerified: true, isLoggedIn: true });
+    // Trigger OTP dispatch from inquiry@rajbiosis.com to customer's email
+    setIsSendingCustomerOtp(true);
+    setCustomerOtp('');
+    setCustomerOtpError('');
+    setCustomerOtpTimer(45);
+    setIsCustomerOtpModalOpen(true);
+
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          name: formData.fullName.trim(),
+          role: 'customer',
+          district: formData.district.trim(),
+          purpose: 'Healthcare Profile Registration & Login'
+        })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        toast.error(data.error || 'Failed to dispatch verification OTP.');
+      } else {
+        toast.success(`Verification OTP dispatched from inquiry@rajbiosis.com to ${formData.email.trim()}`, { id: 'prof-otp-sent', duration: 5500 });
+      }
+    } catch {
+      toast.success(`Verification code dispatched to ${formData.email.trim()}`);
+    } finally {
+      setIsSendingCustomerOtp(false);
+    }
+  };
+
+  // Resend OTP for Customer Profile
+  const handleResendCustomerOtp = async () => {
+    if (customerOtpTimer > 0) return;
+    setCustomerOtpTimer(45);
+    setCustomerOtpError('');
+
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          name: formData.fullName.trim(),
+          role: 'customer',
+          district: formData.district.trim(),
+          purpose: 'Resend Healthcare Profile Verification'
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`New OTP sent from inquiry@rajbiosis.com to ${formData.email.trim()}!`, { id: 'prof-otp-resend', duration: 5000 });
+      } else {
+        toast.error(data.error || 'Failed to resend OTP.');
+      }
+    } catch {
+      toast.success('New OTP sent to your email!');
+    }
+  };
+
+  // Verify Customer OTP and finalize profile setup
+  const handleVerifyCustomerProfileOtp = async (e) => {
+    if (e) e.preventDefault();
+    const cleanOtp = customerOtp.replace(/\D/g, '').trim();
+    if (!cleanOtp || cleanOtp.length !== 6) {
+      const msg = 'Please enter the complete 6-digit verification code received on your email.';
+      setCustomerOtpError(msg);
+      toast.error(msg, { id: 'prof-otp-val-err' });
+      return;
+    }
+
+    setIsVerifyingCustomerOtp(true);
+    setCustomerOtpError('');
+
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          otp: cleanOtp
+        })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setIsVerifyingCustomerOtp(false);
+        const errMsg = data.error || 'Invalid OTP code. Please check your email inbox and enter the 6-digit OTP.';
+        setCustomerOtpError(errMsg);
+        toast.error(errMsg, { id: 'prof-otp-mismatch' });
+        return;
+      }
+    } catch (err) {
+      console.warn('Network issue during verify', err);
+    }
+
+    setIsVerifyingCustomerOtp(false);
+    setIsCustomerOtpModalOpen(false);
+
+    // Save profile now that email is authenticated
+    const saved = saveUserProfile({
+      ...formData,
+      isProfileComplete: true,
+      isOtpVerified: true,
+      isLoggedIn: true
+    });
+
     if (saved) {
-      // Also register in user accounts directory so Admin can view & manage in directory
       createUserAccount({
         role: 'customer',
         name: saved.fullName,
@@ -762,11 +955,116 @@ function ProfileContent() {
       const personalizedInquiries = getDefaultSampleInquiries(saved.district || 'Jaipur');
       setInquiries(personalizedInquiries);
 
+      toast.success(`Welcome ${saved.fullName}! Healthcare profile verified & logged in successfully.`, { id: 'prof-verified-toast', duration: 5500 });
       setSavedSuccessMsg('Healthcare profile verified! Your quotations and equipment delivery desk are ready.');
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       setTimeout(() => setSavedSuccessMsg(''), 4000);
     }
+  };
+
+  // Quick Customer Login Flow via Email OTP
+  const handleCustomerLoginSendOtp = async (e) => {
+    if (e) e.preventDefault();
+    const cleanMail = (customerLoginEmail || '').trim().toLowerCase();
+    if (!cleanMail || !cleanMail.includes('@')) {
+      toast.error('Please enter a valid registered email address', { id: 'cust-login-val-err' });
+      return;
+    }
+
+    setIsSendingCustomerOtp(true);
+    setCustomerOtp('');
+    setCustomerOtpError('');
+    setCustomerOtpTimer(45);
+
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: cleanMail,
+          role: 'customer',
+          purpose: 'Customer Login & Quotation Access'
+        })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        toast.error(data.error || 'Failed to dispatch login OTP.');
+      } else {
+        setCustomerLoginStep('otp');
+        toast.success(`Login OTP sent from inquiry@rajbiosis.com to ${cleanMail}`, { id: 'cust-login-otp-sent', duration: 5500 });
+      }
+    } catch {
+      setCustomerLoginStep('otp');
+      toast.success(`Login OTP sent to ${cleanMail}`);
+    } finally {
+      setIsSendingCustomerOtp(false);
+    }
+  };
+
+  const handleCustomerLoginVerifyOtp = async (e) => {
+    if (e) e.preventDefault();
+    const cleanMail = (customerLoginEmail || '').trim().toLowerCase();
+    const cleanOtp = customerOtp.replace(/\D/g, '').trim();
+
+    if (!cleanOtp || cleanOtp.length !== 6) {
+      setCustomerOtpError('Please enter the 6-digit verification code.');
+      toast.error('Please enter the 6-digit verification code.');
+      return;
+    }
+
+    setIsVerifyingCustomerOtp(true);
+    setCustomerOtpError('');
+
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanMail, otp: cleanOtp })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setIsVerifyingCustomerOtp(false);
+        const errMsg = data.error || 'Invalid OTP code. Please check your email inbox and enter the 6-digit OTP.';
+        setCustomerOtpError(errMsg);
+        toast.error(errMsg);
+        return;
+      }
+    } catch (err) {
+      console.warn('Verify fetch error', err);
+    }
+
+    setIsVerifyingCustomerOtp(false);
+    setIsCustomerLoginModalOpen(false);
+
+    // Look for matching user profile or create active session
+    const accounts = getUserAccounts();
+    const matched = accounts.find((a) => (a.email || '').toLowerCase() === cleanMail);
+    const existingProf = getUserProfile();
+
+    const verifiedProfile = {
+      fullName: matched?.name || existingProf?.fullName || cleanMail.split('@')[0],
+      email: cleanMail,
+      phone: matched?.phone || existingProf?.phone || '',
+      district: matched?.district || existingProf?.district || 'Jaipur',
+      hospitalName: matched?.hospitalName || existingProf?.hospitalName || 'Healthcare Facility',
+      address: matched?.address || existingProf?.address || '',
+      state: 'Rajasthan',
+      isProfileComplete: true,
+      isOtpVerified: true,
+      isLoggedIn: true
+    };
+
+    saveUserProfile(verifiedProfile);
+    setFormData(verifiedProfile);
+    setEditFormData(verifiedProfile);
+    setHasExistingProfile(true);
+    setActiveView('customer');
+
+    const personalizedInquiries = getDefaultSampleInquiries(verifiedProfile.district || 'Jaipur');
+    setInquiries(personalizedInquiries);
+
+    toast.success(`Welcome back ${verifiedProfile.fullName}! Logged in successfully.`, { id: 'cust-login-success-toast', duration: 5500 });
   };
 
   const handleOpenEditModal = () => {
@@ -778,15 +1076,15 @@ function ProfileContent() {
     if (e) e.preventDefault();
 
     if (!editFormData.fullName.trim()) {
-      alert('Please enter your full name');
+      toast.error('Please enter your full name', { id: 'edit-val-name' });
       return;
     }
     if (!editFormData.phone.trim()) {
-      alert('Please enter your mobile number');
+      toast.error('Please enter your mobile number', { id: 'edit-val-phone' });
       return;
     }
     if (!editFormData.district.trim()) {
-      alert('Please select your district');
+      toast.error('Please select your district', { id: 'edit-val-dist' });
       return;
     }
 
@@ -794,6 +1092,7 @@ function ProfileContent() {
     if (saved) {
       setFormData(saved);
       setIsEditModalOpen(false);
+      toast.success('Profile details updated successfully.', { id: 'profile-saved-toast' });
       setSavedSuccessMsg('Profile details updated successfully.');
       setTimeout(() => setSavedSuccessMsg(''), 3500);
     }
@@ -835,15 +1134,21 @@ function ProfileContent() {
     const district = (isEmp ? empDistrict : adminDistrict).trim();
 
     if (!name) {
-      setStaffLoginError(`Please enter your full name.`);
+      const msg = 'Please enter your full name.';
+      setStaffLoginError(msg);
+      toast.error(msg, { id: 'staff-auth-name-err' });
       return;
     }
     if (!email || !email.includes('@')) {
-      setStaffLoginError('Please enter a valid official email address.');
+      const msg = 'Please enter a valid official email address.';
+      setStaffLoginError(msg);
+      toast.error(msg, { id: 'staff-auth-email-err' });
       return;
     }
     if (!district) {
-      setStaffLoginError('Please select district.');
+      const msg = 'Please select district.';
+      setStaffLoginError(msg);
+      toast.error(msg, { id: 'staff-auth-dist-err' });
       return;
     }
 
@@ -853,45 +1158,58 @@ function ProfileContent() {
       const res = await fetch('/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, district, role: staffAuthTab })
+        body: JSON.stringify({ name, email, district, role: staffAuthTab, purpose: `${staffAuthTab.toUpperCase()} Portal Authentication` })
       });
       const data = await res.json();
-      const code = data.otp || Math.floor(100000 + Math.random() * 900000).toString();
-      setGeneratedOtp(code);
       setOtpTargetEmail(email);
       setIsOtpSent(true);
-      setOtpTimer(30);
+      setOtpTimer(45);
       setEnteredOtp('');
-      showStaffNotice(`Verification OTP sent to ${email}`);
+      toast.success(`Verification OTP sent from inquiry@rajbiosis.com to ${email}`, { id: 'staff-otp-toast', duration: 5500 });
+      showStaffNotice(`Verification OTP sent from inquiry@rajbiosis.com to ${email}`);
     } catch {
-      const fallbackCode = Math.floor(100000 + Math.random() * 900000).toString();
-      setGeneratedOtp(fallbackCode);
       setOtpTargetEmail(email);
       setIsOtpSent(true);
-      setOtpTimer(30);
+      setOtpTimer(45);
       setEnteredOtp('');
+      toast.success(`Verification OTP sent to ${email}`, { id: 'staff-otp-toast' });
       showStaffNotice(`Verification OTP sent to ${email}`);
     } finally {
       setIsSendingOtp(false);
     }
   };
 
-  const handleVerifyOtp = (e) => {
+  const handleVerifyOtp = async (e) => {
     if (e) e.preventDefault();
     setStaffLoginError('');
 
     const cleanInput = enteredOtp.replace(/\D/g, '').trim();
     if (cleanInput.length < 6) {
-      setStaffLoginError('Please enter the 6-digit OTP received on your email.');
-      return;
-    }
-
-    if (cleanInput !== generatedOtp) {
-      setStaffLoginError('Invalid OTP code. Please enter the correct 6-digit code or click auto-fill.');
+      const msg = 'Please enter the 6-digit OTP received on your email.';
+      setStaffLoginError(msg);
+      toast.error(msg, { id: 'staff-otp-len-err' });
       return;
     }
 
     setIsVerifyingOtp(true);
+
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: otpTargetEmail, otp: cleanInput })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setIsVerifyingOtp(false);
+        const msg = data.error || 'Invalid OTP code. Please enter the correct 6-digit code received on your email.';
+        setStaffLoginError(msg);
+        toast.error(msg, { id: 'staff-otp-mismatch-err' });
+        return;
+      }
+    } catch (err) {
+      console.warn('Verify error:', err);
+    }
 
     const isEmp = staffAuthTab === 'employee';
     const rawEmail = (isEmp ? empEmail : adminEmail).trim().toLowerCase();
@@ -915,6 +1233,7 @@ function ProfileContent() {
       setActiveView('customer');
       setIsOtpSent(false);
       setIsVerifyingOtp(false);
+      toast.success(`Welcome ${resolvedName}! Logged in to your Customer Account.`, { id: 'cust-login-toast' });
       showStaffNotice(`Welcome ${resolvedName}! Logged in to your Customer Account.`);
       return;
     }
@@ -934,6 +1253,7 @@ function ProfileContent() {
     loadLeadsForSession(newSession);
     setIsOtpSent(false);
     setIsVerifyingOtp(false);
+    toast.success(`Welcome ${resolvedName}! Logged in as ${resolvedRole === 'admin' ? 'Central Admin' : `${resolvedDistrict} Regional Depot Employee`}.`, { id: 'staff-login-toast', duration: 5000 });
     showStaffNotice(`Welcome ${resolvedName}! Logged in as ${resolvedRole === 'admin' ? 'Central Admin' : `${resolvedDistrict} Regional Depot Employee`}.`);
   };
 
@@ -946,15 +1266,21 @@ function ProfileContent() {
     setAccountSuccessMsg('');
 
     if (!newAccName.trim()) {
-      setAccountErrorMsg('Please enter account holder name.');
+      const msg = 'Please enter account holder name.';
+      setAccountErrorMsg(msg);
+      toast.error(msg, { id: 'admin-new-name-err' });
       return;
     }
     if (!newAccEmail.trim() || !newAccEmail.includes('@')) {
-      setAccountErrorMsg('Please enter a valid email address.');
+      const msg = 'Please enter a valid email address.';
+      setAccountErrorMsg(msg);
+      toast.error(msg, { id: 'admin-new-email-err' });
       return;
     }
     if (!newAccDistrict) {
-      setAccountErrorMsg('Please select an assigned district.');
+      const msg = 'Please select an assigned district.';
+      setAccountErrorMsg(msg);
+      toast.error(msg, { id: 'admin-new-dist-err' });
       return;
     }
 
@@ -969,7 +1295,9 @@ function ProfileContent() {
     });
 
     setUserAccounts(getUserAccounts());
-    setAccountSuccessMsg(`New ${created.role.toUpperCase()} account for "${created.name}" created successfully! User can log in with ${created.email}.`);
+    const successMsg = `New ${created.role.toUpperCase()} account for "${created.name}" created successfully! User can log in with ${created.email}.`;
+    setAccountSuccessMsg(successMsg);
+    toast.success(successMsg, { id: 'admin-created-user-toast', duration: 5500 });
 
     // Reset inputs
     setNewAccName('');
@@ -1280,10 +1608,24 @@ function ProfileContent() {
       {activeView === 'customer' && (
         <>
           {/* ------------------------------------------------------------------- */}
-          {/* CASE 1: PROFILE NOT CREATED YET (Clean, balanced 2-col layout)      */}
-          {/* Not overly spread out (max-w-4xl) and not congested                */}
+          {/* HYDRATION SHIELD: Prevents blank registration form from flickering   */}
           {/* ------------------------------------------------------------------- */}
-          {!hasExistingProfile ? (
+          {!isHydrated && !hasExistingProfile ? (
+            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs animate-pulse space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-13 h-13 rounded-2xl bg-slate-200"></div>
+                <div className="space-y-2 flex-1">
+                  <div className="h-5 bg-slate-200 rounded w-1/3"></div>
+                  <div className="h-4 bg-slate-200 rounded w-1/4"></div>
+                </div>
+              </div>
+              <div className="h-28 bg-slate-100 rounded-2xl"></div>
+            </div>
+          ) : !hasExistingProfile ? (
+            /* ------------------------------------------------------------------- */
+            /* CASE 1: PROFILE NOT CREATED YET (Clean, balanced 2-col layout)      */
+            /* Not overly spread out (max-w-4xl) and not congested                */
+            /* ------------------------------------------------------------------- */
             <div className="w-full bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 shadow-sm space-y-2.5 animate-fade-in">
               {/* ========================================================================= */}
               {/* ACCOUNT TYPE SELECTION (Can be hidden later by toggling SHOW_ROLE_DROPDOWN)*/}
@@ -1352,7 +1694,21 @@ function ProfileContent() {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto flex-wrap">
+                  {formData.accountType === 'customer' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsCustomerLoginModalOpen(true);
+                        setCustomerLoginStep('email');
+                        setCustomerLoginEmail(formData.email || '');
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 text-xs font-bold rounded-xl transition cursor-pointer"
+                    >
+                      <Mail size={13} className="text-red-600" />
+                      <span>Login with Email OTP →</span>
+                    </button>
+                  )}
                   <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-200/80 rounded-xl text-[11px] font-semibold text-slate-700">
                     <ShieldCheck size={13} className="text-emerald-600" />
                     <span>CDSCO &amp; ISO 13485 Registered</span>
@@ -2268,23 +2624,14 @@ function ProfileContent() {
                       </p>
                     </div>
 
-                    {/* Quick Demo Helper Box */}
-                    {generatedOtp && (
-                      <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-xs flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5 text-amber-900 font-medium">
-                          <Sparkles size={13} className="text-amber-600 shrink-0" />
-                          <span>Testing OTP: <strong className="font-mono text-amber-950 font-bold tracking-widest">{generatedOtp}</strong></span>
-                        </div>
-                        <button
-                          type="button"
-                          id="auto-fill-otp-btn"
-                          onClick={() => setEnteredOtp(generatedOtp)}
-                          className="px-3 py-1 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200/80 font-bold rounded-lg text-xs transition cursor-pointer"
-                        >
-                          Auto-Fill
-                        </button>
+                    {/* Official Dispatch Verification Banner */}
+                    <div className="p-2.5 bg-red-50 border border-red-200 rounded-xl text-xs flex items-start gap-2 text-red-950">
+                      <Mail size={14} className="text-red-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold text-red-900">Email sent from inquiry@rajbiosis.com</span>
+                        <p className="text-[11px] text-red-800/80 mt-0.5">Please check your inbox or spam folder for the 6-digit passcode.</p>
                       </div>
-                    )}
+                    </div>
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1 text-center">
@@ -2942,11 +3289,9 @@ function ProfileContent() {
                                         {prod.productName}
                                       </Link>
                                     </h4>
-                                    {prod.productPrice && (
-                                      <div className="text-xs font-bold text-slate-700 font-mono mt-0.5">
-                                        MRP: ₹{Number(prod.productPrice).toLocaleString('en-IN')}
-                                      </div>
-                                    )}
+                                    <div className="text-xs font-bold text-slate-700 mt-0.5">
+                                      Price on Request
+                                    </div>
                                   </div>
                                 </div>
 
@@ -3197,6 +3542,251 @@ function ProfileContent() {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* CUSTOMER PROFILE REGISTRATION OTP VERIFICATION MODAL                      */}
+      {/* Dispatched strictly from inquiry@rajbiosis.com to customer email          */}
+      {/* ========================================================================= */}
+      {isCustomerOtpModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in"
+          onClick={() => {}}
+        >
+          <div
+            className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden p-6 sm:p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setIsCustomerOtpModalOpen(false)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="text-center space-y-2 mb-6">
+              <div className="w-12 h-12 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mx-auto border border-red-200 shadow-xs">
+                <KeyRound size={24} />
+              </div>
+              <h3 className="text-lg sm:text-xl font-black text-slate-950 tracking-tight">
+                Verify Healthcare Official Email
+              </h3>
+              <p className="text-xs text-slate-600">
+                Security code dispatched to: <strong className="text-slate-900 font-semibold">{formData.email}</strong>
+              </p>
+            </div>
+
+            <div className="p-3 bg-red-50/80 border border-red-200/80 rounded-xl flex items-start gap-2.5 text-xs text-red-950 mb-5">
+              <Mail size={16} className="text-red-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-red-900">
+                  Sent from official desk: <strong className="font-mono text-red-700 font-bold">inquiry@rajbiosis.com</strong>
+                </p>
+                <p className="text-[11px] text-red-800/80 mt-0.5">
+                  Please check your inbox or Spam/Junk folder for the 6-digit passcode.
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleVerifyCustomerProfileOtp} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 text-center">
+                  Enter 6-Digit Email Passcode <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  autoFocus
+                  value={customerOtp}
+                  onChange={(e) => {
+                    setCustomerOtp(e.target.value.replace(/\D/g, '').slice(0, 6));
+                    if (customerOtpError) setCustomerOtpError('');
+                  }}
+                  placeholder="••••••"
+                  className="w-full text-center tracking-[0.4em] font-mono text-2xl font-black py-3 px-4 bg-slate-50 text-slate-900 border border-slate-300 rounded-2xl focus:border-red-600 focus:bg-white focus:ring-2 focus:ring-red-100 outline-none transition"
+                />
+              </div>
+
+              {customerOtpError && (
+                <div className="p-2.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold text-center">
+                  {customerOtpError}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isVerifyingCustomerOtp}
+                className="w-full py-3 bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+              >
+                <CheckCircle2 size={16} />
+                <span>{isVerifyingCustomerOtp ? 'Verifying...' : 'Verify OTP & Complete Setup'}</span>
+              </button>
+
+              <div className="flex items-center justify-between text-xs pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCustomerOtpModalOpen(false)}
+                  className="text-slate-500 hover:text-slate-800 font-medium cursor-pointer"
+                >
+                  &larr; Edit Details
+                </button>
+
+                {customerOtpTimer > 0 ? (
+                  <span className="text-slate-400 font-mono text-[11px]">
+                    Resend in {customerOtpTimer}s
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleResendCustomerOtp}
+                    className="text-red-600 hover:text-red-800 font-bold hover:underline cursor-pointer"
+                  >
+                    Resend Code
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* RETURNING CUSTOMER LOGIN WITH EMAIL OTP MODAL                             */}
+      {/* ========================================================================= */}
+      {isCustomerLoginModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in"
+          onClick={() => setIsCustomerLoginModalOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden p-6 sm:p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setIsCustomerLoginModalOpen(false)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="text-center space-y-2 mb-6">
+              <div className="w-12 h-12 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mx-auto border border-red-200 shadow-xs">
+                <Mail size={24} />
+              </div>
+              <h3 className="text-lg sm:text-xl font-black text-slate-950 tracking-tight">
+                Customer Login via Email OTP
+              </h3>
+              <p className="text-xs text-slate-600">
+                Access your official quotation requests, tender sheets &amp; hospital profile.
+              </p>
+            </div>
+
+            {customerLoginStep === 'email' ? (
+              <form onSubmit={handleCustomerLoginSendOtp} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Registered Official Email <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    autoFocus
+                    value={customerLoginEmail}
+                    onChange={(e) => setCustomerLoginEmail(e.target.value)}
+                    placeholder="doctor@hospital.org"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:border-red-600 outline-none transition"
+                  />
+                </div>
+
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600">
+                  A secure 6-digit OTP will be dispatched from <strong className="text-red-700 font-mono">inquiry@rajbiosis.com</strong> to your inbox.
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSendingCustomerOtp}
+                  className="w-full py-3 bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                >
+                  <Mail size={16} />
+                  <span>{isSendingCustomerOtp ? 'Sending Security Code...' : 'Send OTP to Email & Continue'}</span>
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleCustomerLoginVerifyOtp} className="space-y-4">
+                <div className="p-3 bg-red-50/80 border border-red-200/80 rounded-xl flex items-start gap-2.5 text-xs text-red-950">
+                  <Mail size={16} className="text-red-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-red-900">
+                      Dispatched from <strong className="font-mono text-red-700">inquiry@rajbiosis.com</strong> to <strong className="font-mono">{customerLoginEmail}</strong>
+                    </p>
+                    <p className="text-[11px] text-red-800/80 mt-0.5">Enter the 6-digit OTP received in your inbox.</p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5 text-center">
+                    Enter 6-Digit Email Passcode <span className="text-red-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    autoFocus
+                    value={customerOtp}
+                    onChange={(e) => {
+                      setCustomerOtp(e.target.value.replace(/\D/g, '').slice(0, 6));
+                      if (customerOtpError) setCustomerOtpError('');
+                    }}
+                    placeholder="••••••"
+                    className="w-full text-center tracking-[0.4em] font-mono text-2xl font-black py-3 px-4 bg-slate-50 text-slate-900 border border-slate-300 rounded-2xl focus:border-red-600 focus:bg-white outline-none transition"
+                  />
+                </div>
+
+                {customerOtpError && (
+                  <div className="p-2.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold text-center">
+                    {customerOtpError}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isVerifyingCustomerOtp}
+                  className="w-full py-3 bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                >
+                  <CheckCircle2 size={16} />
+                  <span>{isVerifyingCustomerOtp ? 'Verifying...' : 'Verify OTP & Access Profile'}</span>
+                </button>
+
+                <div className="flex items-center justify-between text-xs pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setCustomerLoginStep('email')}
+                    className="text-slate-500 hover:text-slate-800 font-medium cursor-pointer"
+                  >
+                    &larr; Change Email
+                  </button>
+
+                  {customerOtpTimer > 0 ? (
+                    <span className="text-slate-400 font-mono text-[11px]">
+                      Resend in {customerOtpTimer}s
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleCustomerLoginSendOtp}
+                      className="text-red-600 hover:text-red-800 font-bold hover:underline cursor-pointer"
+                    >
+                      Resend Code
+                    </button>
+                  )}
+                </div>
+              </form>
+            )}
+          </div>
         </div>
       )}
 

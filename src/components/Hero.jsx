@@ -103,16 +103,16 @@ export default function Hero({ onSelectCategory, onOpenRfq }) {
               </div>
 
               <div className="finder-field">
-                <label>Institutional Budget Range</label>
+                <label>Equipment Division / Tier</label>
                 <select 
                   value={budgetTier} 
                   onChange={(e) => setBudgetTier(e.target.value)}
                   className="finder-select"
                 >
-                  <option value="any">All Price Brackets</option>
-                  <option value="under-1L">Under ₹1,00,000 (Monitors & Pumps)</option>
-                  <option value="1L-5L">₹1,00,000 - ₹5,00,000 (Ventilators & Cautery)</option>
-                  <option value="5L-15L">₹5,00,000+ (Imaging, DR X-Ray, C-Arm)</option>
+                  <option value="any">All Equipment Tiers</option>
+                  <option value="under-1L">Diagnostic &amp; Patient Monitoring</option>
+                  <option value="1L-5L">Critical Care &amp; Operating Theatre</option>
+                  <option value="5L-15L">Radiology, Imaging &amp; Advanced Systems</option>
                 </select>
               </div>
 

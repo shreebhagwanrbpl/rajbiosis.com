@@ -26,7 +26,9 @@ import {
   Users,
   Activity,
   Building2,
-  ChevronDown
+  ChevronDown,
+  Plus,
+  Minus
 } from 'lucide-react';
 import { getActiveDistrict, USER_PROFILE_EVENT, autoDetectLocation, getUserProfile, getUserInquiries, requireCustomerAuth } from '../../../utils/userProfile';
 import { addToCart, openCartDrawer, CART_UPDATED_EVENT } from '../../../utils/cart';
@@ -35,10 +37,11 @@ import { fetchProductDemand } from '../../../utils/cartWishlistSync';
 
 export default function ProductDetailClient({ productId }) {
   const [product, setProduct] = useState(() => {
-    return PRODUCTS.find((p) => p.id === productId) || PRODUCTS[0];
+    return PRODUCTS.find((p) => p.id === productId || p.sku === productId || p._id === productId) || null;
   });
 
   const [allProducts, setAllProducts] = useState(PRODUCTS);
+  const [isLoadingProduct, setIsLoadingProduct] = useState(!product);
 
   useEffect(() => {
     let isMounted = true;
@@ -47,22 +50,26 @@ export default function ProductDetailClient({ productId }) {
         const liveList = await fetchLiveProductsFromAdmin();
         if (isMounted && liveList && Array.isArray(liveList) && liveList.length > 0) {
           setAllProducts(liveList);
-          const found = liveList.find(p => p.id === productId || p.sku === productId);
+          const found = liveList.find(p => p.id === productId || p.sku === productId || p._id === productId);
           if (found) {
             setProduct(found);
           }
         }
       } catch (err) { }
+      finally {
+        if (isMounted) setIsLoadingProduct(false);
+      }
     }
     checkLiveProduct();
     return () => { isMounted = false; };
   }, [productId]);
 
-  const relatedProducts = allProducts.filter(
+  const relatedProducts = product ? allProducts.filter(
     (p) => (p.category === product.category || (p.category && product.category && p.category.toLowerCase() === product.category.toLowerCase())) && p.id !== product.id
-  ).slice(0, 4);
+  ).slice(0, 4) : [];
 
   const [activeTab, setActiveTab] = useState('specs'); // 'specs' | 'package' | 'warranty'
+  const [quantity, setQuantity] = useState(1);
   const [brochureDownloaded, setBrochureDownloaded] = useState(false);
   const [district, setDistrict] = useState('Jaipur');
   const [quoteCompleted, setQuoteCompleted] = useState(false);
@@ -245,6 +252,7 @@ export default function ProductDetailClient({ productId }) {
         new CustomEvent('open-product-enquiry', {
           detail: {
             ...product,
+            quantity: quantity,
             approvedPrice: approvedPriceInfo?.approvedPrice,
             negotiationStatus: approvedPriceInfo?.status,
             actualPrice: approvedPriceInfo?.actualPrice,
@@ -323,16 +331,51 @@ export default function ProductDetailClient({ productId }) {
   };
 
   const handleAddToCart = () => {
-    if (!requireCustomerAuth('cart', product, 1)) {
+    if (!requireCustomerAuth('cart', product, quantity)) {
       return;
     }
-    addToCart(product, 1);
+    addToCart(product, quantity);
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 2000);
     openCartDrawer();
   };
 
-  const gstRate = product.category === 'radiology-imaging' ? '18%' : '12%';
+  const gstRate = product?.gstRate ? `${product.gstRate}%` : '18%';
+
+  if (isLoadingProduct) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 antialiased">
+        <Header />
+        <div className="flex-1 flex flex-col items-center justify-center p-16 text-slate-400">
+          <div className="w-8 h-8 border-3 border-brand-600 border-t-transparent rounded-full animate-spin mb-4" />
+          <p className="text-xs font-semibold">Loading product specifications...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 antialiased">
+        <Header />
+        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center max-w-md mx-auto my-12">
+          <div className="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-4">
+            <Package size={28} />
+          </div>
+          <h2 className="text-lg font-bold text-slate-900 mb-2">Product Not Found</h2>
+          <p className="text-xs text-slate-500 mb-6">
+            The requested product model or SKU could not be located in our active catalogue.
+          </p>
+          <Link href="/products" className="btn-primary-red text-xs py-2.5 px-6 inline-flex items-center gap-2">
+            <span>Browse Full Catalogue</span>
+            <ArrowRight size={14} />
+          </Link>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 antialiased">
@@ -465,7 +508,7 @@ export default function ProductDetailClient({ productId }) {
                 {product.name}
               </h1>
 
-              {/* Pricing Box (Live Admin Approved Rate or Standard B2B Request) */}
+              {/* Pricing Box (Institutional Quote on Request) */}
               {approvedPriceInfo ? (
                 <div className="mt-4 p-5 bg-gradient-to-r from-emerald-50 via-teal-50/70 to-emerald-50 rounded-2xl border-2 border-emerald-400 shadow-sm space-y-3 animate-in fade-in">
                   <div className="flex items-center justify-between flex-wrap gap-2">
@@ -474,7 +517,7 @@ export default function ProductDetailClient({ productId }) {
                       <span>
                         {approvedPriceInfo.status === 'approved'
                           ? 'Authorized Institutional Rate Approved'
-                          : 'Authorized In-Between Counter Offer'}
+                          : 'Official Counter Quotation Ready'}
                       </span>
                     </div>
                     <span className="text-[11px] font-bold text-emerald-800 bg-white px-2.5 py-0.5 rounded-lg border border-emerald-200 font-mono">
@@ -485,23 +528,14 @@ export default function ProductDetailClient({ productId }) {
                   <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3 pt-1">
                     <div>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                        Authorized Special Purchase Price
+                        Institutional Purchase Rate
                       </span>
-                      <div className="text-3xl sm:text-4xl font-black font-mono text-emerald-900 tracking-tight">
-                        ₹{Number(approvedPriceInfo.approvedPrice).toLocaleString('en-IN')}
+                      <div className="text-2xl sm:text-3xl font-black text-emerald-900 tracking-tight">
+                        Official Quotation Generated
                       </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        {approvedPriceInfo.actualPrice > approvedPriceInfo.approvedPrice && (
-                          <>
-                            <span className="text-xs text-slate-400 line-through font-mono">
-                              Catalog MRP: ₹{Number(approvedPriceInfo.actualPrice).toLocaleString('en-IN')}
-                            </span>
-                            <span className="text-[11px] font-extrabold bg-emerald-200 text-emerald-950 px-2 py-0.5 rounded-md font-mono">
-                              Save ₹{(approvedPriceInfo.actualPrice - approvedPriceInfo.approvedPrice).toLocaleString('en-IN')} ({Math.round(((approvedPriceInfo.actualPrice - approvedPriceInfo.approvedPrice) / approvedPriceInfo.actualPrice) * 100)}% Off)
-                            </span>
-                          </>
-                        )}
-                      </div>
+                      <p className="text-xs text-emerald-700 mt-1">
+                        Your confidential institutional rate is attached to your quote sheet.
+                      </p>
                     </div>
 
                     <button
@@ -510,13 +544,13 @@ export default function ProductDetailClient({ productId }) {
                       className="py-3 px-5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <FileText size={16} />
-                      <span>View Authorized Quotation</span>
+                      <span>View Official Quotation</span>
                     </button>
                   </div>
 
                   {approvedPriceInfo.adminNote && (
                     <div className="text-xs text-emerald-900 bg-white/90 p-2.5 rounded-xl border border-emerald-200 font-medium">
-                      <strong>Executive Approval Note:</strong> &quot;{approvedPriceInfo.adminNote}&quot;
+                      <strong>Executive Note:</strong> &quot;{approvedPriceInfo.adminNote}&quot;
                     </div>
                   )}
                 </div>
@@ -526,42 +560,22 @@ export default function ProductDetailClient({ productId }) {
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                       <span className="text-xs font-black text-emerald-950 uppercase tracking-wide">
-                        {activeOffer.title || 'Special Management Offer'}
+                        {activeOffer.title || 'Special Management Privilege'}
                       </span>
                     </div>
                     <span className="text-xs font-mono font-black bg-emerald-600 text-white px-2.5 py-0.5 rounded-full shadow-2xs">
-                      {activeOffer.type === 'percentage'
-                        ? `${activeOffer.value}% OFF`
-                        : activeOffer.type === 'flat'
-                        ? `₹${Number(activeOffer.value).toLocaleString('en-IN')} OFF`
-                        : 'SPECIAL PRIVILEGE'}
+                      SPECIAL PRIVILEGE
                     </span>
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3 pt-1">
                     <div>
                       <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider block">
-                        Special Management Campaign Rate
+                        Institutional Campaign Rate
                       </span>
-                      <div className="text-3xl sm:text-4xl font-black font-mono text-emerald-900 tracking-tight">
-                        ₹{activeOffer.type === 'percentage'
-                          ? Math.round((product.price || 0) * (1 - Number(activeOffer.value || 0) / 100)).toLocaleString('en-IN')
-                          : activeOffer.type === 'flat'
-                          ? Math.max(0, (product.price || 0) - Number(activeOffer.value || 0)).toLocaleString('en-IN')
-                          : (product.price || 0).toLocaleString('en-IN')}
+                      <div className="text-2xl sm:text-3xl font-black text-emerald-900 tracking-tight">
+                        Price Available on Request
                       </div>
-                      {product.price && (
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-slate-400 line-through font-mono">
-                            Catalog MRP: ₹{Number(product.price).toLocaleString('en-IN')}
-                          </span>
-                          {activeOffer.type === 'percentage' && (
-                            <span className="text-[11px] font-extrabold bg-emerald-200 text-emerald-950 px-2 py-0.5 rounded-md font-mono">
-                              Save ₹{Math.round((product.price || 0) * (Number(activeOffer.value || 0) / 100)).toLocaleString('en-IN')} ({activeOffer.value}% Off)
-                            </span>
-                          )}
-                        </div>
-                      )}
                     </div>
 
                     <div className="text-right text-xs text-emerald-800">
@@ -605,191 +619,96 @@ export default function ProductDetailClient({ productId }) {
                 </div>
               )}
 
-              {/* Negotiable Target Price Alert */}
-              {product.isNegotiable && (
-                <div className="mt-3 p-3 bg-amber-50 border border-amber-300 rounded-xl flex items-center gap-2.5 text-xs text-amber-950">
-                  <Tag size={16} className="text-amber-600 shrink-0" />
-                  <span>
-                    <strong>Price Negotiable Equipment:</strong> Click <strong>Get Quote</strong> to enter your <strong>Target / Expected Unit Price (₹)</strong> and submit directly for Company Admin review &amp; approval.
-                  </span>
-                </div>
-              )}
-
-              {/* Description */}
-              <p className="mt-4 text-xs sm:text-sm text-slate-600 leading-relaxed">
+              {/* Clean Medical Equipment Description */}
+              <p className="mt-4 text-xs sm:text-sm text-slate-600 leading-relaxed max-w-2xl">
                 {product.shortDesc}
               </p>
 
-              {/* Stock / Availability Status with District */}
-              <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50/80 border border-emerald-200 px-3 py-1.5 rounded-xl w-fit">
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span suppressHydrationWarning>In Stock &bull; Dispatches to <strong className="font-semibold text-emerald-800" suppressHydrationWarning>{district}</strong></span>
-              </div>
-              {/* Live Customer Procurement Demand & Wishlist/Cart Tracking */}
-              <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200/90 shadow-2xs space-y-3">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-red-100 text-red-600 flex items-center justify-center font-bold">
-                      <Activity size={14} />
-                    </div>
-                    <div>
-                      <span className="text-[11px] font-extrabold text-slate-900 uppercase tracking-wider block">
-                        Procurement Interest &amp; Demand
-                      </span>
-                      <span className="text-[10px] text-slate-500">
-                        Live institutional shortlists synced with central admin
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Badges Count */}
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 text-red-700 border border-red-200 text-xs font-bold">
-                      <Heart size={12} className="fill-red-600 text-red-600" />
-                      <span>{productDemand.wishlistCount} Wishlisted</span>
-                    </span>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 text-amber-900 border border-amber-200 text-xs font-bold">
-                      <ShoppingCart size={12} className="text-amber-700" />
-                      <span>{productDemand.cartCount} In Cart</span>
-                    </span>
-                  </div>
+              {/* Professional Status Badges */}
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+                <div className="flex items-center gap-1.5 font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <span suppressHydrationWarning>In Stock &bull; Ready for Dispatch</span>
                 </div>
-
-                {/* Customers Who Have Wishlisted or In Cart */}
-                {productDemand.allCustomers && productDemand.allCustomers.length > 0 ? (
-                  <div className="pt-2 border-t border-slate-200/80 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                        <Users size={13} className="text-slate-600" />
-                        <span>Interested Hospitals &amp; Doctors ({productDemand.allCustomers.length}):</span>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setShowDemandDetails(!showDemandDetails)}
-                        className="text-[11px] font-bold text-brand-600 hover:text-brand-800 transition flex items-center gap-1 cursor-pointer"
-                      >
-                        <span>{showDemandDetails ? 'Collapse Details' : 'View Customers'}</span>
-                        <ChevronDown size={13} className={`transition-transform duration-200 ${showDemandDetails ? 'rotate-180' : ''}`} />
-                      </button>
-                    </div>
-
-                    {/* Preview summary chips */}
-                    {!showDemandDetails && (
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        {productDemand.allCustomers.slice(0, 3).map((cust, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-flex items-center gap-1 text-[11px] font-semibold bg-white border border-slate-200 px-2 py-0.5 rounded-md text-slate-700 shadow-2xs"
-                          >
-                            <Building2 size={10} className="text-slate-400" />
-                            <span>{cust.name}</span>
-                            <span className="text-[9px] text-slate-400">({cust.district})</span>
-                            <span className={`text-[9px] font-bold px-1 rounded ${cust.type === 'wishlist' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'}`}>
-                              {cust.type === 'wishlist' ? 'Wishlist' : 'Cart'}
-                            </span>
-                          </span>
-                        ))}
-                        {productDemand.allCustomers.length > 3 && (
-                          <button
-                            type="button"
-                            onClick={() => setShowDemandDetails(true)}
-                            className="text-[10px] font-bold text-slate-500 hover:text-slate-800 bg-slate-100 px-2 py-0.5 rounded-md cursor-pointer"
-                          >
-                            +{productDemand.allCustomers.length - 3} more
-                          </button>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Detailed list dropdown */}
-                    {showDemandDetails && (
-                      <div className="mt-2 divide-y divide-slate-100 bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs max-h-48 overflow-y-auto">
-                        {productDemand.allCustomers.map((cust, idx) => (
-                          <div key={idx} className="p-2.5 flex items-center justify-between text-xs hover:bg-slate-50 transition">
-                            <div className="flex items-center gap-2">
-                              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
-                                cust.type === 'wishlist' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-700'
-                              }`}>
-                                {cust.type === 'wishlist' ? <Heart size={11} className="fill-red-600" /> : <ShoppingCart size={11} />}
-                              </div>
-                              <div>
-                                <div className="font-bold text-slate-900 leading-tight">
-                                  {cust.name}
-                                </div>
-                                <div className="text-[10px] text-slate-500">
-                                  {cust.hospital} &bull; <strong className="text-slate-700">{cust.district}</strong>
-                                  {cust.phone ? <span> &bull; {cust.phone}</span> : ''}
-                                </div>
-                              </div>
-                            </div>
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                              cust.type === 'wishlist' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-amber-50 text-amber-800 border border-amber-200'
-                            }`}>
-                              {cust.type === 'wishlist' ? 'Wishlist' : 'In Cart'}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                {product.isNegotiable && (
+                  <div className="flex items-center gap-1.5 font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl">
+                    <Tag size={13} className="text-amber-600" />
+                    <span>Target Price Negotiation Open</span>
                   </div>
-                ) : (
-                  <p className="text-[11px] text-slate-500 pt-1 border-t border-slate-200/60">
-                    Be the first healthcare institution in <strong className="text-slate-800">{district}</strong> to shortlist this equipment in your Wishlist or Cart for official quotation.
-                  </p>
                 )}
+                <div className="flex items-center gap-1.5 text-slate-500 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
+                  <Truck size={13} className="text-slate-400" />
+                  <span suppressHydrationWarning>Regional Service: <strong className="text-slate-700">{district} Hub</strong></span>
+                </div>
               </div>
             </div>
 
-            {/* Primary Action Buttons */}
-            <div className="pt-4 border-t border-slate-200 flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={handleAddToCart}
-                className="py-3 px-5 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-              >
-                {justAdded ? <Check size={16} className="text-emerald-400" /> : <ShoppingCart size={16} />}
-                <span>{justAdded ? 'Added to Cart!' : 'Add to Cart / RFQ'}</span>
-              </button>
+            {/* Primary Action Buttons - Clean & Professional B2B Actions */}
+            <div className="pt-5 border-t border-slate-200/90 flex flex-wrap items-center gap-2.5 sm:gap-3">
+              {/* Quantity Stepper (- / +) */}
+              <div className="flex items-center border border-slate-300 rounded-xl bg-slate-50/90 p-1 h-11 sm:h-12 shrink-0 shadow-2xs">
+                <span className="text-[11px] font-bold text-slate-400 uppercase px-2 hidden sm:inline select-none">Qty:</span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  className="w-8 h-full flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200/80 rounded-lg transition font-black cursor-pointer select-none active:scale-90"
+                  title="Decrease Quantity"
+                  aria-label="Decrease Quantity"
+                >
+                  <Minus size={14} />
+                </button>
+                <span className="w-8 text-center font-black text-sm text-slate-900 select-none">
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity((q) => q + 1)}
+                  className="w-8 h-full flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200/80 rounded-lg transition font-black cursor-pointer select-none active:scale-90"
+                  title="Increase Quantity"
+                  aria-label="Increase Quantity"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
 
-              <button
-                type="button"
-                onClick={handleToggleWishlist}
-                className={`py-3 px-4 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm border ${
-                  isWishlisted
-                    ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
-                    : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
-                }`}
-                title={isWishlisted ? 'Saved in Equipment Wishlist' : 'Save to Equipment Wishlist'}
-              >
-                <Heart size={16} className={isWishlisted ? 'fill-red-600 text-red-600 scale-110' : 'text-slate-600'} />
-                <span>{isWishlisted ? 'Saved' : 'Wishlist'}</span>
-              </button>
-
+              {/* Primary: Get Official Quote */}
               <button
                 type="button"
                 onClick={handleOpenQuoteModal}
-                className="btn-primary-red py-3 px-6 text-xs sm:text-sm flex-1 sm:flex-none justify-center cursor-pointer shadow-sm active:scale-95"
+                className="flex-1 sm:flex-none py-3 px-5 sm:px-6 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white text-xs sm:text-sm font-bold rounded-xl transition shadow-sm flex items-center justify-center gap-2 cursor-pointer h-11 sm:h-12"
               >
                 <FileText size={16} />
-                <span>Get Quote for {district}</span>
+                <span>Request Official Quotation{quantity > 1 ? ` (${quantity} Units)` : ''}</span>
               </button>
 
+              {/* Secondary: Add to Cart / RFQ */}
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                className="flex-1 sm:flex-none py-3 px-4 sm:px-5 bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm h-11 sm:h-12"
+              >
+                {justAdded ? <Check size={16} className="text-emerald-400" /> : <ShoppingCart size={16} />}
+                <span>{justAdded ? `Added ${quantity} Units` : 'Add to RFQ List'}</span>
+              </button>
+
+              {/* Technical Datasheet Download */}
               <button
                 type="button"
                 onClick={handleDownloadBrochure}
-                className="btn-outline-neutral py-3 px-5 text-xs sm:text-sm flex-1 sm:flex-none justify-center cursor-pointer"
+                className="flex-1 sm:flex-none py-3 px-3.5 sm:px-4 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <Download size={16} />
-                <span>{brochureDownloaded ? 'Datasheet Ready!' : 'Product Datasheet'}</span>
+                <Download size={15} />
+                <span>{brochureDownloaded ? 'Datasheet Ready!' : 'Datasheet (PDF)'}</span>
               </button>
 
+              {/* Helpline Call */}
               <a
                 href="tel:9983333469"
-                className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition flex items-center gap-2 text-xs font-semibold"
-                title="Call 9983333469 for technical support"
+                className="w-full sm:w-auto py-2.5 sm:py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition flex items-center justify-center gap-2 text-xs font-bold"
+                title="Direct technical support helpline"
               >
-                <PhoneCall size={16} className="text-red-600" />
-                <span className="hidden sm:inline">9983333469</span>
+                <PhoneCall size={15} className="text-brand-600" />
+                <span>9983333469</span>
               </a>
             </div>
           </div>

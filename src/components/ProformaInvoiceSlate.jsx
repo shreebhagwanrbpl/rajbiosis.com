@@ -14,10 +14,10 @@ export default function ProformaInvoiceSlate({
   useEffect(() => {
     if (!isScrollControlled) return;
 
-    // Gradual thresholds for slow, graceful page transition
-    if (scrollProgress < 0.35) {
+    // Generous, wide thresholds so each sheet stays readable for a long time
+    if (scrollProgress < 0.38) {
       setActivePageIndex(0);
-    } else if (scrollProgress < 0.7) {
+    } else if (scrollProgress < 0.72) {
       setActivePageIndex(1);
     } else {
       setActivePageIndex(2);
@@ -32,16 +32,16 @@ export default function ProformaInvoiceSlate({
     });
   };
 
-  // Silky smooth, slow flying sheet physics (1.1s cubic-bezier for a graceful float)
+  // Silky smooth, ultra-slow flying sheet physics (2.4s cubic-bezier for a majestic, gentle float)
   const getPageStyle = (pageIndex) => {
     if (pageIndex < activePageIndex) {
-      // Sheet has gracefully floated away upwards
+      // Sheet has gracefully floated away upwards ("bilkul slow")
       return {
-        transform: 'translateY(-145%) rotate(-10deg) scale(0.92)',
+        transform: 'translateY(-155%) rotate(-8deg) scale(0.94)',
         opacity: 0,
         pointerEvents: 'none',
         zIndex: 50,
-        transition: 'transform 1.15s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.95s cubic-bezier(0.22, 1, 0.36, 1)'
+        transition: 'transform 2.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 2.0s cubic-bezier(0.16, 1, 0.3, 1)'
       };
     }
     if (pageIndex === activePageIndex) {
@@ -51,7 +51,7 @@ export default function ProformaInvoiceSlate({
         opacity: 1,
         pointerEvents: 'auto',
         zIndex: 40,
-        transition: 'transform 1.05s cubic-bezier(0.22, 1, 0.36, 1), opacity 1.05s cubic-bezier(0.22, 1, 0.36, 1)'
+        transition: 'transform 2.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 2.2s cubic-bezier(0.16, 1, 0.3, 1)'
       };
     }
     // Stacking behind
@@ -64,7 +64,7 @@ export default function ProformaInvoiceSlate({
       opacity: Math.max(0.4, opacity),
       pointerEvents: 'none',
       zIndex: 40 - depth * 10,
-      transition: 'transform 0.95s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.95s cubic-bezier(0.22, 1, 0.36, 1)'
+      transition: 'transform 2.0s cubic-bezier(0.16, 1, 0.3, 1), opacity 2.0s cubic-bezier(0.16, 1, 0.3, 1)'
     };
   };
 

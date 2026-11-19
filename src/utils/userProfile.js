@@ -2,6 +2,7 @@ import { syncProfileToAdmin } from './adminSync';
 // User profile and localized district utility helpers
 import { DEFAULT_DISTRICT } from '../data/districts';
 import { DEFAULT_COUNTRY_CODE } from '../data/internationalCodes';
+import { PRODUCTS } from '../data/products';
 
 export const USER_PROFILE_KEY = 'rajbiosis_user_profile';
 export const USER_PROFILE_EVENT = 'user-profile-updated';
@@ -29,53 +30,57 @@ export const DEFAULT_HOSPITAL_PROFILE = {
  * Get sample default enquiries for realistic display when customer visits profile.
  */
 export function getDefaultSampleInquiries(district = 'Jaipur') {
+  const p1 = PRODUCTS[0];
+  const p2 = PRODUCTS[1];
+  if (!p1) return [];
+
   return [
     {
       id: 'RFQ-880124',
       quoteNumber: 'RB-QT-2026-8801',
-      productId: 'prod-vent-x9',
-      productName: 'RajBiosis-Vent Pro-X9 Turbine Mechanical Ventilator',
-      productSku: 'RAJ-ICU-8801',
-      productCategory: 'ICU & Critical Care',
-      productBrand: 'Raj Biosis OEM',
-      productImage: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80',
-      quantity: 2,
-      unitPrice: 485000,
-      actualPrice: 485000,
-      totalAmount: 970000,
-      gstRate: '12%',
-      gstAmount: 116400,
-      grandTotal: 1086400,
+      productId: p1.id,
+      productName: p1.name,
+      productSku: p1.sku,
+      productCategory: p1.categoryName || p1.category,
+      productBrand: p1.brand || 'Raj Biosis',
+      productImage: p1.image,
+      quantity: 5,
+      unitPrice: p1.price || 1250,
+      actualPrice: p1.price || 1250,
+      totalAmount: (p1.price || 1250) * 5,
+      gstRate: '18%',
+      gstAmount: Math.round(((p1.price || 1250) * 5) * 0.18),
+      grandTotal: Math.round(((p1.price || 1250) * 5) * 1.18),
       status: 'Quotation Sent (Instant Authorized)',
-      statusNote: 'Authorized digital proforma quotation generated with 2-year on-site SLA and priority depot dispatch.',
+      statusNote: 'Authorized digital proforma quotation generated with certified SLA and priority depot dispatch.',
       deliveryEstimate: `24-48 Hours Express Dispatch to ${district}`,
       validTill: '30 Days from issue',
       createdAt: new Date().toISOString(),
       date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
     },
-    {
+    ...(p2 ? [{
       id: 'RFQ-604112',
       quoteNumber: 'RB-QT-2026-6041',
-      productId: 'prod-mon-12x',
-      productName: 'CardioPulse Multi-Para Patient Monitor 12.1"',
-      productSku: 'RAJ-ICU-604',
-      productCategory: 'ICU & Critical Care',
-      productBrand: 'Mindray',
-      productImage: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80',
-      quantity: 4,
-      unitPrice: 68500,
-      actualPrice: 68500,
-      totalAmount: 274000,
-      gstRate: '12%',
-      gstAmount: 32880,
-      grandTotal: 306880,
+      productId: p2.id,
+      productName: p2.name,
+      productSku: p2.sku,
+      productCategory: p2.categoryName || p2.category,
+      productBrand: p2.brand || 'Raj Biosis',
+      productImage: p2.image,
+      quantity: 10,
+      unitPrice: p2.price || 850,
+      actualPrice: p2.price || 850,
+      totalAmount: (p2.price || 850) * 10,
+      gstRate: '18%',
+      gstAmount: Math.round(((p2.price || 850) * 10) * 0.18),
+      grandTotal: Math.round(((p2.price || 850) * 10) * 1.18),
       status: 'Dispatched (Regional Hub)',
-      statusNote: `Consignment calibrated and in transit from Jaipur Central Depot to ${district}.`,
+      statusNote: `Consignment in transit from Jaipur Central Depot to ${district}.`,
       deliveryEstimate: 'Arriving Tomorrow by 2:00 PM',
       validTill: 'Delivered',
       createdAt: new Date(Date.now() - 86400000).toISOString(),
       date: new Date(Date.now() - 86400000).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-    }
+    }] : [])
   ];
 }
 
@@ -402,6 +407,7 @@ export function saveUserProfile(profileData) {
     if (updated.district) {
       try {
         localStorage.setItem('rajbiosis_active_district', updated.district.trim());
+        window.dispatchEvent(new CustomEvent('active-district-changed', { detail: updated.district.trim() }));
       } catch (e) {}
     }
 
